@@ -1,8 +1,10 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { useControls } from "leva";
 import { Particles } from "./Particles";
+import { useRef } from "react";
+import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 // Available environment presets
 const ENVIRONMENT_PRESETS = {
@@ -19,6 +21,8 @@ const ENVIRONMENT_PRESETS = {
 } as const;
 
 export function Scene() {
+  const orbitControlsRef = useRef<OrbitControlsImpl>(null);
+
   const { environmentPreset, backgroundBlur, brightness } = useControls(
     "Environment",
     {
@@ -73,20 +77,99 @@ export function Scene() {
     { collapsed: true }
   );
 
+  const { autoCameraEnabled, cameraSpeed, cameraRadius, heightVariation } =
+    useControls("Camera Motion", {
+      autoCameraEnabled: {
+        value: true,
+        label: "Auto Camera",
+      },
+      cameraSpeed: {
+        value: 1,
+        min: 0.1,
+        max: 3,
+        step: 0.1,
+        label: "Speed",
+      },
+      cameraRadius: {
+        value: 5,
+        min: 0.01,
+        max: 15,
+        step: 0.5,
+        label: "Radius",
+      },
+      heightVariation: {
+        value: 5,
+        min: 0,
+        max: 10,
+        step: 0.5,
+        label: "Height Range",
+      },
+    });
+
+  function CameraController() {
+    const { camera } = useThree();
+    const time = useRef(0);
+
+    useFrame((state, delta) => {
+      if (autoCameraEnabled) {
+        time.current += delta * cameraSpeed;
+
+        // Keep camera directly above, with subtle circular motion
+        const radius = cameraRadius * 0.15;
+        const x = Math.cos(time.current) * radius;
+        const z = Math.sin(time.current) * radius;
+
+        // Fixed height with very subtle variation
+        const baseHeight = cameraRadius * 2;
+        const y =
+          baseHeight + Math.sin(time.current * 0.25) * heightVariation * 0.1;
+
+        // Update camera position
+        camera.position.set(x, y, z);
+
+        // Always look directly down at origin
+        camera.lookAt(0, 0, 0);
+
+        // Disable orbit controls in auto mode
+        if (orbitControlsRef.current) {
+          orbitControlsRef.current.target.set(0, 0, 0);
+          orbitControlsRef.current.enabled = false;
+        }
+      } else if (
+        orbitControlsRef.current &&
+        !orbitControlsRef.current.enabled
+      ) {
+        orbitControlsRef.current.enabled = true;
+      }
+    });
+
+    return null;
+  }
+
   return (
     <Canvas
       camera={{
-        position: [0, 0, 5],
+        position: [0, cameraRadius * 2, 0],
         fov: 50,
         near: 0.1,
         far: 1000,
       }}
     >
+      <CameraController />
       <color attach="background" args={["#000000"]} />
       <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} />
       <Particles />
-      <OrbitControls />
+
+      <OrbitControls
+        ref={orbitControlsRef}
+        enableDamping
+        dampingFactor={0.05}
+        rotateSpeed={0.5}
+        target={[0, 0, 0]}
+        maxPolarAngle={Math.PI * 0.35}
+        minPolarAngle={0}
+      />
 
       <Environment
         preset={environmentPreset as keyof typeof ENVIRONMENT_PRESETS}
