@@ -41,14 +41,15 @@ export function Scene() {
         step: 0.01,
         label: "Brightness",
       },
-    }
+    },
+    { collapsed: true }
   );
 
   const { bloomIntensity, bloomThreshold, bloomSmoothing } = useControls(
     "Bloom",
     {
       bloomIntensity: {
-        value: 1.5,
+        value: 4,
         min: 0,
         max: 5,
         step: 0.1,
@@ -68,7 +69,8 @@ export function Scene() {
         step: 0.1,
         label: "Smoothing",
       },
-    }
+    },
+    { collapsed: true }
   );
 
   return (

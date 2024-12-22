@@ -15,230 +15,6 @@ enum ParticleShape {
   Heart = "heart",
 }
 
-// Add preset types
-interface ParticlePreset {
-  name: string;
-  physics: {
-    emissionRate: number;
-    particleLifetime: number;
-    gravity: number;
-    initialSpeed: number;
-    spread: number;
-    audioReactivity: number;
-    rotationSpeed: number;
-    spiralEffect: number;
-    pulseStrength: number;
-    swarmEffect: number;
-    shape: ParticleShape;
-    shapeSize: number;
-  };
-  particle: {
-    size: number;
-    startColor: string;
-    endColor: string;
-  };
-  camera: {
-    autoRotate: boolean;
-    autoRotateSpeed: number;
-    position: [number, number, number];
-  };
-}
-
-// Define presets
-const particlePresets: Record<string, ParticlePreset> = {
-  night: {
-    name: "Night",
-    physics: {
-      emissionRate: 50,
-      particleLifetime: 2,
-      gravity: -9.8,
-      initialSpeed: 5,
-      spread: 0.5,
-      audioReactivity: 4.6,
-      rotationSpeed: 0.5,
-      spiralEffect: 0.46,
-      pulseStrength: 1.48,
-      swarmEffect: 0.61,
-      shape: ParticleShape.Ring,
-      shapeSize: 1.5,
-    },
-    particle: {
-      size: 0.2,
-      startColor: "#ffffff",
-      endColor: "#ffffff",
-    },
-    camera: {
-      autoRotate: true,
-      autoRotateSpeed: 4,
-      position: [
-        -0.00000836801507049617, 9.999999999995, 0.000005475875622962786,
-      ],
-    },
-  },
-  galaxy: {
-    name: "Galaxy",
-    physics: {
-      emissionRate: 100,
-      particleLifetime: 4,
-      gravity: 0,
-      initialSpeed: 2,
-      spread: 0.2,
-      audioReactivity: 1,
-      rotationSpeed: 0.8,
-      spiralEffect: 0.8,
-      pulseStrength: 0.3,
-      swarmEffect: 0.2,
-      shape: ParticleShape.Point,
-      shapeSize: 3,
-    },
-    particle: {
-      size: 0.15,
-      startColor: "#4a9eff",
-      endColor: "#ff4a4a",
-    },
-    camera: {
-      autoRotate: true,
-      autoRotateSpeed: 1,
-      position: [15, 5, 0],
-    },
-  },
-  fountain: {
-    name: "Fountain",
-    physics: {
-      emissionRate: 150,
-      particleLifetime: 2,
-      gravity: -9.8,
-      initialSpeed: 15,
-      spread: 0.3,
-      audioReactivity: 1,
-      rotationSpeed: 0.2,
-      spiralEffect: 0,
-      pulseStrength: 0.1,
-      swarmEffect: 0,
-      shape: ParticleShape.Point,
-      shapeSize: 1,
-    },
-    particle: {
-      size: 0.08,
-      startColor: "#00ffff",
-      endColor: "#0000ff",
-    },
-    camera: {
-      autoRotate: false,
-      autoRotateSpeed: 0,
-      position: [0, 10, 15],
-    },
-  },
-  fireworks: {
-    name: "Fireworks",
-    physics: {
-      emissionRate: 200,
-      particleLifetime: 1,
-      gravity: -2,
-      initialSpeed: 8,
-      spread: 2,
-      audioReactivity: 2,
-      rotationSpeed: 1,
-      spiralEffect: 0,
-      pulseStrength: 1,
-      swarmEffect: 0,
-      shape: ParticleShape.Sphere,
-      shapeSize: 0.1,
-    },
-    particle: {
-      size: 0.1,
-      startColor: "#ffff00",
-      endColor: "#ff0000",
-    },
-    camera: {
-      autoRotate: false,
-      autoRotateSpeed: 0,
-      position: [0, 5, 15],
-    },
-  },
-  snowfall: {
-    name: "Snowfall",
-    physics: {
-      emissionRate: 50,
-      particleLifetime: 5,
-      gravity: -1,
-      initialSpeed: 2,
-      spread: 1.5,
-      audioReactivity: 0.5,
-      rotationSpeed: 0.3,
-      spiralEffect: 0.1,
-      pulseStrength: 0.1,
-      swarmEffect: 0.2,
-      shape: ParticleShape.Point,
-      shapeSize: 1,
-    },
-    particle: {
-      size: 0.1,
-      startColor: "#ffffff",
-      endColor: "#e0e0ff",
-    },
-    camera: {
-      autoRotate: false,
-      autoRotateSpeed: 0,
-      position: [0, 10, 15],
-    },
-  },
-  vortex: {
-    name: "Vortex",
-    physics: {
-      emissionRate: 120,
-      particleLifetime: 3,
-      gravity: 0,
-      initialSpeed: 5,
-      spread: 0.1,
-      audioReactivity: 1.5,
-      rotationSpeed: 1,
-      spiralEffect: 1,
-      pulseStrength: 0.8,
-      swarmEffect: 0.5,
-      shape: ParticleShape.Ring,
-      shapeSize: 3,
-    },
-    particle: {
-      size: 0.12,
-      startColor: "#ff00ff",
-      endColor: "#00ffff",
-    },
-    camera: {
-      autoRotate: true,
-      autoRotateSpeed: 3,
-      position: [0, 15, 0],
-    },
-  },
-  hearts: {
-    name: "Hearts",
-    physics: {
-      emissionRate: 30,
-      particleLifetime: 4,
-      gravity: -1,
-      initialSpeed: 3,
-      spread: 0.5,
-      audioReactivity: 1,
-      rotationSpeed: 0.2,
-      spiralEffect: 0.2,
-      pulseStrength: 0.5,
-      swarmEffect: 0.3,
-      shape: ParticleShape.Heart,
-      shapeSize: 2,
-    },
-    particle: {
-      size: 0.2,
-      startColor: "#ff69b4",
-      endColor: "#ff1493",
-    },
-    camera: {
-      autoRotate: true,
-      autoRotateSpeed: 1,
-      position: [0, 10, 15],
-    },
-  },
-};
-
 interface Particle {
   position: THREE.Vector3;
   velocity: THREE.Vector3;
@@ -334,6 +110,7 @@ export function Particles() {
   const [autoRotateSpeed, setAutoRotateSpeed] = useState(2.0);
   const [shape, setShape] = useState<ParticleShape>(ParticleShape.Point);
   const [shapeSize, setShapeSize] = useState(2);
+  const [shapeSizeBase, setShapeSizeBase] = useState(2);
 
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
   const points = useRef<THREE.Points>(null);
@@ -343,94 +120,6 @@ export function Particles() {
   const dataArray = useRef<Uint8Array | null>(null);
 
   const { camera } = useThree();
-
-  // Add preset selection controls
-  const [currentPreset, setCurrentPreset] = useState<string>("night");
-
-  // Function to apply preset
-  const applyPreset = (presetName: string) => {
-    const preset = particlePresets[presetName];
-    if (!preset) return;
-
-    // Apply physics settings
-    set(preset.physics);
-
-    // Apply particle settings
-    setControls({
-      size: preset.particle.size,
-      startColor: preset.particle.startColor,
-      endColor: preset.particle.endColor,
-    });
-
-    // Apply camera settings
-    if (camera && orbitControlsRef.current) {
-      const [x, y, z] = preset.camera.position;
-      camera.position.set(x, y, z);
-      setAutoRotate(preset.camera.autoRotate);
-      setAutoRotateSpeed(preset.camera.autoRotateSpeed);
-      orbitControlsRef.current.autoRotate = preset.camera.autoRotate;
-      orbitControlsRef.current.autoRotateSpeed = preset.camera.autoRotateSpeed;
-      orbitControlsRef.current.update();
-    }
-
-    setCurrentPreset(presetName);
-  };
-
-  // Add preset controls
-  useControls("Presets", {
-    preset: {
-      value: currentPreset,
-      options: Object.keys(particlePresets),
-      onChange: (value: string) => {
-        applyPreset(value);
-      },
-    },
-    copyCurrentConfig: button(() => {
-      // Create a preset object from current settings
-      const currentConfig: ParticlePreset = {
-        name: "Custom",
-        physics: {
-          emissionRate,
-          particleLifetime,
-          gravity,
-          initialSpeed,
-          spread,
-          audioReactivity,
-          rotationSpeed,
-          spiralEffect,
-          pulseStrength,
-          swarmEffect,
-          shape,
-          shapeSize,
-        },
-        particle: {
-          size,
-          startColor,
-          endColor,
-        },
-        camera: {
-          autoRotate,
-          autoRotateSpeed,
-          position: [camera.position.x, camera.position.y, camera.position.z],
-        },
-      };
-
-      // Copy to clipboard
-      navigator.clipboard
-        .writeText(JSON.stringify(currentConfig, null, 2))
-        .then(() => {
-          console.log("Configuration copied to clipboard");
-        })
-        .catch((err) => {
-          console.error("Failed to copy configuration:", err);
-        });
-    }),
-  });
-
-  // Initialize with default preset
-  useEffect(() => {
-    applyPreset(currentPreset);
-  }, []);
 
   // Initialize camera position
   useEffect(() => {
@@ -474,7 +163,10 @@ export function Particles() {
       min: 0.1,
       max: 5,
       step: 0.1,
-      onChange: (value: number) => setShapeSize(value),
+      onChange: (value: number) => {
+        setShapeSizeBase(value);
+        setShapeSize(value);
+      },
     },
     randomize: button(() => {
       const randomInRange = (min: number, max: number) =>
@@ -496,7 +188,7 @@ export function Particles() {
 
   const [, setControls] = useControls("Particle", () => ({
     size: {
-      value: 0.1,
+      value: 0.15,
       min: 0.01,
       max: 0.4,
       step: 0.01,
@@ -631,15 +323,6 @@ export function Particles() {
         }
       },
     },
-    level: {
-      value: 0,
-      label: "Input Lvl",
-      min: 0,
-      max: 1,
-      step: 0.01,
-      onChange: () => {}, // Read-only
-      render: (get) => get("Audio.enabled"),
-    },
   });
 
   // Update initAudio function
@@ -753,6 +436,11 @@ export function Particles() {
     const baseSize = size * (1 + audioLevel * audioReactivity * 0.5);
     const time = state.clock.getElapsedTime();
 
+    // Update shape size based on audio
+    const newShapeSize =
+      shapeSizeBase * (1 + audioLevel * audioReactivity * 0.5);
+    setShapeSize(newShapeSize);
+
     const startColorObj = new THREE.Color(startColor);
     const endColorObj = new THREE.Color(endColor);
     const tempColor = new THREE.Color();
@@ -808,7 +496,7 @@ export function Particles() {
         Math.cos(time * 1.5 + particle.position.x * 0.5) * swarmStrength;
 
       // Radial force (inward/outward motion)
-      const radialForce = Math.sin(time * 2) * audioLevel * pulseStrength * 5;
+      const radialForce = Math.sin(time * 2) * pulseStrength * audioLevel * 5;
       const dirToCenter = particle.position.clone().normalize();
       forces.addScaledVector(dirToCenter, radialForce);
 
