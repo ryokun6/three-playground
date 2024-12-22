@@ -5,6 +5,16 @@ import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 
+// Add shape types enum
+enum ParticleShape {
+  Point = "point",
+  Circle = "circle",
+  Star = "star",
+  Sphere = "sphere",
+  Ring = "ring",
+  Heart = "heart",
+}
+
 interface Particle {
   position: THREE.Vector3;
   velocity: THREE.Vector3;
@@ -27,6 +37,8 @@ interface SavedState {
     spiralEffect: number;
     pulseStrength: number;
     swarmEffect: number;
+    shape: ParticleShape;
+    shapeSize: number;
   };
   particle: {
     size: number;
@@ -41,6 +53,77 @@ interface SavedState {
   };
 }
 
+// Add shape generation functions
+const generateShapePosition = (
+  shape: ParticleShape,
+  size: number
+): THREE.Vector3 => {
+  const pos = new THREE.Vector3();
+
+  // Declare all variables at the top
+  const angle = Math.random() * Math.PI * 2;
+  const starAngle = Math.random() * Math.PI * 2;
+  const spikes = 5;
+  const innerRadius = size * 0.382; // Golden ratio for better star proportions
+  const outerRadius = size;
+  const spikeAngle =
+    Math.floor(starAngle / ((Math.PI * 2) / spikes)) * ((Math.PI * 2) / spikes);
+  // Pre-calculate star-specific variables
+  const angleToSpike = starAngle - spikeAngle;
+  const normalizedAngle = angleToSpike % ((Math.PI * 2) / spikes);
+  const spikeBlend = Math.abs(normalizedAngle / (Math.PI / spikes) - 1);
+  const starRadius =
+    innerRadius + (outerRadius - innerRadius) * Math.pow(spikeBlend, 0.5);
+
+  const phi = Math.random() * Math.PI * 2;
+  const theta = Math.acos(2 * Math.random() - 1);
+  const ringWidth = size * 0.2;
+  const ringRadius = size + (Math.random() - 0.5) * ringWidth;
+  const t = Math.random() * Math.PI * 2;
+  const heartSize = size * 0.8;
+
+  switch (shape) {
+    case ParticleShape.Circle:
+      pos.x = Math.cos(angle) * size;
+      pos.z = Math.sin(angle) * size;
+      break;
+
+    case ParticleShape.Star:
+      pos.x = Math.cos(starAngle) * starRadius;
+      pos.z = Math.sin(starAngle) * starRadius;
+      break;
+
+    case ParticleShape.Sphere:
+      pos.x = size * Math.sin(theta) * Math.cos(phi);
+      pos.y = size * Math.sin(theta) * Math.sin(phi);
+      pos.z = size * Math.cos(theta);
+      break;
+
+    case ParticleShape.Ring:
+      pos.x = Math.cos(angle) * ringRadius;
+      pos.z = Math.sin(angle) * ringRadius;
+      break;
+
+    case ParticleShape.Heart:
+      pos.x = heartSize * 16 * Math.pow(Math.sin(t), 3);
+      pos.y =
+        heartSize *
+        (13 * Math.cos(t) -
+          5 * Math.cos(2 * t) -
+          2 * Math.cos(3 * t) -
+          Math.cos(4 * t));
+      pos.z = (Math.random() - 0.5) * size * 0.3; // Add some depth
+      pos.multiplyScalar(0.01); // Scale down the heart shape
+      break;
+
+    default: // Point shape or fallback
+      pos.set(0, 0, 0);
+      break;
+  }
+
+  return pos;
+};
+
 export function Particles() {
   const [count] = useState(500);
   const [size, setSize] = useState(0.1);
@@ -50,6 +133,8 @@ export function Particles() {
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [autoRotate, setAutoRotate] = useState(false);
   const [autoRotateSpeed, setAutoRotateSpeed] = useState(2.0);
+  const [shape, setShape] = useState<ParticleShape>(ParticleShape.Point);
+  const [shapeSize, setShapeSize] = useState(2);
 
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
   const points = useRef<THREE.Points>(null);
@@ -87,6 +172,18 @@ export function Particles() {
     spiralEffect: { value: 0.3, min: 0, max: 1 },
     pulseStrength: { value: 0.5, min: 0, max: 2 },
     swarmEffect: { value: 0.3, min: 0, max: 1 },
+    shape: {
+      value: ParticleShape.Point,
+      options: Object.values(ParticleShape),
+      onChange: (value: ParticleShape) => setShape(value),
+    },
+    shapeSize: {
+      value: 2,
+      min: 0.1,
+      max: 5,
+      step: 0.1,
+      onChange: (value: number) => setShapeSize(value),
+    },
     randomize: button(() => {
       const randomInRange = (min: number, max: number) =>
         Math.random() * (max - min) + min;
@@ -182,7 +279,7 @@ export function Particles() {
       }),
     }),
     "Save/Load State": folder({
-      saveState: button(() => {
+      copyToClipboard: button(async () => {
         if (!camera || !orbitControlsRef.current) return;
 
         const state: SavedState = {
@@ -197,6 +294,8 @@ export function Particles() {
             spiralEffect,
             pulseStrength,
             swarmEffect,
+            shape,
+            shapeSize,
           },
           particle: {
             size,
@@ -219,14 +318,19 @@ export function Particles() {
           },
         };
 
-        localStorage.setItem("particles-state", JSON.stringify(state));
+        try {
+          await navigator.clipboard.writeText(JSON.stringify(state, null, 2));
+          console.log("Configuration copied to clipboard");
+        } catch (error) {
+          console.error("Failed to copy to clipboard:", error);
+        }
       }),
-      loadState: button(() => {
-        const savedStateStr = localStorage.getItem("particles-state");
-        if (!savedStateStr || !camera || !orbitControlsRef.current) return;
+      loadFromClipboard: button(async () => {
+        if (!camera || !orbitControlsRef.current) return;
 
         try {
-          const savedState: SavedState = JSON.parse(savedStateStr);
+          const clipboardText = await navigator.clipboard.readText();
+          const savedState: SavedState = JSON.parse(clipboardText);
 
           // Restore physics parameters
           set(savedState.physics);
@@ -255,8 +359,10 @@ export function Particles() {
           orbitControlsRef.current.autoRotateSpeed =
             savedState.camera.autoRotateSpeed;
           orbitControlsRef.current.update();
+
+          console.log("Configuration loaded from clipboard");
         } catch (error) {
-          console.error("Error loading saved state:", error);
+          console.error("Failed to load from clipboard:", error);
         }
       }),
     }),
@@ -299,23 +405,33 @@ export function Particles() {
   const positions = useRef(new Float32Array(count * 3));
   const colors = useRef(new Float32Array(count * 3));
   const scales = useRef(new Float32Array(count));
-  const emissionPoint = new THREE.Vector3(0, 0, 0);
+  const opacities = useRef(new Float32Array(count));
 
   const resetParticle = (particle: Particle) => {
-    particle.position.copy(emissionPoint);
+    // Get position based on selected shape
+    particle.position.copy(generateShapePosition(shape, shapeSize));
+
     const angle = Math.random() * Math.PI * 2;
     const elevation = (Math.random() - 0.5) * spread;
 
     const audioLevel = getAudioLevel();
     const speedMultiplier = 1 + audioLevel * audioReactivity;
 
-    // Base velocity
+    // Modify velocity based on shape
     const baseSpeed = initialSpeed * speedMultiplier;
-    particle.velocity.set(
-      Math.cos(angle) * baseSpeed * Math.cos(elevation),
-      Math.abs(Math.sin(elevation)) * baseSpeed,
-      Math.sin(angle) * baseSpeed * Math.cos(elevation)
-    );
+    if (shape === ParticleShape.Point) {
+      // Original point emission
+      particle.velocity.set(
+        Math.cos(angle) * baseSpeed * Math.cos(elevation),
+        Math.abs(Math.sin(elevation)) * baseSpeed,
+        Math.sin(angle) * baseSpeed * Math.cos(elevation)
+      );
+    } else {
+      // For shapes, add a small outward velocity
+      const dirFromCenter = particle.position.clone().normalize();
+      particle.velocity.copy(dirFromCenter).multiplyScalar(baseSpeed * 0.2);
+      particle.velocity.y += (Math.random() - 0.5) * baseSpeed * 0.1;
+    }
 
     particle.rotation = Math.random() * Math.PI * 2;
     particle.rotationSpeed = (Math.random() - 0.5) * rotationSpeed;
@@ -338,6 +454,9 @@ export function Particles() {
         maxLifetime: particleLifetime,
       }));
     particles.current.forEach(resetParticle);
+
+    // Initialize opacities
+    opacities.current.fill(1.0);
 
     return () => {
       if (audioContext.current) {
@@ -378,6 +497,9 @@ export function Particles() {
       }
 
       const lifeProgress = particle.lifetime / particle.maxLifetime;
+
+      // Update opacity based on lifetime
+      opacities.current[i] = Math.max(0, 1 - Math.pow(lifeProgress, 2));
 
       // Update rotation
       particle.rotation +=
@@ -453,6 +575,16 @@ export function Particles() {
       geometry.current.attributes.color.needsUpdate = true;
     }
 
+    // Update opacity attribute
+    if (!geometry.current.attributes.opacity) {
+      geometry.current.setAttribute(
+        "opacity",
+        new THREE.BufferAttribute(opacities.current, 1)
+      );
+    } else {
+      geometry.current.attributes.opacity.needsUpdate = true;
+    }
+
     // Update material
     if (points.current.material) {
       const material = points.current.material as THREE.PointsMaterial;
@@ -487,6 +619,12 @@ export function Particles() {
             array={colors.current}
             itemSize={3}
           />
+          <bufferAttribute
+            attach="attributes-opacity"
+            count={opacities.current.length}
+            array={opacities.current}
+            itemSize={1}
+          />
         </bufferGeometry>
         <pointsMaterial
           size={size}
@@ -494,6 +632,8 @@ export function Particles() {
           transparent={true}
           opacity={0.8}
           sizeAttenuation={true}
+          alphaTest={0.001}
+          blending={THREE.AdditiveBlending}
         />
       </points>
     </>
