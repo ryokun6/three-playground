@@ -13,6 +13,7 @@ enum ParticleShape {
   Sphere = "sphere",
   Ring = "ring",
   Heart = "heart",
+  Waveform = "waveform",
 }
 
 interface Particle {
@@ -25,10 +26,24 @@ interface Particle {
   maxLifetime: number;
 }
 
+// Add getWaveformData function before generateShapePosition
+const getWaveformData = (
+  analyser: AnalyserNode | null,
+  dataArray: Uint8Array | null
+): number[] => {
+  if (!analyser || !dataArray) return Array(1024).fill(128);
+  analyser.getByteFrequencyData(dataArray);
+  return Array.from(dataArray);
+};
+
 // Add shape generation functions
 const generateShapePosition = (
   shape: ParticleShape,
-  size: number
+  size: number,
+  analyser: AnalyserNode | null = null,
+  dataArray: Uint8Array | null = null,
+  particleIndex: number = 0,
+  totalParticles: number = 1
 ): THREE.Vector3 => {
   const pos = new THREE.Vector3();
 
@@ -53,6 +68,17 @@ const generateShapePosition = (
   const ringRadius = size + (Math.random() - 0.5) * ringWidth;
   const t = Math.random() * Math.PI * 2;
   const heartSize = size * 0.8;
+
+  // Pre-declare waveform variables
+  const waveformData = getWaveformData(analyser, dataArray);
+  const xPos = (particleIndex / totalParticles - 0.5) * size * 4;
+  const dataIndex = Math.floor(
+    (particleIndex / totalParticles) * waveformData.length
+  );
+  const frequencyValue = waveformData[dataIndex] / 255.0; // Normalize to [0, 1]
+
+  // Apply frequency-based color and amplitude modulation
+  const frequencyAmplitude = Math.pow(frequencyValue, 1.5) * size * 3; // Emphasize higher frequencies
 
   switch (shape) {
     case ParticleShape.Circle:
@@ -84,11 +110,17 @@ const generateShapePosition = (
           5 * Math.cos(2 * t) -
           2 * Math.cos(3 * t) -
           Math.cos(4 * t));
-      pos.z = (Math.random() - 0.5) * size * 0.3; // Add some depth
-      pos.multiplyScalar(0.01); // Scale down the heart shape
+      pos.z = (Math.random() - 0.5) * size * 0.3;
+      pos.multiplyScalar(0.01);
       break;
 
-    default: // Point shape or fallback
+    case ParticleShape.Waveform:
+      pos.x = xPos;
+      pos.y = frequencyAmplitude; // Use frequency-based amplitude
+      pos.z = 0;
+      break;
+
+    default:
       pos.set(0, 0, 0);
       break;
   }
@@ -99,8 +131,8 @@ const generateShapePosition = (
 export function Particles() {
   const [count] = useState(500);
   const [size, setSize] = useState(0.1);
-  const [startColor, setStartColor] = useState("#ffffff");
-  const [endColor, setEndColor] = useState("#ffffff");
+  const [startColor, setStartColor] = useState("#ff0000");
+  const [endColor, setEndColor] = useState("#00ff00");
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [audioGain, setAudioGain] = useState(1.0);
   const [audioSmoothing, setAudioSmoothing] = useState(0.8);
@@ -334,8 +366,8 @@ export function Particles() {
       const gainNode = audioContext.current.createGain();
       analyser.current = audioContext.current.createAnalyser();
 
-      // Configure analyser
-      analyser.current.fftSize = 256;
+      // Configure analyser for frequency analysis
+      analyser.current.fftSize = 2048; // Increased for better frequency resolution
       analyser.current.smoothingTimeConstant = audioSmoothing;
       analyser.current.minDecibels = audioMinDecibels;
       analyser.current.maxDecibels = audioMaxDecibels;
@@ -347,6 +379,7 @@ export function Particles() {
       source.connect(gainNode);
       gainNode.connect(analyser.current);
 
+      // Initialize data array for frequency data
       dataArray.current = new Uint8Array(analyser.current.frequencyBinCount);
     } catch (error) {
       console.error("Error accessing microphone:", error);
@@ -372,9 +405,18 @@ export function Particles() {
   const scales = useRef(new Float32Array(count));
   const opacities = useRef(new Float32Array(count));
 
-  const resetParticle = (particle: Particle) => {
+  const resetParticle = (particle: Particle, index: number) => {
     // Get position based on selected shape
-    particle.position.copy(generateShapePosition(shape, shapeSize));
+    particle.position.copy(
+      generateShapePosition(
+        shape,
+        shapeSize,
+        analyser.current,
+        dataArray.current,
+        index,
+        particles.current.length
+      )
+    );
 
     const angle = Math.random() * Math.PI * 2;
     const elevation = (Math.random() - 0.5) * spread;
@@ -384,15 +426,22 @@ export function Particles() {
 
     // Modify velocity based on shape
     const baseSpeed = initialSpeed * speedMultiplier;
-    if (shape === ParticleShape.Point) {
+    if (shape === ParticleShape.Waveform) {
+      // For waveform, allow slight horizontal movement for more dynamic effect
+      particle.velocity.set(
+        (Math.random() - 0.5) * baseSpeed * 0.05, // Small horizontal movement
+        (Math.random() - 0.5) * baseSpeed * 0.2, // Vertical movement
+        0
+      );
+    } else if (shape === ParticleShape.Point) {
       // Original point emission
       particle.velocity.set(
-        Math.cos(angle) * baseSpeed * Math.cos(elevation),
-        Math.abs(Math.sin(elevation)) * baseSpeed,
-        Math.sin(angle) * baseSpeed * Math.cos(elevation)
+        Math.cos(angle) * baseSpeed * Math.cos(elevation) * 0.2,
+        Math.abs(Math.sin(elevation)) * baseSpeed * 0.2,
+        Math.sin(angle) * baseSpeed * Math.cos(elevation) * 0.2
       );
     } else {
-      // For shapes, add a small outward velocity
+      // For other shapes, add a small outward velocity
       const dirFromCenter = particle.position.clone().normalize();
       particle.velocity.copy(dirFromCenter).multiplyScalar(baseSpeed * 0.2);
       particle.velocity.y += (Math.random() - 0.5) * baseSpeed * 0.1;
@@ -459,7 +508,7 @@ export function Particles() {
       // Reset dead particles
       if (particle.lifetime >= particle.maxLifetime) {
         if (emittedCount < particlesToEmit) {
-          resetParticle(particle);
+          resetParticle(particle, i);
           emittedCount++;
         }
         return; // Skip the rest of the update for reset particles
