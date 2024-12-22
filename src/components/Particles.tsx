@@ -15,6 +15,32 @@ interface Particle {
   maxLifetime: number;
 }
 
+interface SavedState {
+  physics: {
+    emissionRate: number;
+    particleLifetime: number;
+    gravity: number;
+    initialSpeed: number;
+    spread: number;
+    audioReactivity: number;
+    rotationSpeed: number;
+    spiralEffect: number;
+    pulseStrength: number;
+    swarmEffect: number;
+  };
+  particle: {
+    size: number;
+    startColor: string;
+    endColor: string;
+  };
+  camera: {
+    position: { x: number; y: number; z: number };
+    target: { x: number; y: number; z: number };
+    autoRotate: boolean;
+    autoRotateSpeed: number;
+  };
+}
+
 export function Particles() {
   const [count] = useState(500);
   const [size, setSize] = useState(0.1);
@@ -152,6 +178,85 @@ export function Particles() {
           camera.position.copy(defaultCameraPosition);
           orbitControlsRef.current.target.copy(defaultCameraTarget);
           orbitControlsRef.current.update();
+        }
+      }),
+    }),
+    "Save/Load State": folder({
+      saveState: button(() => {
+        if (!camera || !orbitControlsRef.current) return;
+
+        const state: SavedState = {
+          physics: {
+            emissionRate,
+            particleLifetime,
+            gravity,
+            initialSpeed,
+            spread,
+            audioReactivity,
+            rotationSpeed,
+            spiralEffect,
+            pulseStrength,
+            swarmEffect,
+          },
+          particle: {
+            size,
+            startColor,
+            endColor,
+          },
+          camera: {
+            position: {
+              x: camera.position.x,
+              y: camera.position.y,
+              z: camera.position.z,
+            },
+            target: {
+              x: orbitControlsRef.current.target.x,
+              y: orbitControlsRef.current.target.y,
+              z: orbitControlsRef.current.target.z,
+            },
+            autoRotate,
+            autoRotateSpeed,
+          },
+        };
+
+        localStorage.setItem("particles-state", JSON.stringify(state));
+      }),
+      loadState: button(() => {
+        const savedStateStr = localStorage.getItem("particles-state");
+        if (!savedStateStr || !camera || !orbitControlsRef.current) return;
+
+        try {
+          const savedState: SavedState = JSON.parse(savedStateStr);
+
+          // Restore physics parameters
+          set(savedState.physics);
+
+          // Restore particle parameters
+          setControls({
+            size: savedState.particle.size,
+            startColor: savedState.particle.startColor,
+            endColor: savedState.particle.endColor,
+          });
+
+          // Restore camera state
+          camera.position.set(
+            savedState.camera.position.x,
+            savedState.camera.position.y,
+            savedState.camera.position.z
+          );
+          orbitControlsRef.current.target.set(
+            savedState.camera.target.x,
+            savedState.camera.target.y,
+            savedState.camera.target.z
+          );
+          setAutoRotate(savedState.camera.autoRotate);
+          setAutoRotateSpeed(savedState.camera.autoRotateSpeed);
+          orbitControlsRef.current.autoRotate = savedState.camera.autoRotate;
+          orbitControlsRef.current.autoRotateSpeed =
+            savedState.camera.autoRotateSpeed;
+          orbitControlsRef.current.update();
+        } catch (error) {
+          console.error("Error loading saved state:", error);
         }
       }),
     }),
