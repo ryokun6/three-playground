@@ -1,9 +1,76 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { useControls } from "leva";
 import { Particles } from "./Particles";
 
+// Available environment presets
+const ENVIRONMENT_PRESETS = {
+  night: "night",
+  sunset: "sunset",
+  dawn: "dawn",
+  warehouse: "warehouse",
+  forest: "forest",
+  apartment: "apartment",
+  studio: "studio",
+  city: "city",
+  park: "park",
+  lobby: "lobby",
+} as const;
+
 export function Scene() {
+  const { environmentPreset, backgroundBlur, brightness } = useControls(
+    "Environment",
+    {
+      environmentPreset: {
+        value: "night",
+        options: Object.keys(ENVIRONMENT_PRESETS),
+        label: "Preset",
+      },
+      backgroundBlur: {
+        value: 0.8,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        label: "Background Blur",
+      },
+      brightness: {
+        value: 0.5,
+        min: 0.01,
+        max: 1.0,
+        step: 0.01,
+        label: "Brightness",
+      },
+    }
+  );
+
+  const { bloomIntensity, bloomThreshold, bloomSmoothing } = useControls(
+    "Bloom",
+    {
+      bloomIntensity: {
+        value: 1.5,
+        min: 0,
+        max: 5,
+        step: 0.1,
+        label: "Intensity",
+      },
+      bloomThreshold: {
+        value: 0.1,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        label: "Threshold",
+      },
+      bloomSmoothing: {
+        value: 0.9,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        label: "Smoothing",
+      },
+    }
+  );
+
   return (
     <Canvas
       camera={{
@@ -19,13 +86,18 @@ export function Scene() {
       <Particles />
       <OrbitControls />
 
-      <Environment preset="night" background blur={0.8} />
+      <Environment
+        preset={environmentPreset as keyof typeof ENVIRONMENT_PRESETS}
+        background
+        blur={backgroundBlur}
+        backgroundIntensity={brightness}
+      />
 
       <EffectComposer>
         <Bloom
-          intensity={1.5}
-          luminanceThreshold={0.1}
-          luminanceSmoothing={0.9}
+          intensity={bloomIntensity}
+          luminanceThreshold={bloomThreshold}
+          luminanceSmoothing={bloomSmoothing}
           mipmapBlur
         />
       </EffectComposer>

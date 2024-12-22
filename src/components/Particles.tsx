@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { OrbitControls } from "@react-three/drei";
@@ -480,6 +480,31 @@ export function Particles() {
     }
   });
 
+  // Create circular texture
+  const particleTexture = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const context = canvas.getContext("2d");
+
+    if (context) {
+      // Create gradient
+      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+      // Draw circle
+      context.fillStyle = gradient;
+      context.beginPath();
+      context.arc(32, 32, 32, 0, Math.PI * 2);
+      context.fill();
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }, []);
+
   return (
     <>
       <OrbitControls
@@ -521,6 +546,8 @@ export function Particles() {
           sizeAttenuation={true}
           alphaTest={0.001}
           blending={THREE.AdditiveBlending}
+          map={particleTexture}
+          depthWrite={false}
         />
       </points>
     </>
