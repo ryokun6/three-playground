@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useControls, button, folder } from "leva";
+import { useControls, button } from "leva";
 import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
@@ -23,34 +23,6 @@ interface Particle {
   scale: number;
   lifetime: number;
   maxLifetime: number;
-}
-
-interface SavedState {
-  physics: {
-    emissionRate: number;
-    particleLifetime: number;
-    gravity: number;
-    initialSpeed: number;
-    spread: number;
-    audioReactivity: number;
-    rotationSpeed: number;
-    spiralEffect: number;
-    pulseStrength: number;
-    swarmEffect: number;
-    shape: ParticleShape;
-    shapeSize: number;
-  };
-  particle: {
-    size: number;
-    startColor: string;
-    endColor: string;
-  };
-  camera: {
-    position: { x: number; y: number; z: number };
-    target: { x: number; y: number; z: number };
-    autoRotate: boolean;
-    autoRotateSpeed: number;
-  };
 }
 
 // Add shape generation functions
@@ -131,7 +103,7 @@ export function Particles() {
   const [startColor, setStartColor] = useState("#ffffff");
   const [endColor, setEndColor] = useState("#ffffff");
   const [audioEnabled, setAudioEnabled] = useState(false);
-  const [autoRotate, setAutoRotate] = useState(false);
+  const [autoRotate, setAutoRotate] = useState(true);
   const [autoRotateSpeed, setAutoRotateSpeed] = useState(2.0);
   const [shape, setShape] = useState<ParticleShape>(ParticleShape.Point);
   const [shapeSize, setShapeSize] = useState(2);
@@ -144,8 +116,13 @@ export function Particles() {
   const dataArray = useRef<Uint8Array | null>(null);
 
   const { camera } = useThree();
-  const defaultCameraPosition = new THREE.Vector3(0, 0, 5);
-  const defaultCameraTarget = new THREE.Vector3(0, 0, 0);
+
+  // Initialize camera position
+  useEffect(() => {
+    if (camera) {
+      camera.position.set(0, 10, 0);
+    }
+  }, [camera]);
 
   const [
     {
@@ -245,126 +222,37 @@ export function Particles() {
     }),
   }));
 
-  useControls({
-    "Camera Controls": folder({
-      autoRotate: {
-        value: autoRotate,
-        label: "Auto Rotate",
-        onChange: (value: boolean) => {
-          setAutoRotate(value);
-          if (orbitControlsRef.current) {
-            orbitControlsRef.current.autoRotate = value;
-          }
-        },
+  // Camera controls
+  useControls("Camera Controls", {
+    autoRotate: {
+      value: autoRotate,
+      label: "Auto Rotate",
+      onChange: (value: boolean) => {
+        setAutoRotate(value);
+        if (orbitControlsRef.current) {
+          orbitControlsRef.current.autoRotate = value;
+        }
       },
-      autoRotateSpeed: {
-        value: autoRotateSpeed,
-        min: 0.1,
-        max: 10,
-        step: 0.1,
-        label: "Rotation Speed",
-        onChange: (value: number) => {
-          setAutoRotateSpeed(value);
-          if (orbitControlsRef.current) {
-            orbitControlsRef.current.autoRotateSpeed = value;
-          }
-        },
+    },
+    autoRotateSpeed: {
+      value: autoRotateSpeed,
+      min: 0.1,
+      max: 10,
+      step: 0.1,
+      label: "Rotation Speed",
+      onChange: (value: number) => {
+        setAutoRotateSpeed(value);
+        if (orbitControlsRef.current) {
+          orbitControlsRef.current.autoRotateSpeed = value;
+        }
       },
-      resetCamera: button(() => {
-        if (camera && orbitControlsRef.current) {
-          camera.position.copy(defaultCameraPosition);
-          orbitControlsRef.current.target.copy(defaultCameraTarget);
-          orbitControlsRef.current.update();
-        }
-      }),
-    }),
-    "Save/Load State": folder({
-      copyToClipboard: button(async () => {
-        if (!camera || !orbitControlsRef.current) return;
-
-        const state: SavedState = {
-          physics: {
-            emissionRate,
-            particleLifetime,
-            gravity,
-            initialSpeed,
-            spread,
-            audioReactivity,
-            rotationSpeed,
-            spiralEffect,
-            pulseStrength,
-            swarmEffect,
-            shape,
-            shapeSize,
-          },
-          particle: {
-            size,
-            startColor,
-            endColor,
-          },
-          camera: {
-            position: {
-              x: camera.position.x,
-              y: camera.position.y,
-              z: camera.position.z,
-            },
-            target: {
-              x: orbitControlsRef.current.target.x,
-              y: orbitControlsRef.current.target.y,
-              z: orbitControlsRef.current.target.z,
-            },
-            autoRotate,
-            autoRotateSpeed,
-          },
-        };
-
-        try {
-          await navigator.clipboard.writeText(JSON.stringify(state, null, 2));
-          console.log("Configuration copied to clipboard");
-        } catch (error) {
-          console.error("Failed to copy to clipboard:", error);
-        }
-      }),
-      loadFromClipboard: button(async () => {
-        if (!camera || !orbitControlsRef.current) return;
-
-        try {
-          const clipboardText = await navigator.clipboard.readText();
-          const savedState: SavedState = JSON.parse(clipboardText);
-
-          // Restore physics parameters
-          set(savedState.physics);
-
-          // Restore particle parameters
-          setControls({
-            size: savedState.particle.size,
-            startColor: savedState.particle.startColor,
-            endColor: savedState.particle.endColor,
-          });
-
-          // Restore camera state
-          camera.position.set(
-            savedState.camera.position.x,
-            savedState.camera.position.y,
-            savedState.camera.position.z
-          );
-          orbitControlsRef.current.target.set(
-            savedState.camera.target.x,
-            savedState.camera.target.y,
-            savedState.camera.target.z
-          );
-          setAutoRotate(savedState.camera.autoRotate);
-          setAutoRotateSpeed(savedState.camera.autoRotateSpeed);
-          orbitControlsRef.current.autoRotate = savedState.camera.autoRotate;
-          orbitControlsRef.current.autoRotateSpeed =
-            savedState.camera.autoRotateSpeed;
-          orbitControlsRef.current.update();
-
-          console.log("Configuration loaded from clipboard");
-        } catch (error) {
-          console.error("Failed to load from clipboard:", error);
-        }
-      }),
+    },
+    resetCamera: button(() => {
+      if (camera && orbitControlsRef.current) {
+        camera.position.set(0, 10, 0);
+        orbitControlsRef.current.target.set(0, 0, 0);
+        orbitControlsRef.current.update();
+      }
     }),
   });
 
@@ -450,13 +338,12 @@ export function Particles() {
         rotation: 0,
         rotationSpeed: 0,
         scale: 1,
-        lifetime: Infinity,
+        lifetime: particleLifetime + 1, // Initialize as "dead"
         maxLifetime: particleLifetime,
       }));
-    particles.current.forEach(resetParticle);
 
     // Initialize opacities
-    opacities.current.fill(1.0);
+    opacities.current.fill(0.0); // Start with zero opacity
 
     return () => {
       if (audioContext.current) {
