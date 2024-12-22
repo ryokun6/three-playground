@@ -15,6 +15,201 @@ enum ParticleShape {
   Heart = "heart",
 }
 
+// Add preset types
+interface ParticlePreset {
+  name: string;
+  physics: {
+    emissionRate: number;
+    particleLifetime: number;
+    gravity: number;
+    initialSpeed: number;
+    spread: number;
+    audioReactivity: number;
+    rotationSpeed: number;
+    spiralEffect: number;
+    pulseStrength: number;
+    swarmEffect: number;
+    shape: ParticleShape;
+    shapeSize: number;
+  };
+  particle: {
+    size: number;
+    startColor: string;
+    endColor: string;
+  };
+  camera: {
+    autoRotate: boolean;
+    autoRotateSpeed: number;
+    position: [number, number, number];
+  };
+}
+
+// Define presets
+const particlePresets: Record<string, ParticlePreset> = {
+  galaxy: {
+    name: "Galaxy",
+    physics: {
+      emissionRate: 100,
+      particleLifetime: 4,
+      gravity: 0,
+      initialSpeed: 2,
+      spread: 0.2,
+      audioReactivity: 1,
+      rotationSpeed: 0.8,
+      spiralEffect: 0.8,
+      pulseStrength: 0.3,
+      swarmEffect: 0.2,
+      shape: ParticleShape.Point,
+      shapeSize: 3,
+    },
+    particle: {
+      size: 0.15,
+      startColor: "#4a9eff",
+      endColor: "#ff4a4a",
+    },
+    camera: {
+      autoRotate: true,
+      autoRotateSpeed: 1,
+      position: [15, 5, 0],
+    },
+  },
+  fountain: {
+    name: "Fountain",
+    physics: {
+      emissionRate: 150,
+      particleLifetime: 2,
+      gravity: -9.8,
+      initialSpeed: 15,
+      spread: 0.3,
+      audioReactivity: 1,
+      rotationSpeed: 0.2,
+      spiralEffect: 0,
+      pulseStrength: 0.1,
+      swarmEffect: 0,
+      shape: ParticleShape.Point,
+      shapeSize: 1,
+    },
+    particle: {
+      size: 0.08,
+      startColor: "#00ffff",
+      endColor: "#0000ff",
+    },
+    camera: {
+      autoRotate: false,
+      autoRotateSpeed: 0,
+      position: [0, 10, 15],
+    },
+  },
+  fireworks: {
+    name: "Fireworks",
+    physics: {
+      emissionRate: 200,
+      particleLifetime: 1,
+      gravity: -2,
+      initialSpeed: 8,
+      spread: 2,
+      audioReactivity: 2,
+      rotationSpeed: 1,
+      spiralEffect: 0,
+      pulseStrength: 1,
+      swarmEffect: 0,
+      shape: ParticleShape.Sphere,
+      shapeSize: 0.1,
+    },
+    particle: {
+      size: 0.1,
+      startColor: "#ffff00",
+      endColor: "#ff0000",
+    },
+    camera: {
+      autoRotate: false,
+      autoRotateSpeed: 0,
+      position: [0, 5, 15],
+    },
+  },
+  snowfall: {
+    name: "Snowfall",
+    physics: {
+      emissionRate: 50,
+      particleLifetime: 5,
+      gravity: -1,
+      initialSpeed: 2,
+      spread: 1.5,
+      audioReactivity: 0.5,
+      rotationSpeed: 0.3,
+      spiralEffect: 0.1,
+      pulseStrength: 0.1,
+      swarmEffect: 0.2,
+      shape: ParticleShape.Point,
+      shapeSize: 1,
+    },
+    particle: {
+      size: 0.1,
+      startColor: "#ffffff",
+      endColor: "#e0e0ff",
+    },
+    camera: {
+      autoRotate: false,
+      autoRotateSpeed: 0,
+      position: [0, 10, 15],
+    },
+  },
+  vortex: {
+    name: "Vortex",
+    physics: {
+      emissionRate: 120,
+      particleLifetime: 3,
+      gravity: 0,
+      initialSpeed: 5,
+      spread: 0.1,
+      audioReactivity: 1.5,
+      rotationSpeed: 1,
+      spiralEffect: 1,
+      pulseStrength: 0.8,
+      swarmEffect: 0.5,
+      shape: ParticleShape.Ring,
+      shapeSize: 3,
+    },
+    particle: {
+      size: 0.12,
+      startColor: "#ff00ff",
+      endColor: "#00ffff",
+    },
+    camera: {
+      autoRotate: true,
+      autoRotateSpeed: 3,
+      position: [0, 15, 0],
+    },
+  },
+  hearts: {
+    name: "Hearts",
+    physics: {
+      emissionRate: 30,
+      particleLifetime: 4,
+      gravity: -1,
+      initialSpeed: 3,
+      spread: 0.5,
+      audioReactivity: 1,
+      rotationSpeed: 0.2,
+      spiralEffect: 0.2,
+      pulseStrength: 0.5,
+      swarmEffect: 0.3,
+      shape: ParticleShape.Heart,
+      shapeSize: 2,
+    },
+    particle: {
+      size: 0.2,
+      startColor: "#ff69b4",
+      endColor: "#ff1493",
+    },
+    camera: {
+      autoRotate: true,
+      autoRotateSpeed: 1,
+      position: [0, 10, 15],
+    },
+  },
+};
+
 interface Particle {
   position: THREE.Vector3;
   velocity: THREE.Vector3;
@@ -103,6 +298,10 @@ export function Particles() {
   const [startColor, setStartColor] = useState("#ffffff");
   const [endColor, setEndColor] = useState("#ffffff");
   const [audioEnabled, setAudioEnabled] = useState(false);
+  const [audioGain, setAudioGain] = useState(1.0);
+  const [audioSmoothing, setAudioSmoothing] = useState(0.8);
+  const [audioMinDecibels, setAudioMinDecibels] = useState(-90);
+  const [audioMaxDecibels, setAudioMaxDecibels] = useState(-10);
   const [autoRotate, setAutoRotate] = useState(true);
   const [autoRotateSpeed, setAutoRotateSpeed] = useState(2.0);
   const [shape, setShape] = useState<ParticleShape>(ParticleShape.Point);
@@ -116,6 +315,54 @@ export function Particles() {
   const dataArray = useRef<Uint8Array | null>(null);
 
   const { camera } = useThree();
+
+  // Add preset selection controls
+  const [currentPreset, setCurrentPreset] = useState<string>("galaxy");
+
+  // Function to apply preset
+  const applyPreset = (presetName: string) => {
+    const preset = particlePresets[presetName];
+    if (!preset) return;
+
+    // Apply physics settings
+    set(preset.physics);
+
+    // Apply particle settings
+    setControls({
+      size: preset.particle.size,
+      startColor: preset.particle.startColor,
+      endColor: preset.particle.endColor,
+    });
+
+    // Apply camera settings
+    if (camera && orbitControlsRef.current) {
+      const [x, y, z] = preset.camera.position;
+      camera.position.set(x, y, z);
+      setAutoRotate(preset.camera.autoRotate);
+      setAutoRotateSpeed(preset.camera.autoRotateSpeed);
+      orbitControlsRef.current.autoRotate = preset.camera.autoRotate;
+      orbitControlsRef.current.autoRotateSpeed = preset.camera.autoRotateSpeed;
+      orbitControlsRef.current.update();
+    }
+
+    setCurrentPreset(presetName);
+  };
+
+  // Add preset controls
+  useControls("Presets", {
+    preset: {
+      value: currentPreset,
+      options: Object.keys(particlePresets),
+      onChange: (value: string) => {
+        applyPreset(value);
+      },
+    },
+  });
+
+  // Initialize with default preset
+  useEffect(() => {
+    applyPreset(currentPreset);
+  }, []);
 
   // Initialize camera position
   useEffect(() => {
@@ -195,18 +442,6 @@ export function Particles() {
       value: endColor,
       onChange: (value) => setEndColor(value),
     },
-    audio: {
-      value: audioEnabled,
-      onChange: (value) => {
-        setAudioEnabled(value);
-        if (value) {
-          initAudio();
-        } else if (audioContext.current) {
-          audioContext.current.close();
-          audioContext.current = null;
-        }
-      },
-    },
     randomize: button(() => {
       const randomColor = () => {
         const hue = Math.random() * 360;
@@ -264,14 +499,138 @@ export function Particles() {
     }
   }, [autoRotate, autoRotateSpeed]);
 
+  // Add audio controls
+  useControls("Audio", {
+    enabled: {
+      value: audioEnabled,
+      label: "Enable Audio Input",
+      onChange: (value: boolean) => {
+        setAudioEnabled(value);
+        if (value) {
+          initAudio();
+        } else if (audioContext.current) {
+          audioContext.current.close();
+          audioContext.current = null;
+        }
+      },
+    },
+    gain: {
+      value: audioGain,
+      min: 0,
+      max: 5,
+      step: 0.1,
+      label: "Input Gain",
+      onChange: (value: number) => {
+        setAudioGain(value);
+      },
+    },
+    smoothing: {
+      value: audioSmoothing,
+      min: 0,
+      max: 0.99,
+      step: 0.01,
+      label: "Smoothing",
+      onChange: (value: number) => {
+        setAudioSmoothing(value);
+        if (analyser.current) {
+          analyser.current.smoothingTimeConstant = value;
+        }
+      },
+    },
+    minDecibels: {
+      value: audioMinDecibels,
+      min: -100,
+      max: 0,
+      step: 1,
+      label: "Min Decibels",
+      onChange: (value: number) => {
+        setAudioMinDecibels(value);
+        if (analyser.current) {
+          analyser.current.minDecibels = value;
+        }
+      },
+    },
+    maxDecibels: {
+      value: audioMaxDecibels,
+      min: -100,
+      max: 0,
+      step: 1,
+      label: "Max Decibels",
+      onChange: (value: number) => {
+        setAudioMaxDecibels(value);
+        if (analyser.current) {
+          analyser.current.maxDecibels = value;
+        }
+      },
+    },
+    level: {
+      value: 0,
+      label: "Input Level",
+      min: 0,
+      max: 1,
+      step: 0.01,
+      onChange: () => {}, // Read-only
+      render: (get) => get("Audio.enabled"),
+    },
+  });
+
+  // Update the audio level in controls
+  useEffect(() => {
+    let animationFrame: number;
+    const updateAudioLevel = () => {
+      if (audioEnabled) {
+        const level = getAudioLevel();
+        // Update the level control
+        const audioFolder = document.querySelector(".leva-c-kWgxhW"); // Leva folder class
+        if (audioFolder) {
+          const levelRow = audioFolder.querySelector('[title="Input Level"]');
+          if (levelRow) {
+            const fill = levelRow.querySelector(".leva-c-kRHNqY"); // Leva value class
+            if (fill instanceof HTMLElement) {
+              fill.textContent = level.toFixed(2);
+              // Update the fill color based on level
+              const hue = 120 - level * 120; // Green to red
+              fill.style.color = `hsl(${hue}, 100%, 50%)`;
+            }
+          }
+        }
+        animationFrame = requestAnimationFrame(updateAudioLevel);
+      }
+    };
+
+    if (audioEnabled) {
+      updateAudioLevel();
+    }
+
+    return () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+    };
+  }, [audioEnabled]);
+
+  // Update initAudio function
   const initAudio = async () => {
     try {
       audioContext.current = new AudioContext();
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const source = audioContext.current.createMediaStreamSource(stream);
+      const gainNode = audioContext.current.createGain();
       analyser.current = audioContext.current.createAnalyser();
+
+      // Configure analyser
       analyser.current.fftSize = 256;
-      source.connect(analyser.current);
+      analyser.current.smoothingTimeConstant = audioSmoothing;
+      analyser.current.minDecibels = audioMinDecibels;
+      analyser.current.maxDecibels = audioMaxDecibels;
+
+      // Configure gain
+      gainNode.gain.value = audioGain;
+
+      // Connect nodes
+      source.connect(gainNode);
+      gainNode.connect(analyser.current);
+
       dataArray.current = new Uint8Array(analyser.current.frequencyBinCount);
     } catch (error) {
       console.error("Error accessing microphone:", error);
@@ -279,6 +638,7 @@ export function Particles() {
     }
   };
 
+  // Update getAudioLevel function
   const getAudioLevel = () => {
     if (!analyser.current || !dataArray.current || !audioEnabled) return 0;
 
@@ -286,7 +646,8 @@ export function Particles() {
     const average =
       dataArray.current.reduce((acc, val) => acc + val, 0) /
       dataArray.current.length;
-    return average / 128.0; // Normalize to 0-1 range
+    const normalizedLevel = (average / 128.0) * audioGain;
+    return normalizedLevel;
   };
 
   const particles = useRef<Particle[]>([]);
