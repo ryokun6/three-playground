@@ -527,7 +527,7 @@ export function Particles() {
         audioContext.current.close();
       }
     };
-  }, [count]);
+  }, [count, particleLifetime]);
 
   useFrame((state, delta) => {
     if (!points.current || !geometry.current) return;

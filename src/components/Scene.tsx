@@ -110,7 +110,7 @@ export function Scene() {
     const { camera } = useThree();
     const time = useRef(0);
 
-    useFrame((state, delta) => {
+    useFrame((_, delta) => {
       if (autoCameraEnabled) {
         time.current += delta * cameraSpeed;
 
