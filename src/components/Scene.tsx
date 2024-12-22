@@ -77,8 +77,9 @@ export function Scene() {
     { collapsed: true }
   );
 
-  const { autoCameraEnabled, cameraSpeed, cameraRadius, heightVariation } =
-    useControls("Camera Motion", {
+  const { autoCameraEnabled, cameraSpeed, cameraRadius } = useControls(
+    "Camera Motion",
+    {
       autoCameraEnabled: {
         value: true,
         label: "Auto Camera",
@@ -97,14 +98,8 @@ export function Scene() {
         step: 0.5,
         label: "Radius",
       },
-      heightVariation: {
-        value: 5,
-        min: 0,
-        max: 10,
-        step: 0.5,
-        label: "Height Range",
-      },
-    });
+    }
+  );
 
   function CameraController() {
     const { camera } = useThree();
@@ -120,10 +115,8 @@ export function Scene() {
         const x = Math.cos(time.current) * animatedRadius;
         const z = Math.sin(time.current) * animatedRadius;
 
-        // Fixed height with very subtle variation
-        const baseHeight = cameraRadius * 2;
-        const y =
-          baseHeight + Math.sin(time.current * 0.25) * heightVariation * 0.1;
+        // Fixed height
+        const y = cameraRadius * 2;
 
         // Update camera position
         camera.position.set(x, y, z);
