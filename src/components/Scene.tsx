@@ -114,10 +114,11 @@ export function Scene() {
       if (autoCameraEnabled) {
         time.current += delta * cameraSpeed;
 
-        // Keep camera directly above, with subtle circular motion
-        const radius = cameraRadius * 0.15;
-        const x = Math.cos(time.current) * radius;
-        const z = Math.sin(time.current) * radius;
+        // Animate radius using sine wave (oscillates between cameraRadius and near zero)
+        const radiusScale = Math.sin(time.current * 0.5) * 0.5 + 0.5; // oscillates between 0 and 1
+        const animatedRadius = radiusScale * cameraRadius;
+        const x = Math.cos(time.current) * animatedRadius;
+        const z = Math.sin(time.current) * animatedRadius;
 
         // Fixed height with very subtle variation
         const baseHeight = cameraRadius * 2;

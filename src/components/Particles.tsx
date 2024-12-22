@@ -589,27 +589,51 @@ export function Particles() {
         const baseRadius = shapeSize * (1 + ringIndex * 0.2);
         const energyRadius = baseRadius * (1 + bandEnergy * 2);
 
-        // Add time-based movement
-        const wobble = Math.sin(time * 2 + ringIndex * 0.5) * 0.1;
+        // Add gentle wobble effect
+        const wobble = Math.sin(time * 1.5 + ringIndex * 0.3) * 0.1;
 
-        // Calculate position with spiral effect
+        // Enhanced vertical movement based on frequency band
+        const verticalAmplitude = shapeSize * 3; // Increased vertical range
+        const verticalOffset =
+          Math.sin(time * 2 + ringIndex * 0.2) * verticalAmplitude;
         const heightOffset =
-          (ringIndex / bandCount) * shapeSize * 4 - shapeSize * 2;
-        const spiralOffset = (ringIndex / bandCount) * Math.PI * 0.5;
+          (ringIndex / bandCount) * shapeSize * 4 -
+          shapeSize * 2 +
+          verticalOffset * bandEnergy + // Add frequency-responsive vertical movement
+          Math.sin(time + ringIndex * 0.5) * shapeSize * bandEnergy; // Add wave-like motion
 
-        // Add unique rotation speed for each ring
-        // Alternate direction and speed based on ring index
-        const ringRotationSpeed =
-          (ringIndex % 2 === 0 ? 1 : -1) * (0.05 + ringIndex * 0.02);
-        const rotationAngle = time * ringRotationSpeed;
+        // Calculate base position
+        const radius = energyRadius * (1 + wobble);
+        const x = Math.cos(angleInRing) * radius;
+        const z = Math.sin(angleInRing) * radius;
+        const y = heightOffset + bandEnergy * shapeSize * 3; // Increased vertical response to frequency
 
-        // Calculate final position with rotation
-        const finalAngle = angleInRing + spiralOffset + rotationAngle;
-        particle.position.x =
-          Math.cos(finalAngle) * energyRadius * (1 + wobble);
-        particle.position.z =
-          Math.sin(finalAngle) * energyRadius * (1 + wobble);
-        particle.position.y = heightOffset + bandEnergy * shapeSize * 2;
+        // Get overall audio energy for subtle rotation enhancement
+        const audioEnergy = getAudioLevel();
+
+        // Create smooth continuous rotation (slower)
+        const rotationX = time * 0.03;
+        const rotationY = time * 0.05 + audioEnergy * 0.3; // Reduced rotation speed and audio influence
+
+        // Create rotation matrices
+        const cosX = Math.cos(rotationX);
+        const sinX = Math.sin(rotationX);
+        const cosY = Math.cos(rotationY);
+        const sinY = Math.sin(rotationY);
+
+        // Apply rotations
+        // First rotate around X
+        const rotatedX = x;
+        const rotatedY = y * cosX - z * sinX;
+        const rotatedZ = y * sinX + z * cosX;
+
+        // Then rotate around Y
+        const finalX = rotatedX * cosY + rotatedZ * sinY;
+        const finalY = rotatedY;
+        const finalZ = -rotatedX * sinY + rotatedZ * cosY;
+
+        // Update particle position
+        particle.position.set(finalX, finalY, finalZ);
 
         // Scale based on frequency energy
         const scaleBase = 1 + bandEnergy * 1.5;
@@ -630,10 +654,10 @@ export function Particles() {
         positions.current[i * 3 + 1] = particle.position.y;
         positions.current[i * 3 + 2] = particle.position.z;
 
-        // Update opacity based on energy, position, and rotation
+        // Update opacity
         const distanceFromCenter =
           particle.position.length() / (energyRadius * 2);
-        const rotationOpacity = 0.3 + Math.abs(Math.sin(finalAngle)) * 0.7; // Opacity varies with rotation
+        const rotationOpacity = 0.3 + Math.abs(Math.sin(angleInRing)) * 0.7;
         opacities.current[i] = Math.min(
           1,
           (0.4 + bandEnergy * 0.6) *
