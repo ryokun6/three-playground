@@ -35,7 +35,7 @@ export function Scene() {
         label: "Background Blur",
       },
       brightness: {
-        value: 0.5,
+        value: 0.15,
         min: 0.01,
         max: 1.0,
         step: 0.01,
@@ -62,7 +62,7 @@ export function Scene() {
         label: "Threshold",
       },
       bloomSmoothing: {
-        value: 0.9,
+        value: 0.2,
         min: 0,
         max: 1,
         step: 0.1,
@@ -75,7 +75,7 @@ export function Scene() {
     <Canvas
       camera={{
         position: [0, 0, 5],
-        fov: 75,
+        fov: 50,
         near: 0.1,
         far: 1000,
       }}

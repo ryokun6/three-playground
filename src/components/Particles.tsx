@@ -46,6 +46,35 @@ interface ParticlePreset {
 
 // Define presets
 const particlePresets: Record<string, ParticlePreset> = {
+  night: {
+    name: "Night",
+    physics: {
+      emissionRate: 50,
+      particleLifetime: 2,
+      gravity: -9.8,
+      initialSpeed: 5,
+      spread: 0.5,
+      audioReactivity: 4.6,
+      rotationSpeed: 0.5,
+      spiralEffect: 0.46,
+      pulseStrength: 1.48,
+      swarmEffect: 0.61,
+      shape: ParticleShape.Ring,
+      shapeSize: 1.5,
+    },
+    particle: {
+      size: 0.2,
+      startColor: "#ffffff",
+      endColor: "#ffffff",
+    },
+    camera: {
+      autoRotate: true,
+      autoRotateSpeed: 4,
+      position: [
+        -0.00000836801507049617, 9.999999999995, 0.000005475875622962786,
+      ],
+    },
+  },
   galaxy: {
     name: "Galaxy",
     physics: {
@@ -294,7 +323,6 @@ const generateShapePosition = (
 export function Particles() {
   const [count] = useState(500);
   const [size, setSize] = useState(0.1);
-  const [speed] = useState(0.005);
   const [startColor, setStartColor] = useState("#ffffff");
   const [endColor, setEndColor] = useState("#ffffff");
   const [audioEnabled, setAudioEnabled] = useState(false);
@@ -317,7 +345,7 @@ export function Particles() {
   const { camera } = useThree();
 
   // Add preset selection controls
-  const [currentPreset, setCurrentPreset] = useState<string>("galaxy");
+  const [currentPreset, setCurrentPreset] = useState<string>("night");
 
   // Function to apply preset
   const applyPreset = (presetName: string) => {
@@ -357,6 +385,46 @@ export function Particles() {
         applyPreset(value);
       },
     },
+    copyCurrentConfig: button(() => {
+      // Create a preset object from current settings
+      const currentConfig: ParticlePreset = {
+        name: "Custom",
+        physics: {
+          emissionRate,
+          particleLifetime,
+          gravity,
+          initialSpeed,
+          spread,
+          audioReactivity,
+          rotationSpeed,
+          spiralEffect,
+          pulseStrength,
+          swarmEffect,
+          shape,
+          shapeSize,
+        },
+        particle: {
+          size,
+          startColor,
+          endColor,
+        },
+        camera: {
+          autoRotate,
+          autoRotateSpeed,
+          position: [camera.position.x, camera.position.y, camera.position.z],
+        },
+      };
+
+      // Copy to clipboard
+      navigator.clipboard
+        .writeText(JSON.stringify(currentConfig, null, 2))
+        .then(() => {
+          console.log("Configuration copied to clipboard");
+        })
+        .catch((err) => {
+          console.error("Failed to copy configuration:", err);
+        });
+    }),
   });
 
   // Initialize with default preset
@@ -387,22 +455,22 @@ export function Particles() {
     set,
   ] = useControls("Physics", () => ({
     emissionRate: { value: 50, min: 1, max: 200 },
-    particleLifetime: { value: 2, min: 0.1, max: 5 },
+    particleLifetime: { value: 2.0, min: 0.1, max: 5 },
     gravity: { value: -9.8, min: -20, max: 0 },
-    initialSpeed: { value: speed * 1000, min: 0, max: 20 },
+    initialSpeed: { value: 5.0, min: 0, max: 20 },
     spread: { value: 0.5, min: 0, max: 2 },
-    audioReactivity: { value: 1.0, min: 0, max: 5 },
+    audioReactivity: { value: 4.6, min: 0, max: 5 },
     rotationSpeed: { value: 0.5, min: 0, max: 2 },
-    spiralEffect: { value: 0.3, min: 0, max: 1 },
-    pulseStrength: { value: 0.5, min: 0, max: 2 },
-    swarmEffect: { value: 0.3, min: 0, max: 1 },
+    spiralEffect: { value: 0.46, min: 0, max: 1 },
+    pulseStrength: { value: 1.48, min: 0, max: 2 },
+    swarmEffect: { value: 0.61, min: 0, max: 1 },
     shape: {
-      value: ParticleShape.Point,
+      value: ParticleShape.Ring,
       options: Object.values(ParticleShape),
       onChange: (value: ParticleShape) => setShape(value),
     },
     shapeSize: {
-      value: 2,
+      value: 1.5,
       min: 0.1,
       max: 5,
       step: 0.1,
@@ -428,18 +496,18 @@ export function Particles() {
 
   const [, setControls] = useControls("Particle", () => ({
     size: {
-      value: size,
+      value: 0.1,
       min: 0.01,
       max: 0.4,
       step: 0.01,
       onChange: (value) => setSize(value),
     },
     startColor: {
-      value: startColor,
+      value: "#ffffff",
       onChange: (value) => setStartColor(value),
     },
     endColor: {
-      value: endColor,
+      value: "#ffffff",
       onChange: (value) => setEndColor(value),
     },
     randomize: button(() => {
@@ -503,7 +571,7 @@ export function Particles() {
   useControls("Audio", {
     enabled: {
       value: audioEnabled,
-      label: "Enable Audio Input",
+      label: "Audio",
       onChange: (value: boolean) => {
         setAudioEnabled(value);
         if (value) {
@@ -519,7 +587,7 @@ export function Particles() {
       min: 0,
       max: 5,
       step: 0.1,
-      label: "Input Gain",
+      label: "Gain",
       onChange: (value: number) => {
         setAudioGain(value);
       },
@@ -542,7 +610,7 @@ export function Particles() {
       min: -100,
       max: 0,
       step: 1,
-      label: "Min Decibels",
+      label: "Min Vol",
       onChange: (value: number) => {
         setAudioMinDecibels(value);
         if (analyser.current) {
@@ -555,7 +623,7 @@ export function Particles() {
       min: -100,
       max: 0,
       step: 1,
-      label: "Max Decibels",
+      label: "Max Vol",
       onChange: (value: number) => {
         setAudioMaxDecibels(value);
         if (analyser.current) {
@@ -565,7 +633,7 @@ export function Particles() {
     },
     level: {
       value: 0,
-      label: "Input Level",
+      label: "Input Lvl",
       min: 0,
       max: 1,
       step: 0.01,
@@ -573,41 +641,6 @@ export function Particles() {
       render: (get) => get("Audio.enabled"),
     },
   });
-
-  // Update the audio level in controls
-  useEffect(() => {
-    let animationFrame: number;
-    const updateAudioLevel = () => {
-      if (audioEnabled) {
-        const level = getAudioLevel();
-        // Update the level control
-        const audioFolder = document.querySelector(".leva-c-kWgxhW"); // Leva folder class
-        if (audioFolder) {
-          const levelRow = audioFolder.querySelector('[title="Input Level"]');
-          if (levelRow) {
-            const fill = levelRow.querySelector(".leva-c-kRHNqY"); // Leva value class
-            if (fill instanceof HTMLElement) {
-              fill.textContent = level.toFixed(2);
-              // Update the fill color based on level
-              const hue = 120 - level * 120; // Green to red
-              fill.style.color = `hsl(${hue}, 100%, 50%)`;
-            }
-          }
-        }
-        animationFrame = requestAnimationFrame(updateAudioLevel);
-      }
-    };
-
-    if (audioEnabled) {
-      updateAudioLevel();
-    }
-
-    return () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
-    };
-  }, [audioEnabled]);
 
   // Update initAudio function
   const initAudio = async () => {
