@@ -97,7 +97,7 @@ function App() {
         >
           <PiSlidersBold className="w-5 h-5" />
         </button>
-        <div className="absolute bottom-12 right-4 w-96 max-h-[calc(100vh-100px)] overflow-y-auto">
+        <div className="absolute bottom-12 right-4 w-72 max-w-[calc(100%-16px)] max-h-[calc(100vh-100px)] overflow-y-auto">
           <Leva hidden={isLevaHidden} titleBar={false} fill={true} />
         </div>
       </div>
