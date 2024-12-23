@@ -235,6 +235,9 @@ function App() {
       label: "zoom",
       render: (get) => get("Camera.autoCameraEnabled"),
     },
+    randomizeCamera: button(() => {
+      setCameraControls({ cameraRadius: Math.random() * 3 });
+    }),
   }));
 
   const [particleControls, setParticleControls] = useControls(
