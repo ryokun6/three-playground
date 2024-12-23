@@ -250,7 +250,7 @@ function App() {
       step: 0.1,
       label: "gain",
     },
-    Advanced: folder(
+    advanced: folder(
       {
         smoothing: {
           value: 0.8,
@@ -276,6 +276,29 @@ function App() {
       },
       { collapsed: true, render: (get) => get("Audio.enabled") }
     ),
+  }));
+
+  const [cameraControls, setCameraControls] = useControls("Camera", () => ({
+    autoCameraEnabled: {
+      value: true,
+      label: "autoCamera",
+    },
+    cameraSpeed: {
+      value: 1,
+      min: 0.1,
+      max: 3,
+      step: 0.1,
+      label: "speed",
+      render: (get) => get("Camera.autoCameraEnabled"),
+    },
+    cameraRadius: {
+      value: 5,
+      min: 0.01,
+      max: 15,
+      step: 0.5,
+      label: "zoom",
+      render: (get) => get("Camera.autoCameraEnabled"),
+    },
   }));
 
   const [particleControls, setParticleControls] = useControls(
@@ -304,7 +327,54 @@ function App() {
         value: true,
         label: "autoColor",
       },
-      Physics: folder(
+      randomizePhysics: button(() => {
+        const randomInRange = (min: number, max: number) =>
+          Math.random() * (max - min) + min;
+
+        setParticleControls({
+          shapeSize: randomInRange(0.1, 5),
+          emissionRate: randomInRange(1, 200),
+          particleLifetime: randomInRange(0.1, 5),
+          gravity: randomInRange(-20, 0),
+          initialSpeed: randomInRange(0, 20),
+          spread: randomInRange(0, 2),
+          rotationSpeed: randomInRange(0, 2),
+          spiralEffect: randomInRange(0, 1),
+          pulseStrength: randomInRange(0, 2),
+          swarmEffect: randomInRange(0, 1),
+          orbitalSpeed:
+            particleControls.shape === ParticleShape.Waveform
+              ? randomInRange(0, 2)
+              : particleControls.orbitalSpeed,
+        });
+      }),
+      randomizeStyle: button(() => {
+        const randomColor = () => {
+          const r = Math.floor(Math.random() * 256);
+          const g = Math.floor(Math.random() * 256);
+          const b = Math.floor(Math.random() * 256);
+          return `#${r.toString(16).padStart(2, "0")}${g
+            .toString(16)
+            .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+        };
+
+        if (particleControls.autoColor) {
+          setParticleControls({
+            size: Math.random() * 0.39 + 0.01,
+            colorSpeed: Math.random() * 4.9 + 0.1,
+            colorWaveLength: Math.random() * 9.9 + 0.1,
+            colorSaturation: Math.random(),
+            colorBrightness: Math.random(),
+          });
+        } else {
+          setParticleControls({
+            size: Math.random() * 0.39 + 0.01,
+            startColor: randomColor(),
+            endColor: randomColor(),
+          });
+        }
+      }),
+      physics: folder(
         {
           emissionRate: { value: 50, min: 1, max: 200, label: "emissionRate" },
           particleLifetime: { value: 2.0, min: 0.1, max: 5, label: "lifetime" },
@@ -331,7 +401,7 @@ function App() {
         },
         { collapsed: true }
       ),
-      Styles: folder(
+      styles: folder(
         {
           startColor: {
             value: "#ffffff",
@@ -378,76 +448,8 @@ function App() {
         },
         { collapsed: true }
       ),
-      randomizePhysics: button(() => {
-        const randomInRange = (min: number, max: number) =>
-          Math.random() * (max - min) + min;
-
-        setParticleControls({
-          shapeSize: randomInRange(0.1, 5),
-          emissionRate: randomInRange(1, 200),
-          particleLifetime: randomInRange(0.1, 5),
-          gravity: randomInRange(-20, 0),
-          initialSpeed: randomInRange(0, 20),
-          spread: randomInRange(0, 2),
-          rotationSpeed: randomInRange(0, 2),
-          spiralEffect: randomInRange(0, 1),
-          pulseStrength: randomInRange(0, 2),
-          swarmEffect: randomInRange(0, 1),
-          orbitalSpeed:
-            particleControls.shape === ParticleShape.Waveform
-              ? randomInRange(0, 2)
-              : particleControls.orbitalSpeed,
-        });
-      }),
-      randomizeStyle: button(() => {
-        const randomColor = () => {
-          const hue = Math.random() * 360;
-          const saturation = Math.random() * 100;
-          const lightness = Math.random() * 100;
-          return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-        };
-
-        if (particleControls.autoColor) {
-          setParticleControls({
-            size: Math.random() * 0.39 + 0.01,
-            colorSpeed: Math.random() * 4.9 + 0.1,
-            colorWaveLength: Math.random() * 9.9 + 0.1,
-            colorSaturation: Math.random(),
-            colorBrightness: Math.random(),
-          });
-        } else {
-          setParticleControls({
-            size: Math.random() * 0.39 + 0.01,
-            startColor: randomColor(),
-            endColor: randomColor(),
-          });
-        }
-      }),
     })
   );
-
-  const [cameraControls, setCameraControls] = useControls("Camera", () => ({
-    autoCameraEnabled: {
-      value: true,
-      label: "autoCamera",
-    },
-    cameraSpeed: {
-      value: 1,
-      min: 0.1,
-      max: 3,
-      step: 0.1,
-      label: "speed",
-      render: (get) => get("Camera.autoCameraEnabled"),
-    },
-    cameraRadius: {
-      value: 5,
-      min: 0.01,
-      max: 15,
-      step: 0.5,
-      label: "zoom",
-      render: (get) => get("Camera.autoCameraEnabled"),
-    },
-  }));
 
   const handleLevaToggle = () => {
     const newState = !isLevaHidden;
