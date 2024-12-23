@@ -227,6 +227,7 @@ export function Particles() {
   const [audioSmoothing, setAudioSmoothing] = useState(0.8);
   const [audioMinDecibels, setAudioMinDecibels] = useState(-90);
   const [audioMaxDecibels, setAudioMaxDecibels] = useState(-10);
+  const [audioReactivity, setAudioReactivity] = useState(4.6);
   const [shape, setShape] = useState<ParticleShape>(ParticleShape.Point);
   const [shapeSize, setShapeSize] = useState(2);
   const [shapeSizeBase, setShapeSizeBase] = useState(2);
@@ -261,7 +262,6 @@ export function Particles() {
       gravity,
       initialSpeed,
       spread,
-      audioReactivity,
       rotationSpeed,
       spiralEffect,
       pulseStrength,
@@ -274,7 +274,6 @@ export function Particles() {
     gravity: { value: -9.8, min: -20, max: 0 },
     initialSpeed: { value: 5.0, min: 0, max: 20 },
     spread: { value: 0.5, min: 0, max: 2 },
-    audioReactivity: { value: 4.6, min: 0, max: 5 },
     rotationSpeed: { value: 0.5, min: 0, max: 2 },
     spiralEffect: { value: 0.46, min: 0, max: 1 },
     pulseStrength: { value: 1.48, min: 0, max: 2 },
@@ -303,7 +302,6 @@ export function Particles() {
         gravity: randomInRange(-20, 0),
         initialSpeed: randomInRange(0, 20),
         spread: randomInRange(0, 2),
-        audioReactivity: randomInRange(0, 5),
         rotationSpeed: randomInRange(0, 2),
         spiralEffect: randomInRange(0, 1),
         pulseStrength: randomInRange(0, 2),
@@ -366,6 +364,16 @@ export function Particles() {
       label: "Gain",
       onChange: (value: number) => {
         setAudioGain(value);
+      },
+    },
+    audioReactivity: {
+      value: 4.6,
+      min: 0,
+      max: 5,
+      step: 0.1,
+      label: "Reactivity",
+      onChange: (value: number) => {
+        setAudioReactivity(value);
       },
     },
     smoothing: {
