@@ -281,10 +281,6 @@ function App() {
           spiralEffect: randomInRange(0, 1),
           pulseStrength: randomInRange(0, 2),
           swarmEffect: randomInRange(0, 1),
-          orbitalSpeed:
-            particleControls.shape === ParticleShape.Waveform
-              ? randomInRange(0, 2)
-              : particleControls.orbitalSpeed,
         });
       }),
       randomizeStyle: button(() => {
@@ -315,17 +311,71 @@ function App() {
       }),
       physics: folder(
         {
-          emissionRate: { value: 50, min: 1, max: 200, label: "emissionRate" },
-          particleLifetime: { value: 2.0, min: 0.1, max: 5, label: "lifetime" },
-          gravity: { value: -9.8, min: -20, max: 0, label: "gravity" },
-          initialSpeed: { value: 5.0, min: 0, max: 20, label: "speed" },
-          spread: { value: 0.5, min: 0, max: 2, label: "spread" },
-          rotationSpeed: { value: 0.5, min: 0, max: 2, label: "rotation" },
-          spiralEffect: { value: 0.46, min: 0, max: 1, label: "spiral" },
-          pulseStrength: { value: 1.48, min: 0, max: 2, label: "pulse" },
-          swarmEffect: { value: 0.61, min: 0, max: 1, label: "swarm" },
-          orbitalSpeed: {
+          emissionRate: {
+            value: 50,
+            min: 1,
+            max: 200,
+            label: "emissionRate",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          particleLifetime: {
+            value: 2.0,
+            min: 0.1,
+            max: 5,
+            label: "lifetime",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          gravity: {
+            value: -9.8,
+            min: -20,
+            max: 0,
+            label: "gravity",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          initialSpeed: {
+            value: 5.0,
+            min: 0,
+            max: 20,
+            label: "speed",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          spread: {
             value: 0.5,
+            min: 0,
+            max: 2,
+            label: "spread",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          rotationSpeed: {
+            value: 0.5,
+            min: 0,
+            max: 2,
+            label: "rotation",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          spiralEffect: {
+            value: 0.46,
+            min: 0,
+            max: 1,
+            label: "spiral",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          pulseStrength: {
+            value: 1.48,
+            min: 0,
+            max: 2,
+            label: "pulse",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          swarmEffect: {
+            value: 0.61,
+            min: 0,
+            max: 1,
+            label: "swarm",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          orbitalSpeed: {
+            value: 1,
             min: 0,
             max: 2,
             step: 0.1,
