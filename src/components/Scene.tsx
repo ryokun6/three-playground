@@ -89,14 +89,14 @@ export function Scene() {
         min: 0.1,
         max: 3,
         step: 0.1,
-        label: "cameraSpeed",
+        label: "speed",
       },
       cameraRadius: {
         value: 5,
         min: 0.01,
         max: 15,
         step: 0.5,
-        label: "cameraRadius",
+        label: "zoom",
       },
     }
   );
