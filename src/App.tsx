@@ -542,10 +542,6 @@ function App() {
             spiralEffect: Math.random(),
             pulseStrength: Math.random() * 2,
             swarmEffect: Math.random(),
-            orbitalSpeed:
-              particleControls.shape === ParticleShape.Waveform
-                ? Math.random() * 2
-                : particleControls.orbitalSpeed,
           });
           break;
         case "x":
