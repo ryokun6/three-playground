@@ -1,7 +1,13 @@
 import { Leva, useControls, button, folder } from "leva";
 import { Scene } from "./components/Scene";
 import { useState, useEffect } from "react";
-import { PiKeyboardBold, PiSlidersBold, PiXBold } from "react-icons/pi";
+import {
+  PiKeyboardBold,
+  PiSlidersBold,
+  PiXBold,
+  PiMicrophoneBold,
+  PiMicrophoneSlashBold,
+} from "react-icons/pi";
 import { Vector2 } from "three";
 
 type EnvironmentPreset =
@@ -557,6 +563,17 @@ function App() {
       />
       <div className="fixed bottom-4 right-4 flex gap-2">
         <KeyboardShortcuts />
+        <button
+          onClick={() => setAudioControls({ enabled: !audioControls.enabled })}
+          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+          title={audioControls.enabled ? "Disable audio" : "Enable audio"}
+        >
+          {audioControls.enabled ? (
+            <PiMicrophoneBold className="w-5 h-5" />
+          ) : (
+            <PiMicrophoneSlashBold className="w-5 h-5" />
+          )}
+        </button>
         <button
           onClick={handleLevaToggle}
           className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
