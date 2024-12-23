@@ -307,6 +307,10 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
 
     useEffect(() => {
       setOrbitalSpeed(initialOrbitalSpeed);
+      // Update orbital speed for existing particles
+      particles.current.forEach((particle) => {
+        particle.orbitalSpeed = initialOrbitalSpeed;
+      });
     }, [initialOrbitalSpeed]);
 
     useEffect(() => {
