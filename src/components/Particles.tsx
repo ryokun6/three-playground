@@ -1,4 +1,11 @@
-import { useRef, useEffect, useState, useMemo } from "react";
+import {
+  useRef,
+  useEffect,
+  useState,
+  useMemo,
+  forwardRef,
+  useCallback,
+} from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useControls, button, folder } from "leva";
 import { OrbitControls } from "@react-three/drei";
@@ -220,7 +227,7 @@ const generateShapePosition = (
   return pos;
 };
 
-export function Particles() {
+export const Particles = forwardRef<THREE.Points>((_props, ref) => {
   const [count] = useState(500);
   const [size, setSize] = useState(0.15);
   const [startColor, setStartColor] = useState("#ff0000");
@@ -241,12 +248,38 @@ export function Particles() {
   const [colorBrightness, setColorBrightness] = useState(0.8);
   const [expandWithAudio, setExpandWithAudio] = useState(true);
 
+  // Add function to cycle through shapes
+  const cycleToNextShape = useCallback(() => {
+    const shapeValues = Object.values(ParticleShape);
+    const currentIndex = shapeValues.indexOf(shape);
+    const nextIndex = (currentIndex + 1) % shapeValues.length;
+    setShape(shapeValues[nextIndex]);
+  }, [shape]);
+
+  // Add keyboard event listener
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === "c") {
+        cycleToNextShape();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [cycleToNextShape]);
+
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
-  const points = useRef<THREE.Points>(null);
+  const internalPointsRef = useRef<THREE.Points>(null);
   const geometry = useRef<THREE.BufferGeometry>(null);
   const audioContext = useRef<AudioContext | null>(null);
   const analyser = useRef<AnalyserNode | null>(null);
   const dataArray = useRef<Uint8Array | null>(null);
+
+  // Use the forwarded ref if provided, otherwise use internal ref
+  const pointsRef =
+    (ref as React.MutableRefObject<THREE.Points>) || internalPointsRef;
 
   const { camera } = useThree();
 
@@ -376,14 +409,6 @@ export function Particles() {
           setShapeSize(value);
         },
       },
-      expandWithAudio: {
-        value: true,
-        label: "expandWithAudio",
-        render: (get) => get("Shape.shape") === "waveform",
-        onChange: (value: boolean) => {
-          setExpandWithAudio(value);
-        },
-      },
       orbitalSpeed: {
         value: 0.5,
         min: 0,
@@ -393,6 +418,14 @@ export function Particles() {
         render: (get) => get("Shape.shape") === "waveform",
         onChange: (value: number) => {
           setOrbitalSpeed(value);
+        },
+      },
+      expandWithAudio: {
+        value: true,
+        label: "expandWithAudio",
+        render: (get) => get("Shape.shape") === "waveform",
+        onChange: (value: boolean) => {
+          setExpandWithAudio(value);
         },
       },
     }),
@@ -645,7 +678,7 @@ export function Particles() {
   }, [count, particleLifetime, orbitalSpeed]);
 
   useFrame((state, delta) => {
-    if (!points.current || !geometry.current) return;
+    if (!pointsRef.current || !geometry.current) return;
 
     const audioLevel = getAudioLevel();
     const baseSize = size * (1 + audioLevel * audioReactivity * 0.5);
@@ -985,8 +1018,8 @@ export function Particles() {
     geometry.current.attributes.opacity.needsUpdate = true;
 
     // Update material
-    if (points.current.material) {
-      const material = points.current.material as THREE.PointsMaterial;
+    if (pointsRef.current.material) {
+      const material = pointsRef.current.material as THREE.PointsMaterial;
       material.size = baseSize;
       material.vertexColors = true;
     }
@@ -1017,6 +1050,62 @@ export function Particles() {
     return texture;
   }, []);
 
+  // Add randomize functions that can be called externally
+  const randomizePhysics = () => {
+    const randomInRange = (min: number, max: number) =>
+      Math.random() * (max - min) + min;
+
+    setShapeSizeBase(randomInRange(0.1, 5));
+    setShapeSize(randomInRange(0.1, 5));
+
+    set({
+      emissionRate: randomInRange(1, 200),
+      particleLifetime: randomInRange(0.1, 5),
+      gravity: randomInRange(-20, 0),
+      initialSpeed: randomInRange(0, 20),
+      spread: randomInRange(0, 2),
+      rotationSpeed: randomInRange(0, 2),
+      spiralEffect: randomInRange(0, 1),
+      pulseStrength: randomInRange(0, 2),
+      swarmEffect: randomInRange(0, 1),
+    });
+
+    if (shape === ParticleShape.Waveform) {
+      setOrbitalSpeed(randomInRange(0, 2));
+    }
+  };
+
+  const randomizeParticleStyle = () => {
+    const randomColor = () => {
+      const hue = Math.random() * 360;
+      const saturation = Math.random() * 100;
+      const lightness = Math.random() * 100;
+      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    };
+
+    if (autoColor) {
+      setControls({
+        size: Math.random() * 0.39 + 0.01,
+        speed: Math.random() * 4.9 + 0.1,
+        wavelength: Math.random() * 9.9 + 0.1,
+        saturation: Math.random(),
+        brightness: Math.random(),
+      });
+    } else {
+      setControls({
+        size: Math.random() * 0.39 + 0.01,
+        startColor: randomColor(),
+        endColor: randomColor(),
+      });
+    }
+  };
+
+  // Expose the functions through a ref
+  const functionRef = useRef({
+    randomizePhysics,
+    randomizeParticleStyle,
+  });
+
   return (
     <>
       <OrbitControls
@@ -1027,7 +1116,7 @@ export function Particles() {
         maxDistance={20}
         makeDefault
       />
-      <points ref={points}>
+      <points ref={pointsRef} userData={{ functions: functionRef.current }}>
         <bufferGeometry ref={geometry}>
           <bufferAttribute
             attach="attributes-position"
@@ -1062,4 +1151,4 @@ export function Particles() {
       </points>
     </>
   );
-}
+});

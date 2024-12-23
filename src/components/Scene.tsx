@@ -8,9 +8,9 @@ import {
 } from "@react-three/postprocessing";
 import { useControls } from "leva";
 import { Particles } from "./Particles";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { Vector2 } from "three";
+import { Vector2, Points as ThreePoints } from "three";
 
 // Available environment presets
 const ENVIRONMENT_PRESETS = {
@@ -28,6 +28,7 @@ const ENVIRONMENT_PRESETS = {
 
 export function Scene() {
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
+  const particlesRef = useRef<ThreePoints>(null);
 
   const {
     environmentPreset,
@@ -99,46 +100,84 @@ export function Scene() {
     { collapsed: true }
   );
 
-  const { autoCameraEnabled, cameraSpeed, cameraRadius } = useControls(
-    "Camera",
-    {
-      autoCameraEnabled: {
-        value: true,
-        label: "autoCamera",
-      },
-      cameraSpeed: {
-        value: 1,
-        min: 0.1,
-        max: 3,
-        step: 0.1,
-        label: "speed",
-      },
-      cameraRadius: {
-        value: 5,
-        min: 0.01,
-        max: 15,
-        step: 0.5,
-        label: "zoom",
-      },
-    }
-  );
+  // Get audio controls state
+  const [audioControls, setAudioControls] = useControls("Audio", () => ({
+    enabled: {
+      value: false,
+      label: "audioEnabled",
+    },
+  }));
+
+  const [cameraControls, setCameraControls] = useControls("Camera", () => ({
+    autoCameraEnabled: {
+      value: true,
+      label: "autoCamera",
+    },
+    cameraSpeed: {
+      value: 1,
+      min: 0.1,
+      max: 3,
+      step: 0.1,
+      label: "speed",
+      render: (get) => get("Camera.autoCameraEnabled"),
+    },
+    cameraRadius: {
+      value: 5,
+      min: 0.01,
+      max: 15,
+      step: 0.5,
+      label: "zoom",
+      render: (get) => get("Camera.autoCameraEnabled"),
+    },
+  }));
+
+  // Add keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      switch (event.key.toLowerCase()) {
+        case "a":
+          // Toggle audio
+          setAudioControls({ enabled: !audioControls.enabled });
+          break;
+        case "z":
+          // Call randomizePhysics directly
+          if (particlesRef.current?.userData.functions) {
+            particlesRef.current.userData.functions.randomizePhysics();
+          }
+          break;
+        case "x":
+          // Call randomizeParticleStyle directly
+          if (particlesRef.current?.userData.functions) {
+            particlesRef.current.userData.functions.randomizeParticleStyle();
+          }
+          break;
+        case "s":
+          // Random camera radius
+          setCameraControls({ cameraRadius: Math.random() * 8 });
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [audioControls, setAudioControls, setCameraControls]);
 
   function CameraController() {
     const { camera } = useThree();
     const time = useRef(0);
 
     useFrame((_, delta) => {
-      if (autoCameraEnabled) {
-        time.current += delta * cameraSpeed;
+      if (cameraControls.autoCameraEnabled) {
+        time.current += delta * cameraControls.cameraSpeed;
 
         // Animate radius using sine wave (oscillates between cameraRadius and near zero)
         const radiusScale = Math.sin(time.current * 0.5) * 0.5 + 0.5; // oscillates between 0 and 1
-        const animatedRadius = radiusScale * cameraRadius;
+        const animatedRadius = radiusScale * cameraControls.cameraRadius;
         const x = Math.cos(time.current) * animatedRadius;
         const z = Math.sin(time.current) * animatedRadius;
 
         // Fixed height
-        const y = cameraRadius * 2;
+        const y = cameraControls.cameraRadius * 2;
 
         // Update camera position
         camera.position.set(x, y, z);
@@ -165,7 +204,7 @@ export function Scene() {
   return (
     <Canvas
       camera={{
-        position: [0, cameraRadius * 2, 0],
+        position: [0, cameraControls.cameraRadius * 2, 0],
         fov: 50,
         near: 0.1,
         far: 1000,
@@ -175,7 +214,7 @@ export function Scene() {
       <color attach="background" args={["#000000"]} />
       <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} />
-      <Particles />
+      <Particles ref={particlesRef} />
 
       <OrbitControls
         ref={orbitControlsRef}

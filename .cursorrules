@@ -1,0 +1,6 @@
+{
+    "command_replacements": {
+        "npm": "bun",
+        "npx": "bunx"
+    }
+} 
