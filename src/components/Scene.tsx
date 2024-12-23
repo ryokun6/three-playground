@@ -1,10 +1,16 @@
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment } from "@react-three/drei";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import {
+  EffectComposer,
+  Bloom,
+  ChromaticAberration,
+  Pixelation,
+} from "@react-three/postprocessing";
 import { useControls } from "leva";
 import { Particles } from "./Particles";
 import { useRef } from "react";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { Vector2 } from "three";
 
 // Available environment presets
 const ENVIRONMENT_PRESETS = {
@@ -30,6 +36,8 @@ export function Scene() {
     bloomIntensity,
     bloomThreshold,
     bloomSmoothing,
+    chromaticAberrationOffset,
+    pixelSize,
   } = useControls(
     "Visual Effects",
     {
@@ -72,6 +80,20 @@ export function Scene() {
         max: 1,
         step: 0.1,
         label: "bloomSmoothing",
+      },
+      chromaticAberrationOffset: {
+        value: 0.5,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        label: "chromaticAberration",
+      },
+      pixelSize: {
+        value: 1,
+        min: 1,
+        max: 16,
+        step: 1,
+        label: "pixelSize",
       },
     },
     { collapsed: true }
@@ -179,6 +201,17 @@ export function Scene() {
           luminanceSmoothing={bloomSmoothing}
           mipmapBlur
         />
+        <ChromaticAberration
+          offset={
+            new Vector2(
+              chromaticAberrationOffset / 1000,
+              chromaticAberrationOffset / 1000
+            )
+          }
+          radialModulation={false}
+          modulationOffset={0}
+        />
+        <Pixelation granularity={pixelSize} />
       </EffectComposer>
     </Canvas>
   );
