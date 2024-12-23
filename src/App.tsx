@@ -34,7 +34,7 @@ const KeyboardShortcuts = () => {
   return (
     <>
       {isVisible ? (
-        <div className="bg-black/80 text-white/60 px-4 py-2 rounded-lg shadow-lg font-mono text-xs">
+        <div className="bg-black/80 text-white/40 px-4 py-2 rounded-lg shadow-lg font-mono text-xs">
           <div className="flex gap-4 items-center">
             <div>
               <span className="text-white">A</span> toggle audio
