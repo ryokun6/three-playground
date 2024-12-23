@@ -23,80 +23,80 @@ const ENVIRONMENT_PRESETS = {
 export function Scene() {
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
 
-  const { environmentPreset, backgroundBlur, brightness } = useControls(
-    "Environment",
+  const {
+    environmentPreset,
+    backgroundBlur,
+    brightness,
+    bloomIntensity,
+    bloomThreshold,
+    bloomSmoothing,
+  } = useControls(
+    "Visual Effects",
     {
       environmentPreset: {
         value: "night",
         options: Object.keys(ENVIRONMENT_PRESETS),
-        label: "Preset",
+        label: "environmentPreset",
       },
       backgroundBlur: {
         value: 0.8,
         min: 0,
         max: 1,
         step: 0.1,
-        label: "Background Blur",
+        label: "backgroundBlur",
       },
       brightness: {
-        value: 0.15,
+        value: 0.1,
         min: 0.01,
         max: 1.0,
         step: 0.01,
-        label: "Brightness",
+        label: "brightness",
       },
-    },
-    { collapsed: true }
-  );
-
-  const { bloomIntensity, bloomThreshold, bloomSmoothing } = useControls(
-    "Bloom",
-    {
       bloomIntensity: {
         value: 4,
         min: 0,
         max: 5,
         step: 0.1,
-        label: "Intensity",
+        label: "bloomIntensity",
       },
       bloomThreshold: {
         value: 0.1,
         min: 0,
         max: 1,
         step: 0.1,
-        label: "Threshold",
+        label: "bloomThreshold",
       },
       bloomSmoothing: {
         value: 0.2,
         min: 0,
         max: 1,
         step: 0.1,
-        label: "Smoothing",
+        label: "bloomSmoothing",
       },
     },
     { collapsed: true }
   );
 
   const { autoCameraEnabled, cameraSpeed, cameraRadius } = useControls(
-    "Camera Motion",
+    "Camera",
     {
       autoCameraEnabled: {
         value: true,
-        label: "Auto Camera",
+        label: "autoCamera",
       },
       cameraSpeed: {
         value: 1,
         min: 0.1,
         max: 3,
         step: 0.1,
-        label: "Speed",
+        label: "cameraSpeed",
       },
       cameraRadius: {
         value: 5,
         min: 0.01,
         max: 15,
         step: 0.5,
-        label: "Radius",
+        label: "cameraRadius",
       },
     }
   );
