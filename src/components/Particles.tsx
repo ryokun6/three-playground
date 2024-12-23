@@ -1,13 +1,5 @@
-import {
-  useRef,
-  useEffect,
-  useState,
-  useMemo,
-  forwardRef,
-  useCallback,
-} from "react";
+import { useRef, useEffect, useState, useMemo, forwardRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useControls, button, folder } from "leva";
 import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
@@ -227,81 +219,46 @@ const generateShapePosition = (
   return pos;
 };
 
-export const Particles = forwardRef<THREE.Points>((_props, ref) => {
-  const [count] = useState(500);
-  const [size, setSize] = useState(0.15);
-  const [startColor, setStartColor] = useState("#ff0000");
-  const [endColor, setEndColor] = useState("#00ff00");
-  const [audioEnabled, setAudioEnabled] = useState(false);
-  const [audioGain, setAudioGain] = useState(1.0);
-  const [audioSmoothing, setAudioSmoothing] = useState(0.8);
-  const [audioMinDecibels, setAudioMinDecibels] = useState(-90);
-  const [audioMaxDecibels, setAudioMaxDecibels] = useState(-10);
-  const [audioReactivity, setAudioReactivity] = useState(1);
-  const [shape, setShape] = useState<ParticleShape>(ParticleShape.Waveform);
-  const [shapeSize, setShapeSize] = useState(3.8);
-  const [shapeSizeBase, setShapeSizeBase] = useState(3.8);
-  const [autoColor, setAutoColor] = useState(true);
-  const [colorSpeed, setColorSpeed] = useState(1.0);
-  const [colorWaveLength, setColorWaveLength] = useState(2.0);
-  const [colorSaturation, setColorSaturation] = useState(0.8);
-  const [colorBrightness, setColorBrightness] = useState(0.8);
-  const [expandWithAudio, setExpandWithAudio] = useState(true);
+interface ParticlesProps {
+  audioEnabled: boolean;
+  onAudioError?: () => void;
+  shape: string;
+  shapeSize: number;
+  orbitalSpeed: number;
+  expandWithAudio: boolean;
+  emissionRate: number;
+  particleLifetime: number;
+  gravity: number;
+  initialSpeed: number;
+  spread: number;
+  rotationSpeed: number;
+  spiralEffect: number;
+  pulseStrength: number;
+  swarmEffect: number;
+  size: number;
+  autoColor: boolean;
+  startColor: string;
+  endColor: string;
+  colorSpeed: number;
+  colorWaveLength: number;
+  colorSaturation: number;
+  colorBrightness: number;
+  audioGain?: number;
+  audioSmoothing?: number;
+  audioMinDecibels?: number;
+  audioMaxDecibels?: number;
+  audioReactivity?: number;
+}
 
-  // Add function to cycle through shapes
-  const cycleToNextShape = useCallback(() => {
-    const shapeValues = Object.values(ParticleShape);
-    const currentIndex = shapeValues.indexOf(shape);
-    const nextIndex = (currentIndex + 1) % shapeValues.length;
-    setShape(shapeValues[nextIndex]);
-  }, [shape]);
-
-  // Add keyboard event listener
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === "c") {
-        cycleToNextShape();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [cycleToNextShape]);
-
-  const orbitControlsRef = useRef<OrbitControlsImpl>(null);
-  const internalPointsRef = useRef<THREE.Points>(null);
-  const geometry = useRef<THREE.BufferGeometry>(null);
-  const audioContext = useRef<AudioContext | null>(null);
-  const analyser = useRef<AnalyserNode | null>(null);
-  const dataArray = useRef<Uint8Array | null>(null);
-
-  // Use the forwarded ref if provided, otherwise use internal ref
-  const pointsRef =
-    (ref as React.MutableRefObject<THREE.Points>) || internalPointsRef;
-
-  const { camera } = useThree();
-
-  // Initialize camera position
-  useEffect(() => {
-    if (camera) {
-      if (shape === ParticleShape.Waveform) {
-        // Position camera for centered sphere view
-        camera.position.set(15, 0, 0);
-        camera.lookAt(0, 0, 0);
-      } else {
-        // Default camera position for other shapes
-        camera.position.set(0, 10, 0);
-      }
-    }
-  }, [camera, shape]);
-
-  // Add state for orbital speed
-  const [orbitalSpeed, setOrbitalSpeed] = useState(0.5);
-
-  const [
+export const Particles = forwardRef<THREE.Points, ParticlesProps>(
+  (
     {
+      audioEnabled,
+      onAudioError,
+      shape: initialShape,
+      shapeSize: initialShapeSize,
+      orbitalSpeed: initialOrbitalSpeed,
+      expandWithAudio: initialExpandWithAudio,
       emissionRate,
       particleLifetime,
       gravity,
@@ -311,844 +268,672 @@ export const Particles = forwardRef<THREE.Points>((_props, ref) => {
       spiralEffect,
       pulseStrength,
       swarmEffect,
+      size,
+      autoColor,
+      startColor,
+      endColor,
+      colorSpeed,
+      colorWaveLength,
+      colorSaturation,
+      colorBrightness,
+      audioGain = 1.0,
+      audioSmoothing = 0.8,
+      audioMinDecibels = -90,
+      audioMaxDecibels = -10,
+      audioReactivity = 1.0,
     },
-    set,
-  ] = useControls(() => ({
-    Audio: folder({
-      enabled: {
-        value: audioEnabled,
-        label: "audioEnabled",
-        onChange: (value: boolean) => {
-          setAudioEnabled(value);
-          if (value) {
-            initAudio();
-          } else if (audioContext.current) {
-            audioContext.current.close();
-            audioContext.current = null;
-          }
-        },
-      },
-      gain: {
-        value: audioGain,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "gain",
-        render: (get) => get("Audio.enabled"),
-        onChange: (value: number) => {
-          setAudioGain(value);
-        },
-      },
-      audioReactivity: {
-        value: 1,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "reactivity",
-        render: (get) => get("Audio.enabled"),
-        onChange: (value: number) => {
-          setAudioReactivity(value);
-        },
-      },
-      smoothing: {
-        value: audioSmoothing,
-        min: 0,
-        max: 0.99,
-        step: 0.01,
-        label: "smoothing",
-        render: (get) => get("Audio.enabled"),
-        onChange: (value: number) => {
-          setAudioSmoothing(value);
-          if (analyser.current) {
-            analyser.current.smoothingTimeConstant = value;
-          }
-        },
-      },
-      minDecibels: {
-        value: audioMinDecibels,
-        min: -100,
-        max: 0,
-        step: 1,
-        label: "minVol",
-        render: (get) => get("Audio.enabled"),
-        onChange: (value: number) => {
-          setAudioMinDecibels(value);
-          if (analyser.current) {
-            analyser.current.minDecibels = value;
-          }
-        },
-      },
-      maxDecibels: {
-        value: audioMaxDecibels,
-        min: -100,
-        max: 0,
-        step: 1,
-        label: "maxVol",
-        render: (get) => get("Audio.enabled"),
-        onChange: (value: number) => {
-          setAudioMaxDecibels(value);
-          if (analyser.current) {
-            analyser.current.maxDecibels = value;
-          }
-        },
-      },
-    }),
-    Shape: folder({
-      shape: {
-        value: ParticleShape.Waveform,
-        options: Object.values(ParticleShape),
-        onChange: (value: ParticleShape) => setShape(value),
-      },
-      shapeSize: {
-        value: 3.8,
-        min: 0.1,
-        max: 5,
-        step: 0.1,
-        onChange: (value: number) => {
-          setShapeSizeBase(value);
-          setShapeSize(value);
-        },
-      },
-      orbitalSpeed: {
-        value: 0.5,
-        min: 0,
-        max: 2,
-        step: 0.1,
-        label: "orbitalSpeed",
-        render: (get) => get("Shape.shape") === "waveform",
-        onChange: (value: number) => {
-          setOrbitalSpeed(value);
-        },
-      },
-      expandWithAudio: {
-        value: true,
-        label: "expandWithAudio",
-        render: (get) => get("Shape.shape") === "waveform",
-        onChange: (value: boolean) => {
-          setExpandWithAudio(value);
-        },
-      },
-    }),
-    Physics: folder({
-      emissionRate: { value: 50, min: 1, max: 200 },
-      particleLifetime: { value: 2.0, min: 0.1, max: 5 },
-      gravity: { value: -9.8, min: -20, max: 0 },
-      initialSpeed: { value: 5.0, min: 0, max: 20 },
-      spread: { value: 0.5, min: 0, max: 2 },
-      rotationSpeed: { value: 0.5, min: 0, max: 2 },
-      spiralEffect: { value: 0.46, min: 0, max: 1 },
-      pulseStrength: { value: 1.48, min: 0, max: 2 },
-      swarmEffect: { value: 0.61, min: 0, max: 1 },
-      randomize: button(() => {
-        const randomInRange = (min: number, max: number) =>
-          Math.random() * (max - min) + min;
-
-        setShapeSizeBase(randomInRange(0.1, 5));
-        setShapeSize(randomInRange(0.1, 5));
-
-        set({
-          emissionRate: randomInRange(1, 200),
-          particleLifetime: randomInRange(0.1, 5),
-          gravity: randomInRange(-20, 0),
-          initialSpeed: randomInRange(0, 20),
-          spread: randomInRange(0, 2),
-          rotationSpeed: randomInRange(0, 2),
-          spiralEffect: randomInRange(0, 1),
-          pulseStrength: randomInRange(0, 2),
-          swarmEffect: randomInRange(0, 1),
-        });
-
-        if (shape === ParticleShape.Waveform) {
-          setOrbitalSpeed(randomInRange(0, 2));
-        }
-      }),
-    }),
-  }));
-
-  const [, setControls] = useControls("Particle", () => ({
-    size: {
-      value: 0.15,
-      min: 0.01,
-      max: 0.4,
-      step: 0.01,
-      onChange: (value) => setSize(value),
-    },
-    autoColor: {
-      value: true,
-      label: "autoColor",
-      onChange: (value) => setAutoColor(value),
-    },
-    startColor: {
-      value: "#ffffff",
-      onChange: (value) => setStartColor(value),
-      render: (get) => !get("Particle.autoColor"),
-    },
-    endColor: {
-      value: "#ffffff",
-      onChange: (value) => setEndColor(value),
-      render: (get) => !get("Particle.autoColor"),
-    },
-    speed: {
-      value: 1.0,
-      min: 0.1,
-      max: 5.0,
-      step: 0.1,
-      label: "speed",
-      render: (get) => get("Particle.autoColor"),
-      onChange: (value) => setColorSpeed(value),
-    },
-    wavelength: {
-      value: 2.0,
-      min: 0.1,
-      max: 10.0,
-      step: 0.1,
-      label: "waveLength",
-      render: (get) => get("Particle.autoColor"),
-      onChange: (value) => setColorWaveLength(value),
-    },
-    saturation: {
-      value: 0.8,
-      min: 0,
-      max: 1,
-      step: 0.05,
-      label: "saturation",
-      render: (get) => get("Particle.autoColor"),
-      onChange: (value) => setColorSaturation(value),
-    },
-    brightness: {
-      value: 0.6,
-      min: 0,
-      max: 1,
-      step: 0.05,
-      label: "brightness",
-      render: (get) => get("Particle.autoColor"),
-      onChange: (value) => setColorBrightness(value),
-    },
-    randomize: button(() => {
-      const randomColor = () => {
-        const hue = Math.random() * 360;
-        const saturation = Math.random() * 100;
-        const lightness = Math.random() * 100;
-        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-      };
-
-      if (autoColor) {
-        setControls({
-          size: Math.random() * 0.39 + 0.01,
-          speed: Math.random() * 4.9 + 0.1,
-          wavelength: Math.random() * 9.9 + 0.1,
-          saturation: Math.random(),
-          brightness: Math.random(),
-        });
-      } else {
-        setControls({
-          size: Math.random() * 0.39 + 0.01,
-          startColor: randomColor(),
-          endColor: randomColor(),
-        });
-      }
-    }),
-  }));
-
-  // Update initAudio function
-  const initAudio = async () => {
-    try {
-      audioContext.current = new AudioContext();
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const source = audioContext.current.createMediaStreamSource(stream);
-      const gainNode = audioContext.current.createGain();
-      analyser.current = audioContext.current.createAnalyser();
-
-      // Configure analyser for frequency analysis
-      analyser.current.fftSize = 2048; // Increased for better frequency resolution
-      analyser.current.smoothingTimeConstant = audioSmoothing;
-      analyser.current.minDecibels = audioMinDecibels;
-      analyser.current.maxDecibels = audioMaxDecibels;
-
-      // Configure gain
-      gainNode.gain.value = audioGain;
-
-      // Connect nodes
-      source.connect(gainNode);
-      gainNode.connect(analyser.current);
-
-      // Initialize data array for frequency data
-      dataArray.current = new Uint8Array(analyser.current.frequencyBinCount);
-    } catch (error) {
-      console.error("Error accessing microphone:", error);
-      setAudioEnabled(false);
-    }
-  };
-
-  // Update getAudioLevel function
-  const getAudioLevel = () => {
-    if (!analyser.current || !dataArray.current || !audioEnabled) return 0;
-
-    analyser.current.getByteFrequencyData(dataArray.current);
-    const average =
-      dataArray.current.reduce((acc, val) => acc + val, 0) /
-      dataArray.current.length;
-    const normalizedLevel = (average / 128.0) * audioGain;
-    return normalizedLevel;
-  };
-
-  const particles = useRef<Particle[]>([]);
-  const positions = useRef(new Float32Array(count * 3));
-  const colors = useRef(new Float32Array(count * 3));
-  const scales = useRef(new Float32Array(count));
-  const opacities = useRef(new Float32Array(count));
-
-  const resetParticle = (particle: Particle, index: number) => {
-    // Get position based on selected shape
-    particle.position.copy(
-      generateShapePosition(
-        shape,
-        shapeSize,
-        analyser.current,
-        dataArray.current,
-        index,
-        particles.current.length
-      )
+    ref
+  ) => {
+    const [count] = useState(500);
+    const [shape, setShape] = useState<ParticleShape>(
+      initialShape as ParticleShape
+    );
+    const [shapeSize, setShapeSize] = useState(initialShapeSize);
+    const [shapeSizeBase, setShapeSizeBase] = useState(initialShapeSize);
+    const [orbitalSpeed, setOrbitalSpeed] = useState(initialOrbitalSpeed);
+    const [expandWithAudio, setExpandWithAudio] = useState(
+      initialExpandWithAudio
     );
 
-    if (shape === ParticleShape.Waveform) {
-      // Minimal initial velocity for waveform particles
-      particle.velocity.set(0, 0, 0);
-    } else {
-      const angle = Math.random() * Math.PI * 2;
-      const elevation = (Math.random() - 0.5) * spread;
-      const audioLevel = getAudioLevel();
-      const beatIntensity = getBeatIntensity(
-        analyser.current,
-        dataArray.current
-      );
-      const speedMultiplier =
-        1 + audioLevel * audioReactivity + beatIntensity * 3;
-      const baseSpeed = initialSpeed * speedMultiplier;
+    // Add effects to update states when props change
+    useEffect(() => {
+      setShape(initialShape as ParticleShape);
+    }, [initialShape]);
 
-      if (shape === ParticleShape.Point) {
-        particle.velocity.set(
-          Math.cos(angle) * baseSpeed * Math.cos(elevation) * 0.2,
-          Math.abs(Math.sin(elevation)) * baseSpeed * 0.2,
-          Math.sin(angle) * baseSpeed * Math.cos(elevation) * 0.2
-        );
-      } else {
-        const dirFromCenter = particle.position.clone().normalize();
-        particle.velocity.copy(dirFromCenter).multiplyScalar(baseSpeed * 0.2);
-        particle.velocity.y += (Math.random() - 0.5) * baseSpeed * 0.1;
-      }
-    }
+    useEffect(() => {
+      setShapeSize(initialShapeSize);
+      setShapeSizeBase(initialShapeSize);
+    }, [initialShapeSize]);
 
-    particle.rotation = Math.random() * Math.PI * 2;
-    particle.rotationSpeed = (Math.random() - 0.5) * rotationSpeed;
-    particle.scale = 1.0;
-    particle.lifetime = 0;
-    particle.maxLifetime = particleLifetime;
-  };
+    useEffect(() => {
+      setOrbitalSpeed(initialOrbitalSpeed);
+      // Update orbital speed for existing particles
+      particles.current.forEach((particle) => {
+        particle.orbitalSpeed = initialOrbitalSpeed;
+      });
+    }, [initialOrbitalSpeed]);
 
-  // Initialize particles
-  useEffect(() => {
-    particles.current = Array(count)
-      .fill(null)
-      .map(() => ({
-        position: new THREE.Vector3(),
-        velocity: new THREE.Vector3(),
-        rotation: 0,
-        rotationSpeed: 0,
-        scale: 0,
-        lifetime: particleLifetime + 1, // Start with expired lifetime
-        maxLifetime: particleLifetime,
-        orbitalPlane: new THREE.Vector3(
-          Math.random() - 0.5,
-          Math.random() - 0.5,
-          Math.random() - 0.5
-        ).normalize(),
-        orbitalSpeed: orbitalSpeed,
-        orbitalPhase: Math.random() * Math.PI * 2,
-      }));
+    useEffect(() => {
+      setExpandWithAudio(initialExpandWithAudio);
+    }, [initialExpandWithAudio]);
 
-    opacities.current.fill(0.0);
-    scales.current.fill(0.0);
+    const orbitControlsRef = useRef<OrbitControlsImpl>(null);
+    const internalPointsRef = useRef<THREE.Points>(null);
+    const geometry = useRef<THREE.BufferGeometry>(null);
+    const audioContext = useRef<AudioContext | null>(null);
+    const analyser = useRef<AnalyserNode | null>(null);
+    const dataArray = useRef<Uint8Array | null>(null);
 
-    return () => {
-      if (audioContext.current) {
-        audioContext.current.close();
-      }
+    // Add getAudioLevel function
+    const getAudioLevel = () => {
+      if (!analyser.current || !dataArray.current || !audioEnabled) return 0;
+
+      analyser.current.getByteFrequencyData(dataArray.current);
+      const average =
+        dataArray.current.reduce((acc, val) => acc + val, 0) /
+        dataArray.current.length;
+      const normalizedLevel = (average / 128.0) * audioGain;
+      return normalizedLevel;
     };
-  }, [count, particleLifetime, orbitalSpeed]);
 
-  useFrame((state, delta) => {
-    if (!pointsRef.current || !geometry.current) return;
+    // Initialize audio when enabled changes
+    useEffect(() => {
+      const initAudio = async () => {
+        try {
+          audioContext.current = new AudioContext();
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          const source = audioContext.current.createMediaStreamSource(stream);
+          const gainNode = audioContext.current.createGain();
+          analyser.current = audioContext.current.createAnalyser();
 
-    const audioLevel = getAudioLevel();
-    const baseSize = size * (1 + audioLevel * audioReactivity * 0.5);
-    const time = state.clock.getElapsedTime();
+          // Configure analyser for frequency analysis
+          analyser.current.fftSize = 2048;
+          analyser.current.smoothingTimeConstant = audioSmoothing;
+          analyser.current.minDecibels = audioMinDecibels;
+          analyser.current.maxDecibels = audioMaxDecibels;
 
-    // Update shape size based on audio only for non-waveform shapes
-    const newShapeSize =
-      shape === ParticleShape.Waveform
-        ? shapeSizeBase *
-          (expandWithAudio ? 1 + audioLevel * audioReactivity : 1)
-        : shapeSizeBase * (1 + audioLevel * audioReactivity * 0.5);
-    setShapeSize(newShapeSize);
+          // Configure gain
+          gainNode.gain.value = audioGain;
 
-    const startColorObj = new THREE.Color(startColor);
-    const endColorObj = new THREE.Color(endColor);
-    const tempColor = new THREE.Color();
+          // Connect nodes
+          source.connect(gainNode);
+          gainNode.connect(analyser.current);
 
-    // Helper function to generate wave-based color
-    const getWaveColor = (progress: number) => {
-      const waveTime = time * colorSpeed;
-      const wavePhase = progress * Math.PI * 2 * colorWaveLength + waveTime;
-
-      // Get frequency band energies for different color components
-      const lowBandEnergy = getFrequencyBandEnergy(
-        analyser.current,
-        dataArray.current,
-        20, // Low frequencies (20Hz - 200Hz)
-        200,
-        analyser.current?.fftSize || 2048
-      );
-
-      const midBandEnergy = getFrequencyBandEnergy(
-        analyser.current,
-        dataArray.current,
-        200, // Mid frequencies (200Hz - 2000Hz)
-        2000,
-        analyser.current?.fftSize || 2048
-      );
-
-      const highBandEnergy = getFrequencyBandEnergy(
-        analyser.current,
-        dataArray.current,
-        2000, // High frequencies (2kHz - 20kHz)
-        20000,
-        analyser.current?.fftSize || 2048
-      );
-
-      // Use low frequencies to modulate the base hue
-      const baseHue = (Math.sin(wavePhase) * 0.5 + 0.5) * 360;
-      const hueShift = lowBandEnergy * 60; // Up to 60 degrees shift
-      const hue = (baseHue + hueShift) % 360;
-
-      // Use mid frequencies to affect saturation
-      const baseSaturation = colorSaturation;
-      const saturationBoost = midBandEnergy * 0.3; // Up to 30% boost
-      const s = Math.min(1, baseSaturation * (1 + saturationBoost));
-
-      // Use high frequencies to affect brightness
-      const baseBrightness = colorBrightness;
-      const brightnessBoost = highBandEnergy * 0.4; // Up to 40% boost
-      const l = Math.min(1, baseBrightness * (1 + brightnessBoost));
-
-      if (s === 0) {
-        return new THREE.Color(l, l, l);
-      }
-
-      const hue2rgb = (p: number, q: number, t: number) => {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1 / 6) return p + (q - p) * 6 * t;
-        if (t < 1 / 2) return q;
-        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-        return p;
+          // Initialize data array for frequency data
+          dataArray.current = new Uint8Array(
+            analyser.current.frequencyBinCount
+          );
+        } catch (error) {
+          console.error("Error accessing microphone:", error);
+          onAudioError?.();
+        }
       };
 
-      const h = hue / 360;
-      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-      const p = 2 * l - q;
-
-      const r = hue2rgb(p, q, h + 1 / 3);
-      const g = hue2rgb(p, q, h);
-      const b = hue2rgb(p, q, h - 1 / 3);
-
-      return new THREE.Color(r, g, b);
-    };
-
-    if (shape === ParticleShape.Waveform) {
-      // Create frequency bands
-      const bandCount = 16; // Number of distinct frequency bands
-      const frequencyBands = createFrequencyBands(
-        MIN_FREQ,
-        MAX_FREQ,
-        bandCount
-      );
-
-      // Update frequency data
-      if (analyser.current && dataArray.current) {
-        analyser.current.getByteFrequencyData(dataArray.current);
+      if (audioEnabled) {
+        initAudio();
+      } else if (audioContext.current) {
+        audioContext.current.close();
+        audioContext.current = null;
       }
 
-      // Calculate bass energy for ring spacing with smoothing
-      const bassEnergy = getFrequencyBandEnergy(
-        analyser.current,
-        dataArray.current,
-        20, // Start of bass frequency
-        150, // End of bass frequency
-        analyser.current?.fftSize || 2048
-      );
-
-      // Calculate expansion factors
-      const audioExpansion = expandWithAudio
-        ? 1 + audioLevel * audioReactivity * 0.1
-        : 1;
-      const bassExpansion = expandWithAudio
-        ? 1 + (1 - Math.pow(bassEnergy, 0.5)) * 0.2
-        : 1;
-      const totalExpansion = audioExpansion * bassExpansion;
-
-      // Sphere formation parameters
-      const sphereBaseRadius = shapeSize * 0.5;
-      const sphereRadius = sphereBaseRadius * totalExpansion;
-
-      // Calculate perfect sphere distribution
-      const goldenRatio = (1 + Math.sqrt(5)) / 2;
-      const angleIncrement = Math.PI * 2 * goldenRatio;
-
-      // Calculate number of particles to emit this frame
-      const particlesToEmit =
-        emissionRate *
-        delta *
-        (expandWithAudio ? 1 + audioLevel * audioReactivity : 1);
-      let emittedCount = 0;
-
-      particles.current.forEach((particle, i) => {
-        // Update lifetime
-        particle.lifetime += delta;
-
-        // Check if particle should be reset
-        if (particle.lifetime >= particle.maxLifetime) {
-          if (emittedCount < particlesToEmit) {
-            // Reset lifetime and update orbital parameters
-            particle.lifetime = 0;
-            particle.maxLifetime = particleLifetime;
-            particle.orbitalSpeed = orbitalSpeed;
-            particle.orbitalPhase = Math.random() * Math.PI * 2;
-            particle.orbitalPlane
-              .set(
-                Math.random() - 0.5,
-                Math.random() - 0.5,
-                Math.random() - 0.5
-              )
-              .normalize();
-            emittedCount++;
-          } else {
-            // If we're not emitting new particles, make this one invisible
-            opacities.current[i] = 0;
-            scales.current[i] = 0;
-            return;
-          }
+      return () => {
+        if (audioContext.current) {
+          audioContext.current.close();
+          audioContext.current = null;
         }
+      };
+    }, [
+      audioEnabled,
+      audioSmoothing,
+      audioMinDecibels,
+      audioMaxDecibels,
+      audioGain,
+      onAudioError,
+    ]);
 
-        // Calculate lifetime progress for opacity and scale
-        const lifeProgress = particle.lifetime / particle.maxLifetime;
-        const fadeInDuration = 0.2; // 20% of lifetime for fade in
-        const fadeOutStart = 0.8; // Start fading out at 80% of lifetime
+    // Use the forwarded ref if provided, otherwise use internal ref
+    const pointsRef =
+      (ref as React.MutableRefObject<THREE.Points>) || internalPointsRef;
 
-        // Calculate base scale and opacity with audio reactivity toggle
-        const baseScale = expandWithAudio
-          ? 0.8 + audioLevel * audioReactivity * 0.3
-          : 0.8;
-        const opacity = expandWithAudio
-          ? 0.7 + audioLevel * audioReactivity * 0.3
-          : 0.7;
+    const { camera } = useThree();
 
-        // Apply fade in/out to opacity and scale
-        let finalOpacity = opacity;
-        let finalScale = baseScale;
-
-        if (lifeProgress < fadeInDuration) {
-          const fadeInProgress = lifeProgress / fadeInDuration;
-          finalOpacity *= fadeInProgress;
-          finalScale *= fadeInProgress;
-        } else if (lifeProgress > fadeOutStart) {
-          const fadeOutProgress =
-            (lifeProgress - fadeOutStart) / (1 - fadeOutStart);
-          finalOpacity *= 1 - fadeOutProgress;
-          finalScale *= 1 - fadeOutProgress;
+    // Initialize camera position
+    useEffect(() => {
+      if (camera) {
+        if (shape === ParticleShape.Waveform) {
+          // Position camera for centered sphere view
+          camera.position.set(15, 0, 0);
+          camera.lookAt(0, 0, 0);
+        } else {
+          // Default camera position for other shapes
+          camera.position.set(0, 10, 0);
         }
+      }
+    }, [camera, shape]);
 
-        // Update scale and opacity
-        scales.current[i] = finalScale;
-        opacities.current[i] = Math.min(1, finalOpacity);
+    const particles = useRef<Particle[]>([]);
+    const positions = useRef(new Float32Array(count * 3));
+    const colors = useRef(new Float32Array(count * 3));
+    const scales = useRef(new Float32Array(count));
+    const opacities = useRef(new Float32Array(count));
 
-        // Calculate perfect sphere point distribution using Fibonacci sphere
-        const t = i / particles.current.length;
-        const inclination = Math.acos(1 - 2 * t);
-        const azimuth = angleIncrement * i;
-
-        // Get the frequency band for this particle
-        const bandIndex = Math.floor(t * bandCount);
-        const band = frequencyBands[Math.min(bandIndex, bandCount - 1)];
-        const bandEnergy = getFrequencyBandEnergy(
+    const resetParticle = (particle: Particle, index: number) => {
+      // Get position based on selected shape
+      particle.position.copy(
+        generateShapePosition(
+          shape,
+          shapeSize,
           analyser.current,
           dataArray.current,
-          band.start,
-          band.end,
+          index,
+          particles.current.length
+        )
+      );
+
+      if (shape === ParticleShape.Waveform) {
+        // Minimal initial velocity for waveform particles
+        particle.velocity.set(0, 0, 0);
+      } else {
+        const angle = Math.random() * Math.PI * 2;
+        const elevation = (Math.random() - 0.5) * spread;
+        const audioLevel = getAudioLevel();
+        const beatIntensity = getBeatIntensity(
+          analyser.current,
+          dataArray.current
+        );
+        const speedMultiplier =
+          1 + audioLevel * audioReactivity + beatIntensity * 3;
+        const baseSpeed = initialSpeed * speedMultiplier;
+
+        if (shape === ParticleShape.Point) {
+          particle.velocity.set(
+            Math.cos(angle) * baseSpeed * Math.cos(elevation) * 0.2,
+            Math.abs(Math.sin(elevation)) * baseSpeed * 0.2,
+            Math.sin(angle) * baseSpeed * Math.cos(elevation) * 0.2
+          );
+        } else {
+          const dirFromCenter = particle.position.clone().normalize();
+          particle.velocity.copy(dirFromCenter).multiplyScalar(baseSpeed * 0.2);
+          particle.velocity.y += (Math.random() - 0.5) * baseSpeed * 0.1;
+        }
+      }
+
+      particle.rotation = Math.random() * Math.PI * 2;
+      particle.rotationSpeed = (Math.random() - 0.5) * rotationSpeed;
+      particle.scale = 1.0;
+      particle.lifetime = 0;
+      particle.maxLifetime = particleLifetime;
+    };
+
+    // Initialize particles
+    useEffect(() => {
+      particles.current = Array(count)
+        .fill(null)
+        .map(() => ({
+          position: new THREE.Vector3(),
+          velocity: new THREE.Vector3(),
+          rotation: 0,
+          rotationSpeed: 0,
+          scale: 0,
+          lifetime: particleLifetime + 1, // Start with expired lifetime
+          maxLifetime: particleLifetime,
+          orbitalPlane: new THREE.Vector3(
+            Math.random() - 0.5,
+            Math.random() - 0.5,
+            Math.random() - 0.5
+          ).normalize(),
+          orbitalSpeed: orbitalSpeed,
+          orbitalPhase: Math.random() * Math.PI * 2,
+        }));
+
+      opacities.current.fill(0.0);
+      scales.current.fill(0.0);
+
+      return () => {
+        if (audioContext.current) {
+          audioContext.current.close();
+        }
+      };
+    }, [count, particleLifetime, orbitalSpeed]);
+
+    useFrame((state, delta) => {
+      if (!pointsRef.current || !geometry.current) return;
+
+      const audioLevel = getAudioLevel();
+      const baseSize = size * (1 + audioLevel * audioReactivity * 0.5);
+      const time = state.clock.getElapsedTime();
+
+      // Update shape size based on audio only for non-waveform shapes
+      const newShapeSize =
+        shape === ParticleShape.Waveform
+          ? shapeSizeBase *
+            (expandWithAudio ? 1 + audioLevel * audioReactivity : 1)
+          : shapeSizeBase * (1 + audioLevel * audioReactivity * 0.5);
+      setShapeSize(newShapeSize);
+
+      const startColorObj = new THREE.Color(startColor);
+      const endColorObj = new THREE.Color(endColor);
+      const tempColor = new THREE.Color();
+
+      // Helper function to generate wave-based color
+      const getWaveColor = (progress: number) => {
+        const waveTime = time * colorSpeed;
+        const wavePhase = progress * Math.PI * 2 * colorWaveLength + waveTime;
+
+        // Get frequency band energies for different color components
+        const lowBandEnergy = getFrequencyBandEnergy(
+          analyser.current,
+          dataArray.current,
+          20, // Low frequencies (20Hz - 200Hz)
+          200,
           analyser.current?.fftSize || 2048
         );
 
-        // Smooth the band energy response
-        const smoothedBandEnergy = Math.pow(bandEnergy, 1.5);
-
-        // Calculate base position on sphere
-        const baseRadius = sphereRadius * (1 + smoothedBandEnergy * 0.2);
-        const sinInclination = Math.sin(inclination);
-
-        // Calculate base position (before orbital rotation)
-        const basePosition = new THREE.Vector3(
-          baseRadius * sinInclination * Math.cos(azimuth),
-          baseRadius * sinInclination * Math.sin(azimuth),
-          baseRadius * Math.cos(inclination)
+        const midBandEnergy = getFrequencyBandEnergy(
+          analyser.current,
+          dataArray.current,
+          200, // Mid frequencies (200Hz - 2000Hz)
+          2000,
+          analyser.current?.fftSize || 2048
         );
 
-        // Create orbital rotation matrix
-        const orbitalTime = time * particle.orbitalSpeed;
-        const orbitalAngle = orbitalTime + particle.orbitalPhase;
-        const rotationAxis = particle.orbitalPlane;
-        const rotationMatrix = new THREE.Matrix4();
-        rotationMatrix.makeRotationAxis(rotationAxis, orbitalAngle);
+        const highBandEnergy = getFrequencyBandEnergy(
+          analyser.current,
+          dataArray.current,
+          2000, // High frequencies (2kHz - 20kHz)
+          20000,
+          analyser.current?.fftSize || 2048
+        );
 
-        // Apply orbital rotation to position
-        const position = basePosition.clone();
-        position.applyMatrix4(rotationMatrix);
+        // Use low frequencies to modulate the base hue
+        const baseHue = (Math.sin(wavePhase) * 0.5 + 0.5) * 360;
+        const hueShift = lowBandEnergy * 60; // Up to 60 degrees shift
+        const hue = (baseHue + hueShift) % 360;
 
-        // Add expansion effect to orbital path
-        const expansionFactor = 1 + audioLevel * audioReactivity * 1;
-        position.multiplyScalar(expansionFactor);
+        // Use mid frequencies to affect saturation
+        const baseSaturation = colorSaturation;
+        const saturationBoost = midBandEnergy * 0.3; // Up to 30% boost
+        const s = Math.min(1, baseSaturation * (1 + saturationBoost));
 
-        // Add subtle wobble based on audio
-        const wobbleAmount = smoothedBandEnergy * 0.1;
-        const wobbleFreq = time * 1.5;
-        const wobble = Math.sin(wobbleFreq + t * Math.PI * 2) * wobbleAmount;
-        position.multiplyScalar(1 + wobble);
+        // Use high frequencies to affect brightness
+        const baseBrightness = colorBrightness;
+        const brightnessBoost = highBandEnergy * 0.4; // Up to 40% boost
+        const l = Math.min(1, baseBrightness * (1 + brightnessBoost));
 
-        // Update particle position
-        particle.position.copy(position);
-
-        // Color interpolation based on position and lifetime
-        const colorProgress = t + smoothedBandEnergy * 0.3;
-        if (autoColor) {
-          tempColor.copy(getWaveColor(colorProgress));
-        } else {
-          tempColor.copy(startColorObj).lerp(endColorObj, colorProgress);
+        if (s === 0) {
+          return new THREE.Color(l, l, l);
         }
-        colors.current[i * 3] = tempColor.r;
-        colors.current[i * 3 + 1] = tempColor.g;
-        colors.current[i * 3 + 2] = tempColor.b;
 
-        // Update positions array
-        positions.current[i * 3] = particle.position.x;
-        positions.current[i * 3 + 1] = particle.position.y;
-        positions.current[i * 3 + 2] = particle.position.z;
-      });
-    } else {
-      // Original particle update logic for other shapes
-      const particlesToEmit =
-        emissionRate * delta * (1 + audioLevel * audioReactivity);
-      let emittedCount = 0;
+        const hue2rgb = (p: number, q: number, t: number) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+          return p;
+        };
 
-      particles.current.forEach((particle, i) => {
-        particle.lifetime += delta;
+        const h = hue / 360;
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
 
-        if (particle.lifetime >= particle.maxLifetime) {
-          if (emittedCount < particlesToEmit) {
-            resetParticle(particle, i);
-            emittedCount++;
+        const r = hue2rgb(p, q, h + 1 / 3);
+        const g = hue2rgb(p, q, h);
+        const b = hue2rgb(p, q, h - 1 / 3);
+
+        return new THREE.Color(r, g, b);
+      };
+
+      if (shape === ParticleShape.Waveform) {
+        // Create frequency bands
+        const bandCount = 16; // Number of distinct frequency bands
+        const frequencyBands = createFrequencyBands(
+          MIN_FREQ,
+          MAX_FREQ,
+          bandCount
+        );
+
+        // Update frequency data
+        if (analyser.current && dataArray.current) {
+          analyser.current.getByteFrequencyData(dataArray.current);
+        }
+
+        // Calculate bass energy for ring spacing with smoothing
+        const bassEnergy = getFrequencyBandEnergy(
+          analyser.current,
+          dataArray.current,
+          20, // Start of bass frequency
+          150, // End of bass frequency
+          analyser.current?.fftSize || 2048
+        );
+
+        // Calculate expansion factors
+        const audioExpansion = expandWithAudio
+          ? 1 + audioLevel * audioReactivity * 0.1
+          : 1;
+        const bassExpansion = expandWithAudio
+          ? 1 + (1 - Math.pow(bassEnergy, 0.5)) * 0.2
+          : 1;
+        const totalExpansion = audioExpansion * bassExpansion;
+
+        // Sphere formation parameters
+        const sphereBaseRadius = shapeSize * 0.5;
+        const sphereRadius = sphereBaseRadius * totalExpansion;
+
+        // Calculate perfect sphere distribution
+        const goldenRatio = (1 + Math.sqrt(5)) / 2;
+        const angleIncrement = Math.PI * 2 * goldenRatio;
+
+        // Calculate number of particles to emit this frame
+        const particlesToEmit =
+          emissionRate *
+          delta *
+          (expandWithAudio ? 1 + audioLevel * audioReactivity : 1);
+        let emittedCount = 0;
+
+        particles.current.forEach((particle, i) => {
+          // Update lifetime
+          particle.lifetime += delta;
+
+          // Check if particle should be reset
+          if (particle.lifetime >= particle.maxLifetime) {
+            if (emittedCount < particlesToEmit) {
+              // Reset lifetime and update orbital parameters
+              particle.lifetime = 0;
+              particle.maxLifetime = particleLifetime;
+              particle.orbitalSpeed = orbitalSpeed;
+              particle.orbitalPhase = Math.random() * Math.PI * 2;
+              particle.orbitalPlane
+                .set(
+                  Math.random() - 0.5,
+                  Math.random() - 0.5,
+                  Math.random() - 0.5
+                )
+                .normalize();
+              emittedCount++;
+            } else {
+              // If we're not emitting new particles, make this one invisible
+              opacities.current[i] = 0;
+              scales.current[i] = 0;
+              return;
+            }
           }
-          return;
-        }
 
-        const lifeProgress = particle.lifetime / particle.maxLifetime;
-        opacities.current[i] = Math.max(0, 1 - Math.pow(lifeProgress, 2));
+          // Calculate lifetime progress for opacity and scale
+          const lifeProgress = particle.lifetime / particle.maxLifetime;
+          const fadeInDuration = 0.2; // 20% of lifetime for fade in
+          const fadeOutStart = 0.8; // Start fading out at 80% of lifetime
 
-        // Update rotation
-        particle.rotation +=
-          particle.rotationSpeed * delta * (1 + audioLevel * 2);
+          // Calculate base scale and opacity with audio reactivity toggle
+          const baseScale = expandWithAudio
+            ? 0.8 + audioLevel * audioReactivity * 0.3
+            : 0.8;
+          const opacity = expandWithAudio
+            ? 0.7 + audioLevel * audioReactivity * 0.3
+            : 0.7;
 
-        // Calculate forces and update position
-        const forces = new THREE.Vector3(0, 0, 0);
-        forces.y += gravity * (1 + audioLevel * audioReactivity);
+          // Apply fade in/out to opacity and scale
+          let finalOpacity = opacity;
+          let finalScale = baseScale;
 
-        const spiralStrength =
-          spiralEffect * (1 + audioLevel * audioReactivity) * 2;
-        forces.x += Math.cos(time * 2 + particle.rotation) * spiralStrength;
-        forces.z += Math.sin(time * 2 + particle.rotation) * spiralStrength;
+          if (lifeProgress < fadeInDuration) {
+            const fadeInProgress = lifeProgress / fadeInDuration;
+            finalOpacity *= fadeInProgress;
+            finalScale *= fadeInProgress;
+          } else if (lifeProgress > fadeOutStart) {
+            const fadeOutProgress =
+              (lifeProgress - fadeOutStart) / (1 - fadeOutStart);
+            finalOpacity *= 1 - fadeOutProgress;
+            finalScale *= 1 - fadeOutProgress;
+          }
 
-        const swarmStrength =
-          swarmEffect * (1 + audioLevel * audioReactivity) * 3;
-        forces.x +=
-          Math.sin(time * 1.5 + particle.position.y * 0.5) * swarmStrength;
-        forces.z +=
-          Math.cos(time * 1.5 + particle.position.x * 0.5) * swarmStrength;
+          // Update scale and opacity
+          scales.current[i] = finalScale;
+          opacities.current[i] = Math.min(1, finalOpacity);
 
-        const pulseEffect = Math.sin(time * 4) * pulseStrength * audioLevel * 2;
-        particle.velocity.addScaledVector(forces, delta);
-        particle.velocity.multiplyScalar(1 + pulseEffect * delta);
-        particle.position.addScaledVector(particle.velocity, delta);
+          // Calculate perfect sphere point distribution using Fibonacci sphere
+          const t = i / particles.current.length;
+          const inclination = Math.acos(1 - 2 * t);
+          const azimuth = angleIncrement * i;
 
-        // Update scale
-        particle.scale =
-          1 +
-          audioLevel *
-            pulseStrength *
-            Math.sin(particle.rotation + time * 4) *
-            0.5;
-        scales.current[i] = particle.scale;
+          // Get the frequency band for this particle
+          const bandIndex = Math.floor(t * bandCount);
+          const band = frequencyBands[Math.min(bandIndex, bandCount - 1)];
+          const bandEnergy = getFrequencyBandEnergy(
+            analyser.current,
+            dataArray.current,
+            band.start,
+            band.end,
+            analyser.current?.fftSize || 2048
+          );
 
-        // Update positions and colors
-        positions.current[i * 3] = particle.position.x;
-        positions.current[i * 3 + 1] = particle.position.y;
-        positions.current[i * 3 + 2] = particle.position.z;
+          // Smooth the band energy response
+          const smoothedBandEnergy = Math.pow(bandEnergy, 1.5);
 
-        if (autoColor) {
-          tempColor.copy(getWaveColor(lifeProgress));
-        } else {
-          tempColor.copy(startColorObj).lerp(endColorObj, lifeProgress);
-        }
-        colors.current[i * 3] = tempColor.r;
-        colors.current[i * 3 + 1] = tempColor.g;
-        colors.current[i * 3 + 2] = tempColor.b;
-      });
-    }
+          // Calculate base position on sphere
+          const baseRadius = sphereRadius * (1 + smoothedBandEnergy * 0.2);
+          const sinInclination = Math.sin(inclination);
 
-    // Update geometry attributes
-    geometry.current.attributes.position.needsUpdate = true;
-    geometry.current.attributes.color.needsUpdate = true;
-    geometry.current.attributes.opacity.needsUpdate = true;
+          // Calculate base position (before orbital rotation)
+          const basePosition = new THREE.Vector3(
+            baseRadius * sinInclination * Math.cos(azimuth),
+            baseRadius * sinInclination * Math.sin(azimuth),
+            baseRadius * Math.cos(inclination)
+          );
 
-    // Update material
-    if (pointsRef.current.material) {
-      const material = pointsRef.current.material as THREE.PointsMaterial;
-      material.size = baseSize;
-      material.vertexColors = true;
-    }
-  });
+          // Create orbital rotation matrix
+          const orbitalTime = time * particle.orbitalSpeed;
+          const orbitalAngle = orbitalTime + particle.orbitalPhase;
+          const rotationAxis = particle.orbitalPlane;
+          const rotationMatrix = new THREE.Matrix4();
+          rotationMatrix.makeRotationAxis(rotationAxis, orbitalAngle);
 
-  // Create circular texture
-  const particleTexture = useMemo(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 64;
-    canvas.height = 64;
-    const context = canvas.getContext("2d");
+          // Apply orbital rotation to position
+          const position = basePosition.clone();
+          position.applyMatrix4(rotationMatrix);
 
-    if (context) {
-      // Create gradient
-      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+          // Add expansion effect to orbital path
+          const expansionFactor = 1 + audioLevel * audioReactivity * 1;
+          position.multiplyScalar(expansionFactor);
 
-      // Draw circle
-      context.fillStyle = gradient;
-      context.beginPath();
-      context.arc(32, 32, 32, 0, Math.PI * 2);
-      context.fill();
-    }
+          // Add subtle wobble based on audio
+          const wobbleAmount = smoothedBandEnergy * 0.1;
+          const wobbleFreq = time * 1.5;
+          const wobble = Math.sin(wobbleFreq + t * Math.PI * 2) * wobbleAmount;
+          position.multiplyScalar(1 + wobble);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }, []);
+          // Update particle position
+          particle.position.copy(position);
 
-  // Add randomize functions that can be called externally
-  const randomizePhysics = () => {
-    const randomInRange = (min: number, max: number) =>
-      Math.random() * (max - min) + min;
+          // Color interpolation based on position and lifetime
+          const colorProgress = t + smoothedBandEnergy * 0.3;
+          if (autoColor) {
+            tempColor.copy(getWaveColor(colorProgress));
+          } else {
+            tempColor.copy(startColorObj).lerp(endColorObj, colorProgress);
+          }
+          colors.current[i * 3] = tempColor.r;
+          colors.current[i * 3 + 1] = tempColor.g;
+          colors.current[i * 3 + 2] = tempColor.b;
 
-    setShapeSizeBase(randomInRange(0.1, 5));
-    setShapeSize(randomInRange(0.1, 5));
+          // Update positions array
+          positions.current[i * 3] = particle.position.x;
+          positions.current[i * 3 + 1] = particle.position.y;
+          positions.current[i * 3 + 2] = particle.position.z;
+        });
+      } else {
+        // Original particle update logic for other shapes
+        const particlesToEmit =
+          emissionRate * delta * (1 + audioLevel * audioReactivity);
+        let emittedCount = 0;
 
-    set({
-      emissionRate: randomInRange(1, 200),
-      particleLifetime: randomInRange(0.1, 5),
-      gravity: randomInRange(-20, 0),
-      initialSpeed: randomInRange(0, 20),
-      spread: randomInRange(0, 2),
-      rotationSpeed: randomInRange(0, 2),
-      spiralEffect: randomInRange(0, 1),
-      pulseStrength: randomInRange(0, 2),
-      swarmEffect: randomInRange(0, 1),
+        particles.current.forEach((particle, i) => {
+          particle.lifetime += delta;
+
+          if (particle.lifetime >= particle.maxLifetime) {
+            if (emittedCount < particlesToEmit) {
+              resetParticle(particle, i);
+              emittedCount++;
+            }
+            return;
+          }
+
+          const lifeProgress = particle.lifetime / particle.maxLifetime;
+          opacities.current[i] = Math.max(0, 1 - Math.pow(lifeProgress, 2));
+
+          // Update rotation
+          particle.rotation +=
+            particle.rotationSpeed * delta * (1 + audioLevel * 2);
+
+          // Calculate forces and update position
+          const forces = new THREE.Vector3(0, 0, 0);
+          forces.y += gravity * (1 + audioLevel * audioReactivity);
+
+          const spiralStrength =
+            spiralEffect * (1 + audioLevel * audioReactivity) * 2;
+          forces.x += Math.cos(time * 2 + particle.rotation) * spiralStrength;
+          forces.z += Math.sin(time * 2 + particle.rotation) * spiralStrength;
+
+          const swarmStrength =
+            swarmEffect * (1 + audioLevel * audioReactivity) * 3;
+          forces.x +=
+            Math.sin(time * 1.5 + particle.position.y * 0.5) * swarmStrength;
+          forces.z +=
+            Math.cos(time * 1.5 + particle.position.x * 0.5) * swarmStrength;
+
+          const pulseEffect =
+            Math.sin(time * 4) * pulseStrength * audioLevel * 2;
+          particle.velocity.addScaledVector(forces, delta);
+          particle.velocity.multiplyScalar(1 + pulseEffect * delta);
+          particle.position.addScaledVector(particle.velocity, delta);
+
+          // Update scale
+          particle.scale =
+            1 +
+            audioLevel *
+              pulseStrength *
+              Math.sin(particle.rotation + time * 4) *
+              0.5;
+          scales.current[i] = particle.scale;
+
+          // Update positions and colors
+          positions.current[i * 3] = particle.position.x;
+          positions.current[i * 3 + 1] = particle.position.y;
+          positions.current[i * 3 + 2] = particle.position.z;
+
+          if (autoColor) {
+            tempColor.copy(getWaveColor(lifeProgress));
+          } else {
+            tempColor.copy(startColorObj).lerp(endColorObj, lifeProgress);
+          }
+          colors.current[i * 3] = tempColor.r;
+          colors.current[i * 3 + 1] = tempColor.g;
+          colors.current[i * 3 + 2] = tempColor.b;
+        });
+      }
+
+      // Update geometry attributes
+      geometry.current.attributes.position.needsUpdate = true;
+      geometry.current.attributes.color.needsUpdate = true;
+      geometry.current.attributes.opacity.needsUpdate = true;
+
+      // Update material
+      if (pointsRef.current.material) {
+        const material = pointsRef.current.material as THREE.PointsMaterial;
+        material.size = baseSize;
+        material.vertexColors = true;
+      }
     });
 
-    if (shape === ParticleShape.Waveform) {
-      setOrbitalSpeed(randomInRange(0, 2));
-    }
-  };
+    // Create circular texture
+    const particleTexture = useMemo(() => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 64;
+      canvas.height = 64;
+      const context = canvas.getContext("2d");
 
-  const randomizeParticleStyle = () => {
-    const randomColor = () => {
-      const hue = Math.random() * 360;
-      const saturation = Math.random() * 100;
-      const lightness = Math.random() * 100;
-      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+      if (context) {
+        // Create gradient
+        const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+        gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+        // Draw circle
+        context.fillStyle = gradient;
+        context.beginPath();
+        context.arc(32, 32, 32, 0, Math.PI * 2);
+        context.fill();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      return texture;
+    }, []);
+
+    // Update particle functions
+    const randomizePhysics = () => {
+      const randomInRange = (min: number, max: number) =>
+        Math.random() * (max - min) + min;
+
+      setShapeSize(randomInRange(0.1, 5));
     };
 
-    if (autoColor) {
-      setControls({
-        size: Math.random() * 0.39 + 0.01,
-        speed: Math.random() * 4.9 + 0.1,
-        wavelength: Math.random() * 9.9 + 0.1,
-        saturation: Math.random(),
-        brightness: Math.random(),
-      });
-    } else {
-      setControls({
-        size: Math.random() * 0.39 + 0.01,
-        startColor: randomColor(),
-        endColor: randomColor(),
-      });
-    }
-  };
+    const randomizeParticleStyle = () => {
+      // Keep this function for external use
+    };
 
-  // Expose the functions through a ref
-  const functionRef = useRef({
-    randomizePhysics,
-    randomizeParticleStyle,
-  });
+    // Expose the functions through a ref
+    const functionRef = useRef({
+      randomizePhysics,
+      randomizeParticleStyle,
+    });
 
-  return (
-    <>
-      <OrbitControls
-        ref={orbitControlsRef}
-        enableDamping={true}
-        dampingFactor={0.05}
-        minDistance={2}
-        maxDistance={20}
-        makeDefault
-      />
-      <points ref={pointsRef} userData={{ functions: functionRef.current }}>
-        <bufferGeometry ref={geometry}>
-          <bufferAttribute
-            attach="attributes-position"
-            count={positions.current.length / 3}
-            array={positions.current}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-color"
-            count={colors.current.length / 3}
-            array={colors.current}
-            itemSize={3}
-          />
-          <bufferAttribute
-            attach="attributes-opacity"
-            count={opacities.current.length}
-            array={opacities.current}
-            itemSize={1}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          size={size}
-          vertexColors={true}
-          transparent={true}
-          opacity={0.8}
-          sizeAttenuation={true}
-          alphaTest={0.001}
-          blending={THREE.AdditiveBlending}
-          map={particleTexture}
-          depthWrite={false}
+    return (
+      <>
+        <OrbitControls
+          ref={orbitControlsRef}
+          enableDamping={true}
+          dampingFactor={0.05}
+          minDistance={2}
+          maxDistance={20}
+          makeDefault
         />
-      </points>
-    </>
-  );
-});
+        <points ref={pointsRef} userData={{ functions: functionRef.current }}>
+          <bufferGeometry ref={geometry}>
+            <bufferAttribute
+              attach="attributes-position"
+              count={positions.current.length / 3}
+              array={positions.current}
+              itemSize={3}
+            />
+            <bufferAttribute
+              attach="attributes-color"
+              count={colors.current.length / 3}
+              array={colors.current}
+              itemSize={3}
+            />
+            <bufferAttribute
+              attach="attributes-opacity"
+              count={opacities.current.length}
+              array={opacities.current}
+              itemSize={1}
+            />
+          </bufferGeometry>
+          <pointsMaterial
+            size={size}
+            vertexColors={true}
+            transparent={true}
+            opacity={0.8}
+            sizeAttenuation={true}
+            alphaTest={0.001}
+            blending={THREE.AdditiveBlending}
+            map={particleTexture}
+            depthWrite={false}
+          />
+        </points>
+      </>
+    );
+  }
+);
