@@ -222,7 +222,7 @@ const generateShapePosition = (
 
 export function Particles() {
   const [count] = useState(500);
-  const [size, setSize] = useState(0.1);
+  const [size, setSize] = useState(0.15);
   const [startColor, setStartColor] = useState("#ff0000");
   const [endColor, setEndColor] = useState("#00ff00");
   const [audioEnabled, setAudioEnabled] = useState(false);
@@ -232,13 +232,14 @@ export function Particles() {
   const [audioMaxDecibels, setAudioMaxDecibels] = useState(-10);
   const [audioReactivity, setAudioReactivity] = useState(1);
   const [shape, setShape] = useState<ParticleShape>(ParticleShape.Waveform);
-  const [shapeSize, setShapeSize] = useState(2);
-  const [shapeSizeBase, setShapeSizeBase] = useState(2);
-  const [autoColor, setAutoColor] = useState(false);
+  const [shapeSize, setShapeSize] = useState(3.8);
+  const [shapeSizeBase, setShapeSizeBase] = useState(3.8);
+  const [autoColor, setAutoColor] = useState(true);
   const [colorSpeed, setColorSpeed] = useState(1.0);
   const [colorWaveLength, setColorWaveLength] = useState(2.0);
   const [colorSaturation, setColorSaturation] = useState(0.8);
   const [colorBrightness, setColorBrightness] = useState(0.8);
+  const [expandWithAudio, setExpandWithAudio] = useState(true);
 
   const orbitControlsRef = useRef<OrbitControlsImpl>(null);
   const points = useRef<THREE.Points>(null);
@@ -366,7 +367,7 @@ export function Particles() {
         onChange: (value: ParticleShape) => setShape(value),
       },
       shapeSize: {
-        value: 2,
+        value: 3.8,
         min: 0.1,
         max: 5,
         step: 0.1,
@@ -375,8 +376,16 @@ export function Particles() {
           setShapeSize(value);
         },
       },
+      expandWithAudio: {
+        value: true,
+        label: "expandWithAudio",
+        render: (get) => get("Shape.shape") === "waveform",
+        onChange: (value: boolean) => {
+          setExpandWithAudio(value);
+        },
+      },
       orbitalSpeed: {
-        value: orbitalSpeed,
+        value: 0.5,
         min: 0,
         max: 2,
         step: 0.1,
@@ -645,7 +654,8 @@ export function Particles() {
     // Update shape size based on audio only for non-waveform shapes
     const newShapeSize =
       shape === ParticleShape.Waveform
-        ? shapeSizeBase * (1 + audioLevel * audioReactivity)
+        ? shapeSizeBase *
+          (expandWithAudio ? 1 + audioLevel * audioReactivity : 1)
         : shapeSizeBase * (1 + audioLevel * audioReactivity * 0.5);
     setShapeSize(newShapeSize);
 
@@ -658,13 +668,45 @@ export function Particles() {
       const waveTime = time * colorSpeed;
       const wavePhase = progress * Math.PI * 2 * colorWaveLength + waveTime;
 
-      // Generate base hue from wave
-      const hue = (Math.sin(wavePhase) * 0.5 + 0.5) * 360;
+      // Get frequency band energies for different color components
+      const lowBandEnergy = getFrequencyBandEnergy(
+        analyser.current,
+        dataArray.current,
+        20, // Low frequencies (20Hz - 200Hz)
+        200,
+        analyser.current?.fftSize || 2048
+      );
 
-      // Convert HSL to RGB
-      const h = hue / 360;
-      const s = colorSaturation;
-      const l = colorBrightness;
+      const midBandEnergy = getFrequencyBandEnergy(
+        analyser.current,
+        dataArray.current,
+        200, // Mid frequencies (200Hz - 2000Hz)
+        2000,
+        analyser.current?.fftSize || 2048
+      );
+
+      const highBandEnergy = getFrequencyBandEnergy(
+        analyser.current,
+        dataArray.current,
+        2000, // High frequencies (2kHz - 20kHz)
+        20000,
+        analyser.current?.fftSize || 2048
+      );
+
+      // Use low frequencies to modulate the base hue
+      const baseHue = (Math.sin(wavePhase) * 0.5 + 0.5) * 360;
+      const hueShift = lowBandEnergy * 60; // Up to 60 degrees shift
+      const hue = (baseHue + hueShift) % 360;
+
+      // Use mid frequencies to affect saturation
+      const baseSaturation = colorSaturation;
+      const saturationBoost = midBandEnergy * 0.3; // Up to 30% boost
+      const s = Math.min(1, baseSaturation * (1 + saturationBoost));
+
+      // Use high frequencies to affect brightness
+      const baseBrightness = colorBrightness;
+      const brightnessBoost = highBandEnergy * 0.4; // Up to 40% boost
+      const l = Math.min(1, baseBrightness * (1 + brightnessBoost));
 
       if (s === 0) {
         return new THREE.Color(l, l, l);
@@ -679,6 +721,7 @@ export function Particles() {
         return p;
       };
 
+      const h = hue / 360;
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
       const p = 2 * l - q;
 
@@ -713,8 +756,12 @@ export function Particles() {
       );
 
       // Calculate expansion factors
-      const audioExpansion = 1 + audioLevel * audioReactivity * 0.1;
-      const bassExpansion = 1 + (1 - Math.pow(bassEnergy, 0.5)) * 0.2;
+      const audioExpansion = expandWithAudio
+        ? 1 + audioLevel * audioReactivity * 0.1
+        : 1;
+      const bassExpansion = expandWithAudio
+        ? 1 + (1 - Math.pow(bassEnergy, 0.5)) * 0.2
+        : 1;
       const totalExpansion = audioExpansion * bassExpansion;
 
       // Sphere formation parameters
@@ -727,7 +774,9 @@ export function Particles() {
 
       // Calculate number of particles to emit this frame
       const particlesToEmit =
-        emissionRate * delta * (1 + audioLevel * audioReactivity);
+        emissionRate *
+        delta *
+        (expandWithAudio ? 1 + audioLevel * audioReactivity : 1);
       let emittedCount = 0;
 
       particles.current.forEach((particle, i) => {
@@ -763,9 +812,13 @@ export function Particles() {
         const fadeInDuration = 0.2; // 20% of lifetime for fade in
         const fadeOutStart = 0.8; // Start fading out at 80% of lifetime
 
-        // Calculate base scale and opacity
-        const baseScale = 0.8 + audioLevel * audioReactivity * 0.3;
-        const opacity = 0.7 + audioLevel * audioReactivity * 0.3;
+        // Calculate base scale and opacity with audio reactivity toggle
+        const baseScale = expandWithAudio
+          ? 0.8 + audioLevel * audioReactivity * 0.3
+          : 0.8;
+        const opacity = expandWithAudio
+          ? 0.7 + audioLevel * audioReactivity * 0.3
+          : 0.7;
 
         // Apply fade in/out to opacity and scale
         let finalOpacity = opacity;
