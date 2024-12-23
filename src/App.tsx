@@ -167,76 +167,6 @@ function App() {
     return stored === null ? true : stored === "true";
   });
 
-  const {
-    environmentPreset,
-    backgroundBlur,
-    brightness,
-    bloomIntensity,
-    bloomThreshold,
-    bloomSmoothing,
-    chromaticAberrationOffset,
-    pixelSize,
-  } = useControls(
-    "Visuals",
-    {
-      environmentPreset: {
-        value: "night",
-        options: Object.keys(ENVIRONMENT_PRESETS),
-        label: "environmentPreset",
-      },
-      backgroundBlur: {
-        value: 0.8,
-        min: 0,
-        max: 1,
-        step: 0.1,
-        label: "backgroundBlur",
-      },
-      brightness: {
-        value: 0.1,
-        min: 0.01,
-        max: 1.0,
-        step: 0.01,
-        label: "brightness",
-      },
-      bloomIntensity: {
-        value: 4,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "bloomIntensity",
-      },
-      bloomThreshold: {
-        value: 0.1,
-        min: 0,
-        max: 1,
-        step: 0.1,
-        label: "bloomThreshold",
-      },
-      bloomSmoothing: {
-        value: 0.2,
-        min: 0,
-        max: 1,
-        step: 0.1,
-        label: "bloomSmoothing",
-      },
-      chromaticAberrationOffset: {
-        value: 0.1,
-        min: 0,
-        max: 3,
-        step: 0.1,
-        label: "chromaticAberration",
-      },
-      pixelSize: {
-        value: 0,
-        min: 0,
-        max: 16,
-        step: 1,
-        label: "pixelSize",
-      },
-    },
-    { collapsed: true }
-  );
-
   const [audioControls, setAudioControls] = useControls("Audio", () => ({
     enabled: {
       value: false,
@@ -455,6 +385,76 @@ function App() {
         { collapsed: true }
       ),
     })
+  );
+
+  const {
+    environmentPreset,
+    backgroundBlur,
+    brightness,
+    bloomIntensity,
+    bloomThreshold,
+    bloomSmoothing,
+    chromaticAberrationOffset,
+    pixelSize,
+  } = useControls(
+    "Visuals",
+    {
+      environmentPreset: {
+        value: "night",
+        options: Object.keys(ENVIRONMENT_PRESETS),
+        label: "environmentPreset",
+      },
+      backgroundBlur: {
+        value: 0.8,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        label: "backgroundBlur",
+      },
+      brightness: {
+        value: 0.1,
+        min: 0.01,
+        max: 1.0,
+        step: 0.01,
+        label: "brightness",
+      },
+      bloomIntensity: {
+        value: 4,
+        min: 0,
+        max: 5,
+        step: 0.1,
+        label: "bloomIntensity",
+      },
+      bloomThreshold: {
+        value: 0.1,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        label: "bloomThreshold",
+      },
+      bloomSmoothing: {
+        value: 0.2,
+        min: 0,
+        max: 1,
+        step: 0.1,
+        label: "bloomSmoothing",
+      },
+      chromaticAberrationOffset: {
+        value: 0.1,
+        min: 0,
+        max: 3,
+        step: 0.1,
+        label: "chromaticAberration",
+      },
+      pixelSize: {
+        value: 0,
+        min: 0,
+        max: 16,
+        step: 1,
+        label: "pixelSize",
+      },
+    },
+    { collapsed: true }
   );
 
   const handleLevaToggle = () => {
