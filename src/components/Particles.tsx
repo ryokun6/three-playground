@@ -593,65 +593,45 @@ export function Particles() {
           analyser.current?.fftSize || 2048
         );
 
-        // Calculate base radius with frequency response
-        const baseRadius = shapeSize * (1 + ringIndex * 0.2);
-        const energyRadius = baseRadius * (1 + bandEnergy * 2);
+        // Calculate the vertical angle for spherical distribution
+        const phi = (ringIndex / (bandCount - 1)) * Math.PI; // Vertical angle from 0 to PI
 
-        // Add gentle wobble effect
-        const wobble = Math.sin(time * 1.5 + ringIndex * 0.3) * 0.1;
+        // Base radius calculation
+        const baseRadius = shapeSize * Math.sin(phi); // Sine creates sphere shape
+        const energyRadius =
+          baseRadius * (1 + bandEnergy * audioReactivity * 0.5);
 
-        // Enhanced vertical movement based on frequency band
-        const verticalAmplitude = shapeSize * 3; // Increased vertical range
-        const verticalOffset =
-          Math.sin(time * 2 + ringIndex * 0.2) * verticalAmplitude;
-        const heightOffset =
-          (ringIndex / bandCount) * shapeSize * 4 -
-          shapeSize * 2 +
-          verticalOffset * bandEnergy + // Add frequency-responsive vertical movement
-          Math.sin(time + ringIndex * 0.5) * shapeSize * bandEnergy; // Add wave-like motion
+        // Calculate rotation angles
+        const rotationSpeed = 0.2; // Base rotation speed
+        const verticalRotation = time * rotationSpeed * 0.3; // Slower vertical rotation
+        const horizontalRotation = time * rotationSpeed + bandEnergy * 0.5; // Horizontal rotation affected by audio
 
-        // Calculate base position
-        const radius = energyRadius * (1 + wobble);
-        const x = Math.cos(angleInRing) * radius;
-        const z = Math.sin(angleInRing) * radius;
-        const y = heightOffset + bandEnergy * shapeSize * 3; // Increased vertical response to frequency
+        // Calculate initial spherical coordinates
+        const theta = angleInRing + horizontalRotation; // Horizontal angle with rotation
 
-        // Get overall audio energy for subtle rotation enhancement
-        const audioEnergy = getAudioLevel();
+        // Convert spherical to cartesian coordinates
+        const x = energyRadius * Math.sin(phi) * Math.cos(theta);
+        let y = energyRadius * Math.cos(phi);
+        let z = energyRadius * Math.sin(phi) * Math.sin(theta);
 
-        // Create smooth continuous rotation (slower)
-        const rotationX = time * 0.03;
-        const rotationY = time * 0.05 + audioEnergy * 0.3; // Reduced rotation speed and audio influence
-
-        // Create rotation matrices
-        const cosX = Math.cos(rotationX);
-        const sinX = Math.sin(rotationX);
-        const cosY = Math.cos(rotationY);
-        const sinY = Math.sin(rotationY);
-
-        // Apply rotations
-        // First rotate around X
-        const rotatedX = x;
-        const rotatedY = y * cosX - z * sinX;
-        const rotatedZ = y * sinX + z * cosX;
-
-        // Then rotate around Y
-        const finalX = rotatedX * cosY + rotatedZ * sinY;
-        const finalY = rotatedY;
-        const finalZ = -rotatedX * sinY + rotatedZ * cosY;
+        // Apply vertical rotation
+        const cosV = Math.cos(verticalRotation);
+        const sinV = Math.sin(verticalRotation);
+        const oldY = y;
+        y = oldY * cosV - z * sinV;
+        z = oldY * sinV + z * cosV;
 
         // Update particle position
-        particle.position.set(finalX, finalY, finalZ);
+        particle.position.set(x, y, z);
 
-        // Scale based on frequency energy
-        const scaleBase = 1 + bandEnergy * 1.5;
-        const beatScale = beatIntensity * 0.5;
-        particle.scale =
-          scaleBase * (1 + beatScale) * (1 + (ringIndex / bandCount) * 0.5);
+        // Scale based on frequency energy and position in sphere
+        const scaleBase = 1 + bandEnergy * audioReactivity * 0.5;
+        const positionScale = Math.sin(phi); // Smaller particles at poles
+        particle.scale = scaleBase * positionScale * (1 + beatIntensity * 0.3);
         scales.current[i] = particle.scale;
 
         // Color interpolation based on frequency and position
-        const colorProgress = bandEnergy * 0.6 + (ringIndex / bandCount) * 0.4;
+        const colorProgress = bandEnergy * 0.6 + (phi / Math.PI) * 0.4;
         tempColor.copy(startColorObj).lerp(endColorObj, colorProgress);
         colors.current[i * 3] = tempColor.r;
         colors.current[i * 3 + 1] = tempColor.g;
@@ -662,16 +642,13 @@ export function Particles() {
         positions.current[i * 3 + 1] = particle.position.y;
         positions.current[i * 3 + 2] = particle.position.z;
 
-        // Update opacity
-        const distanceFromCenter =
-          particle.position.length() / (energyRadius * 2);
-        const rotationOpacity = 0.3 + Math.abs(Math.sin(angleInRing)) * 0.7;
+        // Update opacity based on energy and position
+        const normalizedEnergy = Math.pow(bandEnergy, 0.5); // Soften energy response
         opacities.current[i] = Math.min(
           1,
-          (0.4 + bandEnergy * 0.6) *
-            (1 - distanceFromCenter * 0.3) *
-            (1 + beatIntensity * 0.3) *
-            rotationOpacity
+          (0.4 + normalizedEnergy * 0.6) * // Base opacity from energy
+            (0.5 + Math.sin(phi) * 0.5) * // Fade at poles
+            (1 + beatIntensity * 0.3)
         );
       });
     } else {
