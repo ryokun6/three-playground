@@ -167,6 +167,11 @@ function App() {
     return stored === null ? true : stored === "true";
   });
 
+  // Touch handling state
+  const [touchStartTime, setTouchStartTime] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [holdTimer, setHoldTimer] = useState<number | null>(null);
+
   const [audioControls, setAudioControls] = useControls("Audio", () => ({
     enabled: {
       value: false,
@@ -584,8 +589,90 @@ function App() {
     setParticleControls,
   ]);
 
+  // Touch handlers
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      setTouchStartTime(Date.now());
+      setTouchStartX(e.touches[0].clientX);
+
+      // Start hold timer
+      const timer = window.setTimeout(() => {
+        // Long press - randomize physics
+        setParticleControls({
+          shapeSize: Math.random() * 4.9 + 0.1,
+          emissionRate: Math.random() * 199 + 1,
+          particleLifetime: Math.random() * 4.9 + 0.1,
+          gravity: Math.random() * -20,
+          initialSpeed: Math.random() * 20,
+          spread: Math.random() * 2,
+          rotationSpeed: Math.random() * 2,
+          spiralEffect: Math.random(),
+          pulseStrength: Math.random() * 2,
+          swarmEffect: Math.random(),
+        });
+      }, 500); // 500ms hold time
+
+      setHoldTimer(timer);
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      // Clear hold timer
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        setHoldTimer(null);
+      }
+
+      const touchDuration = Date.now() - touchStartTime;
+      const touchEndX = e.changedTouches[0].clientX;
+      const swipeDistance = touchEndX - touchStartX;
+
+      // Handle swipe (minimum 50px distance)
+      if (Math.abs(swipeDistance) > 50) {
+        const shapeValues = Object.values(ParticleShape);
+        const currentIndex = shapeValues.indexOf(particleControls.shape);
+        const nextIndex =
+          swipeDistance > 0
+            ? (currentIndex + 1) % shapeValues.length
+            : (currentIndex - 1 + shapeValues.length) % shapeValues.length;
+        setParticleControls({ shape: shapeValues[nextIndex] });
+        return;
+      }
+
+      // Handle quick tap (under 200ms)
+      if (touchDuration < 200) {
+        // Quick tap - only randomize camera zoom
+        setCameraControls({ cameraRadius: Math.random() * 8 });
+      }
+    };
+
+    const handleTouchCancel = () => {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        setHoldTimer(null);
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("touchcancel", handleTouchCancel);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", handleTouchCancel);
+      if (holdTimer) clearTimeout(holdTimer);
+    };
+  }, [
+    touchStartTime,
+    touchStartX,
+    holdTimer,
+    setCameraControls,
+    setParticleControls,
+    particleControls,
+  ]);
+
   return (
-    <main className="w-screen h-screen bg-black">
+    <main className="w-screen h-screen bg-black select-none">
       <Scene
         environmentPreset={environmentPreset as EnvironmentPreset}
         backgroundBlur={backgroundBlur}
