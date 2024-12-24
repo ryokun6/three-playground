@@ -583,14 +583,14 @@ function App() {
       const r = Math.floor(Math.random() * 256);
       const g = Math.floor(Math.random() * 256);
       const b = Math.floor(Math.random() * 256);
-      return `#${r.toString(16).padStart(2, "0")}${g
-        .toString(16)
-        .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+      return `#${[r, g, b]
+        .map((x) => x.toString(16).padStart(2, "0"))
+        .join("")}`;
     };
 
     if (particleControls.autoColor) {
       setParticleControls({
-        size: Math.random() * 0.39 + 0.01,
+        size: Math.random() * 0.14 + 0.01,
         colorSpeed: Math.random() * 4.9 + 0.1,
         colorWaveLength: Math.random() * 0.9 + 0.1,
         colorSaturation: Math.random() * 0.5 + 0.25,
@@ -598,7 +598,7 @@ function App() {
       });
     } else {
       setParticleControls({
-        size: Math.random() * 0.39 + 0.01,
+        size: Math.random() * 0.14 + 0.01,
         startColor: randomColor(),
         endColor: randomColor(),
       });
