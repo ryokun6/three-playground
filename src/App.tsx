@@ -1,6 +1,6 @@
 import { Leva, useControls, button, folder } from "leva";
 import { Scene } from "./components/Scene";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   PiKeyboardBold,
   PiSlidersBold,
@@ -280,13 +280,13 @@ function App() {
     []
   );
 
-  const showToast = (message: string) => {
+  const showToast = useCallback((message: string) => {
     const id = Math.random().toString(36).substring(7);
     setToasts((prev) => [...prev, { id, message }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 1000);
-  };
+  }, []);
 
   const [audioControls, setAudioControls] = useControls("Audio", () => ({
     enabled: {
@@ -433,7 +433,7 @@ function App() {
       physics: folder(
         {
           emissionRate: {
-            value: 50,
+            value: 200,
             min: 1,
             max: 200,
             label: "emissionRate",
@@ -722,6 +722,7 @@ function App() {
     setCameraControls,
     particleControls,
     setParticleControls,
+    showToast,
   ]);
 
   // Touch handlers

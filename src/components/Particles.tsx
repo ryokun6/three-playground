@@ -591,6 +591,29 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           bandCount
         );
 
+        // Calculate active particle count based on emission rate
+        const targetActiveParticles = Math.min(
+          Math.ceil(emissionRate * 2), // Use a fixed multiplier instead of lifetime
+          particles.current.length
+        );
+
+        // Zero out all particles first
+        for (let i = 0; i < particles.current.length; i++) {
+          if (i >= targetActiveParticles) {
+            particles.current[i].lifetime =
+              particles.current[i].maxLifetime + 1;
+            particles.current[i].position.set(0, 0, 0);
+            positions.current[i * 3] = 0;
+            positions.current[i * 3 + 1] = 0;
+            positions.current[i * 3 + 2] = 0;
+            colors.current[i * 3] = 0;
+            colors.current[i * 3 + 1] = 0;
+            colors.current[i * 3 + 2] = 0;
+            opacities.current[i] = 0;
+            scales.current[i] = 0;
+          }
+        }
+
         // Update frequency data
         if (analyser.current && dataArray.current) {
           analyser.current.getByteFrequencyData(dataArray.current);
@@ -627,8 +650,10 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           emissionRate * delta * (1 + audioLevel * audioReactivity);
         let emittedCount = 0;
 
-        // Force update all particles when audio is enabled
+        // Force particles beyond the target count to expire
         particles.current.forEach((particle, i) => {
+          if (i >= targetActiveParticles) return;
+
           particle.lifetime += delta;
 
           if (particle.lifetime >= particle.maxLifetime) {
