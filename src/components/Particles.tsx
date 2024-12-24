@@ -10,7 +10,6 @@ enum ParticleShape {
   Circle = "circle",
   Star = "star",
   Sphere = "sphere",
-  Ring = "ring",
   Heart = "heart",
   Waveform = "waveform",
 }
@@ -154,8 +153,6 @@ const generateShapePosition = (
 
   const phi = Math.random() * Math.PI * 2;
   const theta = Math.acos(2 * Math.random() - 1);
-  const ringWidth = size * 0.2;
-  const ringRadius = size + (Math.random() - 0.5) * ringWidth;
   const t = Math.random() * Math.PI * 2;
   const heartSize = size * 0.8;
 
@@ -186,11 +183,6 @@ const generateShapePosition = (
       pos.x = size * Math.sin(theta) * Math.cos(phi);
       pos.y = size * Math.sin(theta) * Math.sin(phi);
       pos.z = size * Math.cos(theta);
-      break;
-
-    case ParticleShape.Ring:
-      pos.x = Math.cos(angle) * ringRadius;
-      pos.z = Math.sin(angle) * ringRadius;
       break;
 
     case ParticleShape.Heart:

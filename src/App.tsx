@@ -74,7 +74,6 @@ enum ParticleShape {
   Circle = "circle",
   Star = "star",
   Sphere = "sphere",
-  Ring = "ring",
   Heart = "heart",
   Waveform = "waveform",
 }
@@ -494,10 +493,10 @@ function App() {
             render: (get) => get("Particle.autoColor"),
           },
           colorWaveLength: {
-            value: 2.0,
+            value: 0.5,
             min: 0.1,
-            max: 10.0,
-            step: 0.1,
+            max: 1.0,
+            step: 0.05,
             label: "waveLength",
             render: (get) => get("Particle.autoColor"),
           },
@@ -554,11 +553,11 @@ function App() {
 
     if (particleControls.autoColor) {
       setParticleControls({
-        size: Math.random() * 0.39 + 0.01,
+        size: Math.random() * 0.19 + 0.01,
         colorSpeed: Math.random() * 4.9 + 0.1,
-        colorWaveLength: Math.random() * 9.9 + 0.1,
+        colorWaveLength: Math.random() * 0.9 + 0.1,
         colorSaturation: Math.random(),
-        colorBrightness: Math.random(),
+        colorBrightness: Math.random() * 0.75 + 0.25,
       });
     } else {
       setParticleControls({
