@@ -861,7 +861,12 @@ function App() {
 
   // Add pinch handler
   useEffect(() => {
+    let initialTouchTarget: EventTarget | null = null;
+
     const handleTouchStart = (e: TouchEvent) => {
+      // Store the initial touch target
+      initialTouchTarget = e.target;
+
       // Check if the touch event originated from UI elements
       const target = e.target as HTMLElement;
       if (
@@ -920,7 +925,21 @@ function App() {
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!isActiveGesture) return;
+      // Check if this touch end is for a UI element touch that started on a UI element
+      const target = initialTouchTarget as HTMLElement;
+      if (
+        target?.closest("button") ||
+        target?.closest("[class^='leva-']") ||
+        target?.closest(".fixed")
+      ) {
+        initialTouchTarget = null;
+        return;
+      }
+
+      if (!isActiveGesture) {
+        initialTouchTarget = null;
+        return;
+      }
 
       // Clear hold timer
       if (holdTimer) {
@@ -952,6 +971,7 @@ function App() {
       }
 
       setIsActiveGesture(false);
+      initialTouchTarget = null;
     };
 
     const handleTouchCancel = () => {
@@ -962,6 +982,7 @@ function App() {
       setTouchStartDistance(null);
       setInitialCameraRadius(null);
       setIsActiveGesture(false);
+      initialTouchTarget = null;
     };
 
     window.addEventListener("touchstart", handleTouchStart);
@@ -1030,7 +1051,12 @@ function App() {
         particleControls={particleControls}
         onAudioError={() => setAudioControls({ enabled: false })}
       />
-      <div className="fixed bottom-4 right-4 flex gap-2">
+      <div
+        className="fixed bottom-4 right-4 flex gap-2"
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         <KeyboardShortcuts />
         <MobileGestures />
         <button
@@ -1046,8 +1072,9 @@ function App() {
         </button>
         <button
           onClick={handleLevaToggle}
-          onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
           className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
           title="Toggle settings"
         >
@@ -1055,8 +1082,9 @@ function App() {
         </button>
         <div
           className="leva-container absolute bottom-12 right-4 w-72 max-w-[calc(100vw-24px)] max-h-[calc(100vh-100px)] overflow-y-auto"
-          onMouseDown={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
         >
           <Leva hidden={isLevaHidden} titleBar={false} fill={true} />
         </div>
