@@ -836,30 +836,9 @@ function App() {
     null
   );
   const [isActiveGesture, setIsActiveGesture] = useState(false);
+  const [isPinchGesture, setIsPinchGesture] = useState(false);
 
   // Add mousewheel handler
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (cameraControls.autoCameraEnabled) {
-        e.preventDefault();
-        const delta = e.deltaY * -0.001; // Adjust sensitivity
-        const newRadius = Math.max(
-          0.3,
-          Math.min(7, cameraControls.cameraRadius + delta)
-        );
-        setCameraControls({ cameraRadius: newRadius });
-      }
-    };
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [
-    cameraControls.autoCameraEnabled,
-    cameraControls.cameraRadius,
-    setCameraControls,
-  ]);
-
-  // Add pinch handler
   useEffect(() => {
     let initialTouchTarget: EventTarget | null = null;
 
@@ -881,6 +860,7 @@ function App() {
       setIsActiveGesture(true);
 
       if (e.touches.length === 2) {
+        setIsPinchGesture(true);
         const distance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -888,13 +868,16 @@ function App() {
         setTouchStartDistance(distance);
         setInitialCameraRadius(cameraControls.cameraRadius);
       } else {
+        setIsPinchGesture(false);
         setTouchStartTime(Date.now());
         setTouchStartX(e.touches[0].clientX);
 
         // Start hold timer
         const timer = window.setTimeout(() => {
           // Long press - randomize physics
-          randomizePhysics();
+          if (isActiveGesture && !isPinchGesture) {
+            randomizePhysics();
+          }
         }, 500); // 500ms hold time
 
         setHoldTimer(timer);
@@ -904,22 +887,25 @@ function App() {
     const handleTouchMove = (e: TouchEvent) => {
       if (!isActiveGesture) return;
 
+      // Handle pinch gesture
       if (
+        isPinchGesture &&
         e.touches.length === 2 &&
         touchStartDistance !== null &&
-        initialCameraRadius !== null &&
-        cameraControls.autoCameraEnabled
+        initialCameraRadius !== null
       ) {
+        e.preventDefault(); // Prevent default to avoid page zooming
+
         const currentDistance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
 
         const scale = currentDistance / touchStartDistance;
-        const newRadius = Math.max(
-          0.01,
-          Math.min(7, initialCameraRadius * scale)
-        );
+        const sensitivity = 2.0; // Adjust this value to control pinch sensitivity
+        const scaledRadius = initialCameraRadius * Math.pow(scale, sensitivity);
+        const newRadius = Math.max(0.3, Math.min(7, scaledRadius));
+
         setCameraControls({ cameraRadius: newRadius });
       }
     };
@@ -947,30 +933,37 @@ function App() {
         setHoldTimer(null);
       }
 
-      // Reset pinch state
-      setTouchStartDistance(null);
-      setInitialCameraRadius(null);
+      // Reset pinch state if all touches are gone
+      if (e.touches.length === 0) {
+        setTouchStartDistance(null);
+        setInitialCameraRadius(null);
+        setIsPinchGesture(false);
 
-      // Only handle swipe/tap if it wasn't a pinch gesture
-      if (e.touches.length === 0 && touchStartTime && touchStartX) {
-        const touchDuration = Date.now() - touchStartTime;
-        const touchEndX = e.changedTouches[0].clientX;
-        const swipeDistance = touchEndX - touchStartX;
+        // Only handle swipe/tap if it wasn't a pinch gesture
+        if (!isPinchGesture && touchStartTime && touchStartX) {
+          const touchDuration = Date.now() - touchStartTime;
+          const touchEndX = e.changedTouches[0].clientX;
+          const swipeDistance = touchEndX - touchStartX;
 
-        // Handle swipe (minimum 50px distance)
-        if (Math.abs(swipeDistance) > 50) {
-          randomizeShape(swipeDistance > 0 ? 1 : -1);
-          return;
+          // Handle swipe (minimum 50px distance)
+          if (Math.abs(swipeDistance) > 50) {
+            randomizeShape(swipeDistance > 0 ? 1 : -1);
+          }
+          // Handle quick tap (under 200ms)
+          else if (touchDuration < 200) {
+            randomizeCamera();
+          }
         }
 
-        // Handle quick tap (under 200ms)
-        if (touchDuration < 200) {
-          // Quick tap - only randomize camera zoom
-          randomizeCamera();
-        }
+        setIsActiveGesture(false);
+      }
+      // If there's still one touch remaining after a pinch
+      else if (e.touches.length === 1 && isPinchGesture) {
+        setTouchStartTime(Date.now());
+        setTouchStartX(e.touches[0].clientX);
+        setIsPinchGesture(false);
       }
 
-      setIsActiveGesture(false);
       initialTouchTarget = null;
     };
 
@@ -982,11 +975,12 @@ function App() {
       setTouchStartDistance(null);
       setInitialCameraRadius(null);
       setIsActiveGesture(false);
+      setIsPinchGesture(false);
       initialTouchTarget = null;
     };
 
-    window.addEventListener("touchstart", handleTouchStart);
-    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("touchend", handleTouchEnd);
     window.addEventListener("touchcancel", handleTouchCancel);
 
@@ -1013,6 +1007,7 @@ function App() {
     randomizeShape,
     setCameraControls,
     isActiveGesture,
+    isPinchGesture,
   ]);
 
   return (
