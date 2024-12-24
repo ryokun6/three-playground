@@ -663,7 +663,7 @@ function App() {
     }
 
     setCameraControls({
-      cameraRadius: Math.random() * 5 + 0.1,
+      cameraRadius: Math.random() * 4 + 1,
       cameraTilt: Math.random(),
       verticalMovement: Math.random() * 1.9 + 0.1,
       speedVariation: Math.random() * 1.9 + 0.1, // Speed between 0.1 and 2
