@@ -665,15 +665,15 @@ function App() {
     setCameraControls({
       cameraRadius: Math.random() * 5 + 0.1,
       cameraTilt: Math.random(),
-      verticalMovement: Math.random() * 2,
+      verticalMovement: Math.random() * 1.9 + 0.1,
       speedVariation: Math.random() * 1.9 + 0.1, // Speed between 0.1 and 2
     });
-    showToast("Camera switched");
+    showToast("Randomized Camera");
   }, [cameraControls, setCameraControls, showToast]);
 
   const toggleAudio = useCallback(() => {
     setAudioControls({ enabled: !audioControls.enabled });
-    showToast(`Audio ${!audioControls.enabled ? "enabled" : "disabled"}`);
+    showToast(`Audio ${!audioControls.enabled ? "on" : "off"}`);
   }, [audioControls.enabled, setAudioControls, showToast]);
 
   // Add randomizeShape function
@@ -921,9 +921,7 @@ function App() {
           break;
         case "d":
           setAudioControls({ autoPlay: !audioControls.autoPlay });
-          showToast(
-            `Auto-play ${!audioControls.autoPlay ? "enabled" : "disabled"}`
-          );
+          showToast(`Auto-play ${!audioControls.autoPlay ? "on" : "off"}`);
           break;
       }
     };
