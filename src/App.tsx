@@ -640,7 +640,7 @@ function App() {
         label: "backgroundBlur",
       },
       brightness: {
-        value: 0.08,
+        value: 0.05,
         min: 0.01,
         max: 1.0,
         step: 0.01,
