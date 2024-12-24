@@ -679,11 +679,16 @@ function App() {
   // Add randomizeShape function
   const randomizeShape = useCallback(() => {
     const shapeValues = Object.values(ParticleShape);
-    const randomIndex = Math.floor(Math.random() * shapeValues.length);
-    const nextShape = shapeValues[randomIndex];
+    const currentShapeIndex = shapeValues.indexOf(particleControls.shape);
+    // Filter out the current shape and select randomly from remaining shapes
+    const availableShapes = shapeValues.filter(
+      (_, index) => index !== currentShapeIndex
+    );
+    const randomIndex = Math.floor(Math.random() * availableShapes.length);
+    const nextShape = availableShapes[randomIndex];
     setParticleControls({ shape: nextShape });
     showToast(`Shape: ${nextShape}`);
-  }, [setParticleControls, showToast]);
+  }, [particleControls.shape, setParticleControls, showToast]);
 
   const setShape = useCallback(
     (index: number) => {
