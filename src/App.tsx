@@ -356,6 +356,30 @@ function App() {
       label: "zoom",
       render: (get) => get("Camera.autoCameraEnabled"),
     },
+    cameraTilt: {
+      value: 0.3,
+      min: 0,
+      max: 1,
+      step: 0.1,
+      label: "tilt",
+      render: (get) => get("Camera.autoCameraEnabled"),
+    },
+    verticalMovement: {
+      value: 0.5,
+      min: 0,
+      max: 2,
+      step: 0.1,
+      label: "verticalMove",
+      render: (get) => get("Camera.autoCameraEnabled"),
+    },
+    speedVariation: {
+      value: 0.3,
+      min: 0,
+      max: 1,
+      step: 0.1,
+      label: "speedVar",
+      render: (get) => get("Camera.autoCameraEnabled"),
+    },
     randomizeCamera: button(() => {
       randomizeCamera();
     }),
@@ -569,7 +593,12 @@ function App() {
   }, [particleControls.autoColor, setParticleControls]);
 
   const randomizeCamera = useCallback(() => {
-    setCameraControls({ cameraRadius: Math.random() * 5 + 0.1 });
+    setCameraControls({
+      cameraRadius: Math.random() * 5 + 0.1,
+      cameraTilt: Math.random(),
+      verticalMovement: Math.random() * 2,
+      speedVariation: Math.random() * 1.9 + 0.1, // Speed between 0.1 and 2
+    });
   }, [setCameraControls]);
 
   // Add randomizeShape function
@@ -611,7 +640,7 @@ function App() {
         label: "backgroundBlur",
       },
       brightness: {
-        value: 0.1,
+        value: 0.08,
         min: 0.01,
         max: 1.0,
         step: 0.01,

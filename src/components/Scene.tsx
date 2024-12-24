@@ -41,6 +41,9 @@ interface SceneProps {
     autoCameraEnabled: boolean;
     cameraSpeed: number;
     cameraRadius: number;
+    cameraTilt: number;
+    verticalMovement: number;
+    speedVariation: number;
   };
   particleControls: {
     shape: string;
@@ -118,6 +121,9 @@ export const Scene = ({
         <AutoCamera
           speed={cameraControls.cameraSpeed}
           radius={cameraControls.cameraRadius}
+          cameraTilt={cameraControls.cameraTilt}
+          verticalMovement={cameraControls.verticalMovement}
+          speedVariation={cameraControls.speedVariation}
         />
       )}
       <EffectComposer>
