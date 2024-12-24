@@ -32,6 +32,13 @@ export interface SceneProps {
   bloomSmoothing: number;
   chromaticAberrationOffset: Vector2;
   pixelSize: number;
+  vignetteIntensity: number;
+  vignetteOffset: number;
+  noiseIntensity: number;
+  colorGradingHue: number;
+  colorGradingSaturation: number;
+  colorGradingBrightness: number;
+  colorGradingContrast: number;
   audioEnabled: boolean;
   audioGain: number;
   audioReactivity: number;
@@ -42,6 +49,9 @@ export interface SceneProps {
     autoCameraEnabled: boolean;
     cameraSpeed: number;
     cameraRadius: number;
+    cameraTilt: number;
+    verticalMovement: number;
+    speedVariation: number;
   };
   particleControls: {
     shape: string;
@@ -401,6 +411,19 @@ function App() {
         step: 0.1,
         label: "shapeSize",
       },
+
+      emissionRate: {
+        value: 497,
+        min: 1,
+        max: 500,
+        label: "emission",
+      },
+      particleLifetime: {
+        value: 0.24,
+        min: 0.1,
+        max: 2,
+        label: "lifetime",
+      },
       size: {
         value: 0.08,
         min: 0.01,
@@ -420,18 +443,6 @@ function App() {
       }),
       physics: folder(
         {
-          emissionRate: {
-            value: 497,
-            min: 1,
-            max: 500,
-            label: "emissionRate",
-          },
-          particleLifetime: {
-            value: 0.24,
-            min: 0.1,
-            max: 2,
-            label: "lifetime",
-          },
           gravity: {
             value: -4.6,
             min: -9.8,
@@ -650,63 +661,125 @@ function App() {
     bloomSmoothing,
     chromaticAberrationOffset,
     pixelSize,
+    vignetteIntensity,
+    vignetteOffset,
+    noiseIntensity,
+    colorGradingHue,
+    colorGradingSaturation,
+    colorGradingBrightness,
+    colorGradingContrast,
   } = useControls(
     "Visuals",
     {
-      environmentPreset: {
-        value: "night",
-        options: Object.keys(ENVIRONMENT_PRESETS),
-        label: "environmentPreset",
-      },
-      backgroundBlur: {
-        value: 0.8,
-        min: 0,
-        max: 1,
-        step: 0.1,
-        label: "backgroundBlur",
-      },
-      brightness: {
-        value: 0.05,
-        min: 0.01,
-        max: 1.0,
-        step: 0.01,
-        label: "brightness",
-      },
-      bloomIntensity: {
-        value: 4,
-        min: 0,
-        max: 5,
-        step: 0.1,
-        label: "bloomIntensity",
-      },
-      bloomThreshold: {
-        value: 0.1,
-        min: 0,
-        max: 1,
-        step: 0.1,
-        label: "bloomThreshold",
-      },
-      bloomSmoothing: {
-        value: 0.2,
-        min: 0,
-        max: 1,
-        step: 0.1,
-        label: "bloomSmoothing",
-      },
-      chromaticAberrationOffset: {
-        value: 0.1,
-        min: 0,
-        max: 3,
-        step: 0.1,
-        label: "chromaticAberration",
-      },
-      pixelSize: {
-        value: 0,
-        min: 0,
-        max: 16,
-        step: 1,
-        label: "pixelSize",
-      },
+      environment: folder({
+        environmentPreset: {
+          value: "sunset",
+          options: Object.keys(ENVIRONMENT_PRESETS),
+          label: "preset",
+        },
+        backgroundBlur: {
+          value: 0.5,
+          min: 0,
+          max: 1,
+          step: 0.1,
+          label: "blur",
+        },
+        brightness: {
+          value: 0.03,
+          min: 0.01,
+          max: 1.0,
+          step: 0.01,
+          label: "brightness",
+        },
+      }),
+      postProcessing: folder({
+        bloomIntensity: {
+          value: 4,
+          min: 0,
+          max: 5,
+          step: 0.1,
+          label: "bloomIntensity",
+        },
+        bloomThreshold: {
+          value: 0.1,
+          min: 0,
+          max: 1,
+          step: 0.1,
+          label: "bloomThreshold",
+        },
+        bloomSmoothing: {
+          value: 0.2,
+          min: 0,
+          max: 1,
+          step: 0.1,
+          label: "bloomSmoothing",
+        },
+        chromaticAberrationOffset: {
+          value: 0.1,
+          min: 0,
+          max: 3,
+          step: 0.1,
+          label: "chromaticAberration",
+        },
+        pixelSize: {
+          value: 0,
+          min: 0,
+          max: 16,
+          step: 1,
+          label: "pixelSize",
+        },
+        vignetteIntensity: {
+          value: 0.6,
+          min: 0,
+          max: 1,
+          step: 0.1,
+          label: "vignetteIntensity",
+        },
+        vignetteOffset: {
+          value: 0.1,
+          min: 0,
+          max: 1,
+          step: 0.1,
+          label: "vignetteOffset",
+        },
+        noiseIntensity: {
+          value: 0.25,
+          min: 0,
+          max: 1,
+          step: 0.05,
+          label: "noiseIntensity",
+        },
+      }),
+      colorGrading: folder({
+        colorGradingHue: {
+          value: 0,
+          min: 0,
+          max: 6.28,
+          step: 0.1,
+          label: "hue",
+        },
+        colorGradingSaturation: {
+          value: 0,
+          min: 0,
+          max: 1,
+          step: 0.1,
+          label: "saturation",
+        },
+        colorGradingBrightness: {
+          value: 1,
+          min: 0,
+          max: 2,
+          step: 0.1,
+          label: "brightness",
+        },
+        colorGradingContrast: {
+          value: 1,
+          min: 0,
+          max: 2,
+          step: 0.1,
+          label: "contrast",
+        },
+      }),
     },
     { collapsed: true }
   );
@@ -974,6 +1047,13 @@ function App() {
           )
         }
         pixelSize={pixelSize}
+        vignetteIntensity={vignetteIntensity}
+        vignetteOffset={vignetteOffset}
+        noiseIntensity={noiseIntensity}
+        colorGradingHue={colorGradingHue}
+        colorGradingSaturation={colorGradingSaturation}
+        colorGradingBrightness={colorGradingBrightness}
+        colorGradingContrast={colorGradingContrast}
         audioEnabled={audioControls.enabled}
         audioGain={audioControls.gain}
         audioReactivity={audioControls.reactivity}

@@ -5,7 +5,12 @@ import {
   Bloom,
   ChromaticAberration,
   Pixelation,
+  Vignette,
+  Noise,
+  HueSaturation,
+  BrightnessContrast,
 } from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
 import { Vector2 } from "three";
 import { Particles } from "./Particles";
 import { AutoCamera } from "./AutoCamera";
@@ -31,6 +36,13 @@ interface SceneProps {
   bloomSmoothing: number;
   chromaticAberrationOffset: Vector2;
   pixelSize: number;
+  vignetteIntensity: number;
+  vignetteOffset: number;
+  noiseIntensity: number;
+  colorGradingHue: number;
+  colorGradingSaturation: number;
+  colorGradingBrightness: number;
+  colorGradingContrast: number;
   audioEnabled: boolean;
   audioGain: number;
   audioReactivity: number;
@@ -80,6 +92,13 @@ export const Scene = ({
   bloomSmoothing,
   chromaticAberrationOffset,
   pixelSize,
+  vignetteIntensity,
+  vignetteOffset,
+  noiseIntensity,
+  colorGradingHue,
+  colorGradingSaturation,
+  colorGradingBrightness,
+  colorGradingContrast,
   audioEnabled,
   audioGain,
   audioReactivity,
@@ -90,6 +109,41 @@ export const Scene = ({
   particleControls,
   onAudioError,
 }: SceneProps) => {
+  const effects = (
+    <>
+      <Bloom
+        intensity={bloomIntensity}
+        luminanceThreshold={bloomThreshold}
+        luminanceSmoothing={bloomSmoothing}
+        mipmapBlur
+      />
+      <ChromaticAberration
+        offset={chromaticAberrationOffset}
+        radialModulation={false}
+        modulationOffset={0}
+      />
+      <Pixelation granularity={pixelSize} />
+      <Vignette
+        offset={vignetteOffset}
+        darkness={vignetteIntensity}
+        blendFunction={BlendFunction.NORMAL}
+      />
+      <Noise
+        premultiply
+        blendFunction={BlendFunction.SCREEN}
+        opacity={noiseIntensity}
+      />
+      <HueSaturation
+        hue={colorGradingHue}
+        saturation={colorGradingSaturation}
+      />
+      <BrightnessContrast
+        brightness={colorGradingBrightness - 1}
+        contrast={colorGradingContrast - 1}
+      />
+    </>
+  );
+
   return (
     <Canvas
       gl={{
@@ -126,20 +180,7 @@ export const Scene = ({
           speedVariation={cameraControls.speedVariation}
         />
       )}
-      <EffectComposer>
-        <Bloom
-          intensity={bloomIntensity}
-          luminanceThreshold={bloomThreshold}
-          luminanceSmoothing={bloomSmoothing}
-          mipmapBlur
-        />
-        <ChromaticAberration
-          offset={chromaticAberrationOffset}
-          radialModulation={false}
-          modulationOffset={0}
-        />
-        <Pixelation granularity={pixelSize} />
-      </EffectComposer>
+      <EffectComposer>{effects}</EffectComposer>
     </Canvas>
   );
 };
