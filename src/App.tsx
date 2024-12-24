@@ -119,7 +119,7 @@ const Toast = ({
 
   return (
     <div
-      className={`fixed bottom-20 left-1/2 bg-black/80 text-white/80 px-4 py-2 rounded-lg shadow-lg font-mono text-sm z-[9999] ${
+      className={`fixed bottom-24 left-1/2 bg-black/80 text-white/80 px-4 py-2 rounded-lg shadow-lg font-mono text-sm z-[9999] ${
         isExiting ? "animate-toast-out" : "animate-toast-in"
       }`}
     >
