@@ -813,7 +813,7 @@ function App() {
   ]);
 
   return (
-    <main className="w-screen h-screen bg-black select-none">
+    <main className="w-screen h-[100dvh] bg-black select-none">
       {toasts.map((toast, index) => (
         <Toast
           key={toast.id}

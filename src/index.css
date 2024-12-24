@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add viewport and scrolling control */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
