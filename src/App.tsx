@@ -422,13 +422,13 @@ function App() {
           emissionRate: {
             value: 200,
             min: 1,
-            max: 200,
+            max: 500,
             label: "emissionRate",
           },
           particleLifetime: {
-            value: 2.0,
+            value: 2,
             min: 0.1,
-            max: 5,
+            max: 3,
             label: "lifetime",
           },
           gravity: {
@@ -467,7 +467,7 @@ function App() {
             render: (get) => get("Particle.shape") !== "waveform",
           },
           pulseStrength: {
-            value: 1.48,
+            value: 0.4,
             min: 0,
             max: 2,
             label: "pulse",
@@ -525,7 +525,7 @@ function App() {
             render: (get) => get("Particle.autoColor"),
           },
           colorSaturation: {
-            value: 0.8,
+            value: 0.5,
             min: 0,
             max: 1,
             step: 0.05,
@@ -533,7 +533,7 @@ function App() {
             render: (get) => get("Particle.autoColor"),
           },
           colorBrightness: {
-            value: 0.6,
+            value: 0.45,
             min: 0,
             max: 1,
             step: 0.05,
@@ -552,18 +552,19 @@ function App() {
       Math.random() * (max - min) + min;
 
     setParticleControls({
-      shapeSize: randomInRange(0.1, 4),
-      emissionRate: randomInRange(50, 200),
-      particleLifetime: randomInRange(0.1, 2),
+      shapeSize: randomInRange(1, 4),
+      emissionRate: randomInRange(300, 500),
+      particleLifetime: randomInRange(0.4, 1.5),
       gravity: randomInRange(-20, 0),
       initialSpeed: randomInRange(0, 20),
       spread: randomInRange(0, 2),
       rotationSpeed: randomInRange(0, 2),
       spiralEffect: randomInRange(0, 1),
-      pulseStrength: randomInRange(0, 2),
+      pulseStrength: randomInRange(0, 1),
       swarmEffect: randomInRange(0, 1),
     });
-  }, [setParticleControls]);
+    showToast("Randomized Physics");
+  }, [setParticleControls, showToast]);
 
   const randomizeStyle = useCallback(() => {
     const randomColor = () => {
@@ -577,11 +578,11 @@ function App() {
 
     if (particleControls.autoColor) {
       setParticleControls({
-        size: Math.random() * 0.19 + 0.01,
+        size: Math.random() * 0.39 + 0.01,
         colorSpeed: Math.random() * 4.9 + 0.1,
         colorWaveLength: Math.random() * 0.9 + 0.1,
-        colorSaturation: Math.random(),
-        colorBrightness: Math.random() * 0.75 + 0.25,
+        colorSaturation: Math.random() * 0.5 + 0.25,
+        colorBrightness: Math.random() * 0.7 + 0.25,
       });
     } else {
       setParticleControls({
@@ -590,7 +591,8 @@ function App() {
         endColor: randomColor(),
       });
     }
-  }, [particleControls.autoColor, setParticleControls]);
+    showToast("Randomized Style");
+  }, [particleControls.autoColor, setParticleControls, showToast]);
 
   const randomizeCamera = useCallback(() => {
     setCameraControls({
@@ -599,7 +601,13 @@ function App() {
       verticalMovement: Math.random() * 2,
       speedVariation: Math.random() * 1.9 + 0.1, // Speed between 0.1 and 2
     });
-  }, [setCameraControls]);
+    showToast("Camera switched");
+  }, [setCameraControls, showToast]);
+
+  const toggleAudio = useCallback(() => {
+    setAudioControls({ enabled: !audioControls.enabled });
+    showToast(`Audio ${!audioControls.enabled ? "enabled" : "disabled"}`);
+  }, [audioControls.enabled, setAudioControls, showToast]);
 
   // Add randomizeShape function
   const randomizeShape = useCallback(
@@ -613,6 +621,18 @@ function App() {
       showToast(`Shape: ${nextShape}`);
     },
     [particleControls.shape, setParticleControls, showToast]
+  );
+
+  const setShape = useCallback(
+    (index: number) => {
+      const shapeValues = Object.values(ParticleShape);
+      if (index >= 0 && index < shapeValues.length) {
+        const shape = shapeValues[index];
+        setParticleControls({ shape });
+        showToast(`Shape: ${shape}`);
+      }
+    },
+    [setParticleControls, showToast]
   );
 
   const {
@@ -694,29 +714,26 @@ function App() {
   // Add keyboard shortcut handler
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      const keyboardHintsVisible =
-        localStorage.getItem("keyboardShortcutsDismissed") !== "true";
+      // Handle number keys for direct shape selection
+      const num = parseInt(event.key);
+      if (
+        !isNaN(num) &&
+        num > 0 &&
+        num <= Object.values(ParticleShape).length
+      ) {
+        setShape(num - 1);
+        return;
+      }
 
       switch (event.key.toLowerCase()) {
         case "a":
-          setAudioControls({ enabled: !audioControls.enabled });
-          if (keyboardHintsVisible) {
-            showToast(
-              `Audio ${!audioControls.enabled ? "enabled" : "disabled"}`
-            );
-          }
+          toggleAudio();
           break;
         case "z":
           randomizePhysics();
-          if (keyboardHintsVisible) {
-            showToast("Randomized Physics");
-          }
           break;
         case "x":
           randomizeStyle();
-          if (keyboardHintsVisible) {
-            showToast("Randomized Style");
-          }
           break;
         case "s": {
           randomizeShape();
@@ -724,9 +741,6 @@ function App() {
         }
         case "c":
           randomizeCamera();
-          if (keyboardHintsVisible) {
-            showToast("Camera switched");
-          }
           break;
       }
     };
@@ -743,6 +757,8 @@ function App() {
     setParticleControls,
     showToast,
     randomizeShape,
+    toggleAudio,
+    setShape,
   ]);
 
   // Touch handlers
@@ -755,7 +771,6 @@ function App() {
       const timer = window.setTimeout(() => {
         // Long press - randomize physics
         randomizePhysics();
-        showToast("Randomized Physics");
       }, 500); // 500ms hold time
 
       setHoldTimer(timer);
@@ -861,7 +876,6 @@ function App() {
         const timer = window.setTimeout(() => {
           // Long press - randomize physics
           randomizePhysics();
-          showToast("Randomized Physics");
         }, 500); // 500ms hold time
 
         setHoldTimer(timer);
@@ -998,7 +1012,7 @@ function App() {
         <KeyboardShortcuts />
         <MobileGestures />
         <button
-          onClick={() => setAudioControls({ enabled: !audioControls.enabled })}
+          onClick={toggleAudio}
           className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
           title={audioControls.enabled ? "Disable audio" : "Enable audio"}
         >

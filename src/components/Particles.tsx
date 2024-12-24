@@ -276,7 +276,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
     },
     ref
   ) => {
-    const [count] = useState(500);
+    const [count] = useState(1000);
     const [shape, setShape] = useState<ParticleShape>(
       initialShape as ParticleShape
     );
@@ -585,7 +585,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
 
         // Calculate active particle count based on emission rate
         const targetActiveParticles = Math.min(
-          Math.ceil(emissionRate * 2), // Use a fixed multiplier instead of lifetime
+          Math.ceil(Math.max(emissionRate * particleLifetime, count * 0.25)),
           particles.current.length
         );
 
@@ -758,7 +758,29 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           emissionRate * delta * (1 + audioLevel * audioReactivity * 2);
         let emittedCount = 0;
 
+        // Calculate target active particles similar to waveform mode
+        const targetActiveParticles = Math.min(
+          Math.ceil(Math.max(emissionRate * particleLifetime, count * 0.25)),
+          particles.current.length
+        );
+
         particles.current.forEach((particle, i) => {
+          // Zero out excess particles
+          if (i >= targetActiveParticles) {
+            particles.current[i].lifetime =
+              particles.current[i].maxLifetime + 1;
+            particles.current[i].position.set(0, 0, 0);
+            positions.current[i * 3] = 0;
+            positions.current[i * 3 + 1] = 0;
+            positions.current[i * 3 + 2] = 0;
+            colors.current[i * 3] = 0;
+            colors.current[i * 3 + 1] = 0;
+            colors.current[i * 3 + 2] = 0;
+            opacities.current[i] = 0;
+            scales.current[i] = 0;
+            return;
+          }
+
           particle.lifetime += delta;
 
           if (particle.lifetime >= particle.maxLifetime) {
@@ -788,7 +810,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           forces.z += Math.sin(time * 2 + particle.rotation) * spiralStrength;
 
           const swarmStrength =
-            swarmEffect * (1 + audioLevel * audioReactivity * 4) * 3;
+            swarmEffect * (1 + audioLevel * audioReactivity * 2) * 3;
           forces.x +=
             Math.sin(time * 1.5 + particle.position.y * 0.5) * swarmStrength;
           forces.z +=
