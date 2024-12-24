@@ -782,7 +782,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
 
         // Calculate target active particles similar to waveform mode
         const targetActiveParticles = Math.min(
-          Math.ceil(Math.max(emissionRate * particleLifetime, count * 0.25)),
+          Math.ceil(Math.max(emissionRate * particleLifetime, count * 0.5)),
           particles.current.length
         );
 

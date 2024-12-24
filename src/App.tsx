@@ -420,7 +420,7 @@ function App() {
       physics: folder(
         {
           emissionRate: {
-            value: 200,
+            value: 350,
             min: 1,
             max: 500,
             label: "emissionRate",
@@ -432,8 +432,8 @@ function App() {
             label: "lifetime",
           },
           gravity: {
-            value: -9.8,
-            min: -20,
+            value: -4.8,
+            min: -9.8,
             max: 0,
             label: "gravity",
             render: (get) => get("Particle.shape") !== "waveform",
@@ -552,7 +552,7 @@ function App() {
       Math.random() * (max - min) + min;
 
     setParticleControls({
-      shapeSize: randomInRange(1, 4),
+      shapeSize: randomInRange(1, 3),
       emissionRate: randomInRange(300, 500),
       particleLifetime: randomInRange(0.4, 1.5),
       gravity: randomInRange(-20, 0),
@@ -835,6 +835,7 @@ function App() {
   const [initialCameraRadius, setInitialCameraRadius] = useState<number | null>(
     null
   );
+  const [isActiveGesture, setIsActiveGesture] = useState(false);
 
   // Add mousewheel handler
   useEffect(() => {
@@ -843,7 +844,7 @@ function App() {
         e.preventDefault();
         const delta = e.deltaY * -0.001; // Adjust sensitivity
         const newRadius = Math.max(
-          0.01,
+          0.3,
           Math.min(7, cameraControls.cameraRadius + delta)
         );
         setCameraControls({ cameraRadius: newRadius });
@@ -861,6 +862,15 @@ function App() {
   // Add pinch handler
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
+      // Check if the touch event originated from the canvas
+      const target = e.target as HTMLElement;
+      if (!target.closest("canvas")) return;
+
+      // Prevent touch events if the touch started on UI elements
+      if (target.closest("button") || target.closest(".leva-container")) return;
+
+      setIsActiveGesture(true);
+
       if (e.touches.length === 2) {
         const distance = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
@@ -883,6 +893,8 @@ function App() {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      if (!isActiveGesture) return;
+
       if (
         e.touches.length === 2 &&
         touchStartDistance !== null &&
@@ -904,6 +916,8 @@ function App() {
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (!isActiveGesture) return;
+
       // Clear hold timer
       if (holdTimer) {
         clearTimeout(holdTimer);
@@ -932,6 +946,8 @@ function App() {
           randomizeCamera();
         }
       }
+
+      setIsActiveGesture(false);
     };
 
     const handleTouchCancel = () => {
@@ -941,6 +957,7 @@ function App() {
       }
       setTouchStartDistance(null);
       setInitialCameraRadius(null);
+      setIsActiveGesture(false);
     };
 
     window.addEventListener("touchstart", handleTouchStart);
@@ -970,6 +987,7 @@ function App() {
     showToast,
     randomizeShape,
     setCameraControls,
+    isActiveGesture,
   ]);
 
   return (
@@ -1024,12 +1042,18 @@ function App() {
         </button>
         <button
           onClick={handleLevaToggle}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
           className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
           title="Toggle settings"
         >
           <PiSlidersBold className="w-5 h-5" />
         </button>
-        <div className="absolute bottom-12 right-4 w-72 max-w-[calc(100vw-24px)] max-h-[calc(100vh-100px)] overflow-y-auto">
+        <div
+          className="leva-container absolute bottom-12 right-4 w-72 max-w-[calc(100vw-24px)] max-h-[calc(100vh-100px)] overflow-y-auto"
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        >
           <Leva hidden={isLevaHidden} titleBar={false} fill={true} />
         </div>
       </div>
