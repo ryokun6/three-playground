@@ -294,7 +294,7 @@ function App() {
       label: "audioEnabled",
     },
     reactivity: {
-      value: 1.0,
+      value: 4.5,
       min: 0,
       max: 5,
       step: 0.1,
@@ -310,7 +310,7 @@ function App() {
     advanced: folder(
       {
         smoothing: {
-          value: 0.8,
+          value: 0.7,
           min: 0,
           max: 0.99,
           step: 0.01,
@@ -349,10 +349,10 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     cameraRadius: {
-      value: 5,
+      value: 2.5,
       min: 0.01,
-      max: 15,
-      step: 0.5,
+      max: 7,
+      step: 0.1,
       label: "zoom",
       render: (get) => get("Camera.autoCameraEnabled"),
     },
@@ -377,7 +377,7 @@ function App() {
         label: "shapeSize",
       },
       size: {
-        value: 0.15,
+        value: 0.1,
         min: 0.01,
         max: 0.4,
         step: 0.01,
@@ -706,7 +706,7 @@ function App() {
           break;
         }
         case "s":
-          setCameraControls({ cameraRadius: Math.random() * 8 });
+          setCameraControls({ cameraRadius: Math.random() * 3 });
           if (keyboardHintsVisible) {
             showToast("Camera switched");
           }

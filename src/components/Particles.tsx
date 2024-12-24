@@ -505,7 +505,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
       const newShapeSize =
         shape === ParticleShape.Waveform
           ? shapeSizeBase *
-            (expandWithAudio ? 1 + audioLevel * audioReactivity : 1)
+            (expandWithAudio ? 1 + audioLevel * audioReactivity * 0.2 : 1)
           : shapeSizeBase * (1 + audioLevel * audioReactivity * 0.5);
       setShapeSize(newShapeSize);
 
@@ -630,10 +630,10 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
 
         // Calculate expansion factors
         const audioExpansion = expandWithAudio
-          ? 1 + audioLevel * audioReactivity * 0.1
+          ? 1 + audioLevel * audioReactivity * 0.05
           : 1;
         const bassExpansion = expandWithAudio
-          ? 1 + (1 - Math.pow(bassEnergy, 0.5)) * 0.2
+          ? 1 + (1 - Math.pow(bassEnergy, 0.5)) * 0.1
           : 1;
         const totalExpansion = audioExpansion * bassExpansion;
 
@@ -707,8 +707,10 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           const position = basePosition.clone().applyMatrix4(rotationMatrix);
 
           // Apply audio-reactive effects
-          const expansionFactor = 1 + audioLevel * audioReactivity;
-          position.multiplyScalar(expansionFactor);
+          // if (expandWithAudio) {
+          //   const expansionFactor = 1 + audioLevel * audioReactivity * 0.2;
+          //   position.multiplyScalar(expansionFactor);
+          // }
 
           const wobbleAmount = smoothedBandEnergy * 0.1;
           const wobbleFreq = time * 1.5;
@@ -761,7 +763,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
       } else {
         // Original particle update logic for other shapes
         const particlesToEmit =
-          emissionRate * delta * (1 + audioLevel * audioReactivity);
+          emissionRate * delta * (1 + audioLevel * audioReactivity * 2);
         let emittedCount = 0;
 
         particles.current.forEach((particle, i) => {
@@ -778,39 +780,46 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           const lifeProgress = particle.lifetime / particle.maxLifetime;
           opacities.current[i] = Math.max(0, 1 - Math.pow(lifeProgress, 2));
 
-          // Update rotation
+          // Update rotation with enhanced audio reactivity
           particle.rotation +=
-            particle.rotationSpeed * delta * (1 + audioLevel * 2);
+            particle.rotationSpeed *
+            delta *
+            (1 + audioLevel * audioReactivity * 4);
 
           // Calculate forces and update position
           const forces = new THREE.Vector3(0, 0, 0);
-          forces.y += gravity * (1 + audioLevel * audioReactivity);
+          forces.y += gravity * (1 + audioLevel * audioReactivity * 2);
 
           const spiralStrength =
-            spiralEffect * (1 + audioLevel * audioReactivity) * 2;
+            spiralEffect * (1 + audioLevel * audioReactivity * 3) * 2;
           forces.x += Math.cos(time * 2 + particle.rotation) * spiralStrength;
           forces.z += Math.sin(time * 2 + particle.rotation) * spiralStrength;
 
           const swarmStrength =
-            swarmEffect * (1 + audioLevel * audioReactivity) * 3;
+            swarmEffect * (1 + audioLevel * audioReactivity * 4) * 3;
           forces.x +=
             Math.sin(time * 1.5 + particle.position.y * 0.5) * swarmStrength;
           forces.z +=
             Math.cos(time * 1.5 + particle.position.x * 0.5) * swarmStrength;
 
           const pulseEffect =
-            Math.sin(time * 4) * pulseStrength * audioLevel * 2;
+            Math.sin(time * 4) *
+            pulseStrength *
+            audioLevel *
+            audioReactivity *
+            4;
           particle.velocity.addScaledVector(forces, delta);
           particle.velocity.multiplyScalar(1 + pulseEffect * delta);
           particle.position.addScaledVector(particle.velocity, delta);
 
-          // Update scale
+          // Update scale with enhanced audio reactivity
           particle.scale =
             1 +
             audioLevel *
+              audioReactivity *
               pulseStrength *
               Math.sin(particle.rotation + time * 4) *
-              0.5;
+              1.5;
           scales.current[i] = particle.scale;
 
           // Update positions and colors
