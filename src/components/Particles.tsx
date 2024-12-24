@@ -519,7 +519,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
       const newShapeSize =
         shape === ParticleShape.Waveform
           ? shapeSizeBase *
-            (expandWithAudio ? 2 + audioLevel * audioReactivity * 0.2 : 1)
+            (expandWithAudio ? 3 + audioLevel * audioReactivity * 0.2 : 1)
           : shapeSizeBase * (0.5 + audioLevel * audioReactivity * 0.5);
       setShapeSize(newShapeSize);
 

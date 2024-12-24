@@ -350,7 +350,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     cameraRadius: {
-      value: 3.2,
+      value: 2.8,
       min: 0.01,
       max: 7,
       step: 0.1,
