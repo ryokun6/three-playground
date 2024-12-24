@@ -805,12 +805,12 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           forces.y += gravity * (1 + audioLevel * audioReactivity * 2);
 
           const spiralStrength =
-            spiralEffect * (1 + audioLevel * audioReactivity * 3) * 2;
+            spiralEffect * (1 + audioLevel * audioReactivity * 1) * 2;
           forces.x += Math.cos(time * 2 + particle.rotation) * spiralStrength;
           forces.z += Math.sin(time * 2 + particle.rotation) * spiralStrength;
 
           const swarmStrength =
-            swarmEffect * (1 + audioLevel * audioReactivity * 2) * 3;
+            swarmEffect * (1 + audioLevel * audioReactivity * 1) * 2;
           forces.x +=
             Math.sin(time * 1.5 + particle.position.y * 0.5) * swarmStrength;
           forces.z +=
@@ -821,7 +821,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
             pulseStrength *
             audioLevel *
             audioReactivity *
-            4;
+            1.5;
           particle.velocity.addScaledVector(forces, delta);
           particle.velocity.multiplyScalar(1 + pulseEffect * delta);
           particle.position.addScaledVector(particle.velocity, delta);

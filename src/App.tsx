@@ -460,7 +460,7 @@ function App() {
             render: (get) => get("Particle.shape") !== "waveform",
           },
           spiralEffect: {
-            value: 0.46,
+            value: 0.2,
             min: 0,
             max: 1,
             label: "spiral",
@@ -474,7 +474,7 @@ function App() {
             render: (get) => get("Particle.shape") !== "waveform",
           },
           swarmEffect: {
-            value: 0.61,
+            value: 0.2,
             min: 0,
             max: 1,
             label: "swarm",
