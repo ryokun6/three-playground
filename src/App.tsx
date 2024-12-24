@@ -537,7 +537,7 @@ function App() {
             render: (get) => get("Particle.autoColor"),
           },
           colorSaturation: {
-            value: 0.5,
+            value: 0.6,
             min: 0,
             max: 1,
             step: 0.05,
@@ -545,7 +545,7 @@ function App() {
             render: (get) => get("Particle.autoColor"),
           },
           colorBrightness: {
-            value: 0.45,
+            value: 0.7,
             min: 0,
             max: 1,
             step: 0.05,
@@ -752,14 +752,14 @@ function App() {
       }),
       colorGrading: folder({
         colorGradingHue: {
-          value: 0,
+          value: 3.6,
           min: 0,
           max: 6.28,
           step: 0.1,
           label: "hue",
         },
         colorGradingSaturation: {
-          value: 0,
+          value: 0.5,
           min: 0,
           max: 1,
           step: 0.1,
