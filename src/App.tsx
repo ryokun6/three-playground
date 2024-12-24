@@ -645,9 +645,17 @@ function App() {
     };
 
     const handleKeyPress = (event: KeyboardEvent) => {
+      const keyboardHintsVisible =
+        localStorage.getItem("keyboardShortcutsDismissed") !== "true";
+
       switch (event.key.toLowerCase()) {
         case "a":
           setAudioControls({ enabled: !audioControls.enabled });
+          if (keyboardHintsVisible) {
+            showToast(
+              `Audio ${!audioControls.enabled ? "enabled" : "disabled"}`
+            );
+          }
           break;
         case "z":
           setParticleControls({
@@ -662,6 +670,9 @@ function App() {
             pulseStrength: Math.random() * 2,
             swarmEffect: Math.random(),
           });
+          if (keyboardHintsVisible) {
+            showToast("Randomized Physics");
+          }
           break;
         case "x":
           if (particleControls.autoColor) {
@@ -679,16 +690,26 @@ function App() {
               endColor: randomColor(),
             });
           }
+          if (keyboardHintsVisible) {
+            showToast("Randomized Style");
+          }
           break;
         case "c": {
           const shapeValues = Object.values(ParticleShape);
           const currentIndex = shapeValues.indexOf(particleControls.shape);
           const nextIndex = (currentIndex + 1) % shapeValues.length;
-          setParticleControls({ shape: shapeValues[nextIndex] });
+          const nextShape = shapeValues[nextIndex];
+          setParticleControls({ shape: nextShape });
+          if (keyboardHintsVisible) {
+            showToast(`Shape: ${nextShape}`);
+          }
           break;
         }
         case "s":
           setCameraControls({ cameraRadius: Math.random() * 8 });
+          if (keyboardHintsVisible) {
+            showToast("Camera switched");
+          }
           break;
       }
     };
