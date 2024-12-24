@@ -862,13 +862,17 @@ function App() {
   // Add pinch handler
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
-      // Check if the touch event originated from the canvas
+      // Check if the touch event originated from UI elements
       const target = e.target as HTMLElement;
-      if (!target.closest("canvas")) return;
+      if (
+        target.closest("button") ||
+        target.closest("[class^='leva-']") ||
+        target.closest(".fixed")
+      ) {
+        return;
+      }
 
-      // Prevent touch events if the touch started on UI elements
-      if (target.closest("button") || target.closest(".leva-container")) return;
-
+      // If we got here, we're interacting with the scene
       setIsActiveGesture(true);
 
       if (e.touches.length === 2) {
