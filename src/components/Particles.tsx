@@ -622,148 +622,116 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
         const goldenRatio = (1 + Math.sqrt(5)) / 2;
         const angleIncrement = Math.PI * 2 * goldenRatio;
 
+        // Handle particle emission and lifetime
+        const particlesToEmit =
+          emissionRate * delta * (1 + audioLevel * audioReactivity);
+        let emittedCount = 0;
+
         // Force update all particles when audio is enabled
         particles.current.forEach((particle, i) => {
-          if (shape === ParticleShape.Waveform) {
-            // For waveform, we don't need lifetime-based updates
-            particle.orbitalSpeed = orbitalSpeed;
+          particle.lifetime += delta;
 
-            // Calculate perfect sphere point distribution
-            const t = i / particles.current.length;
-            const inclination = Math.acos(1 - 2 * t);
-            const azimuth = angleIncrement * i;
-
-            // Get frequency band energy
-            const bandIndex = Math.floor(t * bandCount);
-            const band = frequencyBands[Math.min(bandIndex, bandCount - 1)];
-            const bandEnergy = getFrequencyBandEnergy(
-              analyser.current,
-              dataArray.current,
-              band.start,
-              band.end,
-              analyser.current?.fftSize || 2048
-            );
-
-            const smoothedBandEnergy = Math.pow(bandEnergy, 1.5);
-
-            // Calculate position with audio reactivity
-            const baseRadius = sphereRadius * (1 + smoothedBandEnergy * 0.2);
-            const sinInclination = Math.sin(inclination);
-
-            const basePosition = new THREE.Vector3(
-              baseRadius * sinInclination * Math.cos(azimuth),
-              baseRadius * sinInclination * Math.sin(azimuth),
-              baseRadius * Math.cos(inclination)
-            );
-
-            // Apply orbital rotation
-            const orbitalTime = time * particle.orbitalSpeed;
-            const orbitalAngle = orbitalTime + particle.orbitalPhase;
-            const rotationMatrix = new THREE.Matrix4();
-            rotationMatrix.makeRotationAxis(
-              particle.orbitalPlane,
-              orbitalAngle
-            );
-
-            const position = basePosition.clone().applyMatrix4(rotationMatrix);
-
-            // Apply audio-reactive effects
-            const expansionFactor = 1 + audioLevel * audioReactivity;
-            position.multiplyScalar(expansionFactor);
-
-            const wobbleAmount = smoothedBandEnergy * 0.1;
-            const wobbleFreq = time * 1.5;
-            const wobble =
-              Math.sin(wobbleFreq + t * Math.PI * 2) * wobbleAmount;
-            position.multiplyScalar(1 + wobble);
-
-            // Update particle position
-            particle.position.copy(position);
-
-            // Calculate base scale and opacity with audio reactivity
-            const baseScale = expandWithAudio
-              ? 0.8 + audioLevel * audioReactivity * 0.3
-              : 0.8;
-            const opacity = expandWithAudio
-              ? 0.7 + audioLevel * audioReactivity * 0.3
-              : 0.7;
-
-            // Update scale and opacity
-            scales.current[i] = baseScale;
-            opacities.current[i] = opacity;
-
-            // Update colors
-            const colorProgress = t + smoothedBandEnergy * 0.3;
-            if (autoColor) {
-              tempColor.copy(getWaveColor(colorProgress));
-            } else {
-              tempColor.copy(startColorObj).lerp(endColorObj, colorProgress);
+          if (particle.lifetime >= particle.maxLifetime) {
+            if (emittedCount < particlesToEmit) {
+              particle.lifetime = 0;
+              emittedCount++;
             }
-
-            colors.current[i * 3] = tempColor.r;
-            colors.current[i * 3 + 1] = tempColor.g;
-            colors.current[i * 3 + 2] = tempColor.b;
-
-            // Update positions array
-            positions.current[i * 3] = particle.position.x;
-            positions.current[i * 3 + 1] = particle.position.y;
-            positions.current[i * 3 + 2] = particle.position.z;
-          } else {
-            // Original particle update logic for other shapes
-            particle.lifetime += delta;
-
-            if (particle.lifetime >= particle.maxLifetime) {
-              resetParticle(particle, i);
-              return;
-            }
-
-            const lifeProgress = particle.lifetime / particle.maxLifetime;
-            const fadeInDuration = 0.2;
-            const fadeOutStart = 0.8;
-
-            // Calculate base scale and opacity with audio reactivity
-            const baseScale = expandWithAudio
-              ? 0.8 + audioLevel * audioReactivity * 0.3
-              : 0.8;
-            const opacity = expandWithAudio
-              ? 0.7 + audioLevel * audioReactivity * 0.3
-              : 0.7;
-
-            // Apply fade in/out
-            let finalOpacity = opacity;
-            let finalScale = baseScale;
-
-            if (lifeProgress < fadeInDuration) {
-              const fadeInProgress = lifeProgress / fadeInDuration;
-              finalOpacity *= fadeInProgress;
-              finalScale *= fadeInProgress;
-            } else if (lifeProgress > fadeOutStart) {
-              const fadeOutProgress =
-                (lifeProgress - fadeOutStart) / (1 - fadeOutStart);
-              finalOpacity *= 1 - fadeOutProgress;
-              finalScale *= 1 - fadeOutProgress;
-            }
-
-            // Update scale and opacity
-            scales.current[i] = finalScale;
-            opacities.current[i] = Math.min(1, finalOpacity);
-
-            // Update colors
-            if (autoColor) {
-              tempColor.copy(getWaveColor(lifeProgress));
-            } else {
-              tempColor.copy(startColorObj).lerp(endColorObj, lifeProgress);
-            }
-
-            colors.current[i * 3] = tempColor.r;
-            colors.current[i * 3 + 1] = tempColor.g;
-            colors.current[i * 3 + 2] = tempColor.b;
-
-            // Update positions array
-            positions.current[i * 3] = particle.position.x;
-            positions.current[i * 3 + 1] = particle.position.y;
-            positions.current[i * 3 + 2] = particle.position.z;
+            return;
           }
+
+          const lifeProgress = particle.lifetime / particle.maxLifetime;
+          const fadeInDuration = 0.2;
+          const fadeOutStart = 0.8;
+
+          // Calculate t based on particle index and lifetime
+          const t = i / particles.current.length;
+
+          // Calculate inclination and azimuth for sphere distribution
+          const inclination = Math.acos(1 - 2 * t);
+          const azimuth = angleIncrement * i;
+
+          // Get frequency band energy
+          const bandIndex = Math.floor(t * bandCount);
+          const band = frequencyBands[Math.min(bandIndex, bandCount - 1)];
+          const bandEnergy = getFrequencyBandEnergy(
+            analyser.current,
+            dataArray.current,
+            band.start,
+            band.end,
+            analyser.current?.fftSize || 2048
+          );
+
+          const smoothedBandEnergy = Math.pow(bandEnergy, 1.5);
+
+          // Calculate position with audio reactivity
+          const baseRadius = sphereRadius * (1 + smoothedBandEnergy * 0.2);
+          const sinInclination = Math.sin(inclination);
+
+          const basePosition = new THREE.Vector3(
+            baseRadius * sinInclination * Math.cos(azimuth),
+            baseRadius * sinInclination * Math.sin(azimuth),
+            baseRadius * Math.cos(inclination)
+          );
+
+          // Apply orbital rotation
+          const orbitalTime = time * particle.orbitalSpeed;
+          const orbitalAngle = orbitalTime + particle.orbitalPhase;
+          const rotationMatrix = new THREE.Matrix4();
+          rotationMatrix.makeRotationAxis(particle.orbitalPlane, orbitalAngle);
+
+          const position = basePosition.clone().applyMatrix4(rotationMatrix);
+
+          // Apply audio-reactive effects
+          const expansionFactor = 1 + audioLevel * audioReactivity;
+          position.multiplyScalar(expansionFactor);
+
+          const wobbleAmount = smoothedBandEnergy * 0.1;
+          const wobbleFreq = time * 1.5;
+          const wobble = Math.sin(wobbleFreq + t * Math.PI * 2) * wobbleAmount;
+          position.multiplyScalar(1 + wobble);
+
+          // Update particle position
+          particle.position.copy(position);
+
+          // Apply fade in/out based on lifetime
+          let opacity = expandWithAudio
+            ? 0.7 + audioLevel * audioReactivity * 0.3
+            : 0.7;
+          let scale = expandWithAudio
+            ? 0.8 + audioLevel * audioReactivity * 0.3
+            : 0.8;
+
+          if (lifeProgress < fadeInDuration) {
+            const fadeInProgress = lifeProgress / fadeInDuration;
+            opacity *= fadeInProgress;
+            scale *= fadeInProgress;
+          } else if (lifeProgress > fadeOutStart) {
+            const fadeOutProgress =
+              (lifeProgress - fadeOutStart) / (1 - fadeOutStart);
+            opacity *= 1 - fadeOutProgress;
+            scale *= 1 - fadeOutProgress;
+          }
+
+          // Update scale and opacity
+          scales.current[i] = scale;
+          opacities.current[i] = opacity;
+
+          // Update colors
+          const colorProgress = t + smoothedBandEnergy * 0.3;
+          if (autoColor) {
+            tempColor.copy(getWaveColor(colorProgress));
+          } else {
+            tempColor.copy(startColorObj).lerp(endColorObj, colorProgress);
+          }
+
+          colors.current[i * 3] = tempColor.r;
+          colors.current[i * 3 + 1] = tempColor.g;
+          colors.current[i * 3 + 2] = tempColor.b;
+
+          // Update positions array
+          positions.current[i * 3] = particle.position.x;
+          positions.current[i * 3 + 1] = particle.position.y;
+          positions.current[i * 3 + 2] = particle.position.z;
         });
       } else {
         // Original particle update logic for other shapes

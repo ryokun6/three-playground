@@ -437,14 +437,12 @@ function App() {
             min: 1,
             max: 200,
             label: "emissionRate",
-            render: (get) => get("Particle.shape") !== "waveform",
           },
           particleLifetime: {
             value: 2.0,
             min: 0.1,
             max: 5,
             label: "lifetime",
-            render: (get) => get("Particle.shape") !== "waveform",
           },
           gravity: {
             value: -9.8,
