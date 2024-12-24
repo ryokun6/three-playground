@@ -7,6 +7,7 @@ import {
   PiXBold,
   PiMicrophoneBold,
   PiMicrophoneSlashBold,
+  PiHandTapBold,
 } from "react-icons/pi";
 import { Vector2 } from "three";
 
@@ -255,7 +256,7 @@ const MobileGestures = () => {
           className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
           title="Show gesture tips"
         >
-          <PiKeyboardBold className="w-5 h-5" />
+          <PiHandTapBold className="w-5 h-5" />
         </button>
       )}
     </>
