@@ -168,8 +168,9 @@ const KeyboardShortcuts = () => {
               <span className="text-white">A</span> toggle audio
             </div>
             <div>
-              <span className="text-white">S</span> switch camera
+              <span className="text-white">S</span> next shape
             </div>
+
             <div>
               <span className="text-white">Z</span> randomize physics
             </div>
@@ -177,7 +178,7 @@ const KeyboardShortcuts = () => {
               <span className="text-white">X</span> randomize style
             </div>
             <div>
-              <span className="text-white">C</span> next shape
+              <span className="text-white">C</span> switch camera
             </div>
             <button
               onClick={handleDismiss}
@@ -310,7 +311,7 @@ function App() {
     advanced: folder(
       {
         smoothing: {
-          value: 0.7,
+          value: 0.9,
           min: 0,
           max: 0.99,
           step: 0.01,
@@ -357,7 +358,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     randomizeCamera: button(() => {
-      setCameraControls({ cameraRadius: Math.random() * 3 });
+      randomizeCamera();
     }),
   }));
 
@@ -388,47 +389,10 @@ function App() {
         label: "autoColor",
       },
       randomizePhysics: button(() => {
-        const randomInRange = (min: number, max: number) =>
-          Math.random() * (max - min) + min;
-
-        setParticleControls({
-          shapeSize: randomInRange(0.1, 5),
-          emissionRate: randomInRange(1, 200),
-          particleLifetime: randomInRange(0.1, 5),
-          gravity: randomInRange(-20, 0),
-          initialSpeed: randomInRange(0, 20),
-          spread: randomInRange(0, 2),
-          rotationSpeed: randomInRange(0, 2),
-          spiralEffect: randomInRange(0, 1),
-          pulseStrength: randomInRange(0, 2),
-          swarmEffect: randomInRange(0, 1),
-        });
+        randomizePhysics();
       }),
       randomizeStyle: button(() => {
-        const randomColor = () => {
-          const r = Math.floor(Math.random() * 256);
-          const g = Math.floor(Math.random() * 256);
-          const b = Math.floor(Math.random() * 256);
-          return `#${r.toString(16).padStart(2, "0")}${g
-            .toString(16)
-            .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
-        };
-
-        if (particleControls.autoColor) {
-          setParticleControls({
-            size: Math.random() * 0.39 + 0.01,
-            colorSpeed: Math.random() * 4.9 + 0.1,
-            colorWaveLength: Math.random() * 9.9 + 0.1,
-            colorSaturation: Math.random(),
-            colorBrightness: Math.random(),
-          });
-        } else {
-          setParticleControls({
-            size: Math.random() * 0.39 + 0.01,
-            startColor: randomColor(),
-            endColor: randomColor(),
-          });
-        }
+        randomizeStyle();
       }),
       physics: folder(
         {
@@ -559,6 +523,70 @@ function App() {
     })
   );
 
+  // Extracted random functions
+  const randomizePhysics = useCallback(() => {
+    const randomInRange = (min: number, max: number) =>
+      Math.random() * (max - min) + min;
+
+    setParticleControls({
+      shapeSize: randomInRange(0.1, 4),
+      emissionRate: randomInRange(50, 200),
+      particleLifetime: randomInRange(0.1, 2),
+      gravity: randomInRange(-20, 0),
+      initialSpeed: randomInRange(0, 20),
+      spread: randomInRange(0, 2),
+      rotationSpeed: randomInRange(0, 2),
+      spiralEffect: randomInRange(0, 1),
+      pulseStrength: randomInRange(0, 2),
+      swarmEffect: randomInRange(0, 1),
+    });
+  }, [setParticleControls]);
+
+  const randomizeStyle = useCallback(() => {
+    const randomColor = () => {
+      const r = Math.floor(Math.random() * 256);
+      const g = Math.floor(Math.random() * 256);
+      const b = Math.floor(Math.random() * 256);
+      return `#${r.toString(16).padStart(2, "0")}${g
+        .toString(16)
+        .padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+    };
+
+    if (particleControls.autoColor) {
+      setParticleControls({
+        size: Math.random() * 0.39 + 0.01,
+        colorSpeed: Math.random() * 4.9 + 0.1,
+        colorWaveLength: Math.random() * 9.9 + 0.1,
+        colorSaturation: Math.random(),
+        colorBrightness: Math.random(),
+      });
+    } else {
+      setParticleControls({
+        size: Math.random() * 0.39 + 0.01,
+        startColor: randomColor(),
+        endColor: randomColor(),
+      });
+    }
+  }, [particleControls.autoColor, setParticleControls]);
+
+  const randomizeCamera = useCallback(() => {
+    setCameraControls({ cameraRadius: Math.random() * 5 + 0.1 });
+  }, [setCameraControls]);
+
+  // Add randomizeShape function
+  const randomizeShape = useCallback(
+    (direction: 1 | -1 = 1) => {
+      const shapeValues = Object.values(ParticleShape);
+      const currentIndex = shapeValues.indexOf(particleControls.shape);
+      const nextIndex =
+        (currentIndex + direction + shapeValues.length) % shapeValues.length;
+      const nextShape = shapeValues[nextIndex];
+      setParticleControls({ shape: nextShape });
+      showToast(`Shape: ${nextShape}`);
+    },
+    [particleControls.shape, setParticleControls, showToast]
+  );
+
   const {
     environmentPreset,
     backgroundBlur,
@@ -637,13 +665,6 @@ function App() {
 
   // Add keyboard shortcut handler
   useEffect(() => {
-    const randomColor = () => {
-      const hue = Math.random() * 360;
-      const saturation = Math.random() * 100;
-      const lightness = Math.random() * 100;
-      return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-    };
-
     const handleKeyPress = (event: KeyboardEvent) => {
       const keyboardHintsVisible =
         localStorage.getItem("keyboardShortcutsDismissed") !== "true";
@@ -658,55 +679,23 @@ function App() {
           }
           break;
         case "z":
-          setParticleControls({
-            shapeSize: Math.random() * 4.9 + 0.1,
-            emissionRate: Math.random() * 199 + 1,
-            particleLifetime: Math.random() * 4.9 + 0.1,
-            gravity: Math.random() * -20,
-            initialSpeed: Math.random() * 20,
-            spread: Math.random() * 2,
-            rotationSpeed: Math.random() * 2,
-            spiralEffect: Math.random(),
-            pulseStrength: Math.random() * 2,
-            swarmEffect: Math.random(),
-          });
+          randomizePhysics();
           if (keyboardHintsVisible) {
             showToast("Randomized Physics");
           }
           break;
         case "x":
-          if (particleControls.autoColor) {
-            setParticleControls({
-              size: Math.random() * 0.39 + 0.01,
-              colorSpeed: Math.random() * 4.9 + 0.1,
-              colorWaveLength: Math.random() * 9.9 + 0.1,
-              colorSaturation: Math.random(),
-              colorBrightness: Math.random(),
-            });
-          } else {
-            setParticleControls({
-              size: Math.random() * 0.39 + 0.01,
-              startColor: randomColor(),
-              endColor: randomColor(),
-            });
-          }
+          randomizeStyle();
           if (keyboardHintsVisible) {
             showToast("Randomized Style");
           }
           break;
-        case "c": {
-          const shapeValues = Object.values(ParticleShape);
-          const currentIndex = shapeValues.indexOf(particleControls.shape);
-          const nextIndex = (currentIndex + 1) % shapeValues.length;
-          const nextShape = shapeValues[nextIndex];
-          setParticleControls({ shape: nextShape });
-          if (keyboardHintsVisible) {
-            showToast(`Shape: ${nextShape}`);
-          }
+        case "s": {
+          randomizeShape();
           break;
         }
-        case "s":
-          setCameraControls({ cameraRadius: Math.random() * 3 });
+        case "c":
+          randomizeCamera();
           if (keyboardHintsVisible) {
             showToast("Camera switched");
           }
@@ -719,10 +708,13 @@ function App() {
   }, [
     audioControls,
     setAudioControls,
-    setCameraControls,
+    randomizeCamera,
+    randomizePhysics,
+    randomizeStyle,
     particleControls,
     setParticleControls,
     showToast,
+    randomizeShape,
   ]);
 
   // Touch handlers
@@ -734,18 +726,7 @@ function App() {
       // Start hold timer
       const timer = window.setTimeout(() => {
         // Long press - randomize physics
-        setParticleControls({
-          shapeSize: Math.random() * 4.9 + 0.1,
-          emissionRate: Math.random() * 199 + 1,
-          particleLifetime: Math.random() * 4.9 + 0.1,
-          gravity: Math.random() * -20,
-          initialSpeed: Math.random() * 20,
-          spread: Math.random() * 2,
-          rotationSpeed: Math.random() * 2,
-          spiralEffect: Math.random(),
-          pulseStrength: Math.random() * 2,
-          swarmEffect: Math.random(),
-        });
+        randomizePhysics();
         showToast("Randomized Physics");
       }, 500); // 500ms hold time
 
@@ -765,23 +746,14 @@ function App() {
 
       // Handle swipe (minimum 50px distance)
       if (Math.abs(swipeDistance) > 50) {
-        const shapeValues = Object.values(ParticleShape);
-        const currentIndex = shapeValues.indexOf(particleControls.shape);
-        const nextIndex =
-          swipeDistance > 0
-            ? (currentIndex + 1) % shapeValues.length
-            : (currentIndex - 1 + shapeValues.length) % shapeValues.length;
-        const nextShape = shapeValues[nextIndex];
-        setParticleControls({ shape: nextShape });
-        showToast(`Shape: ${nextShape}`);
+        randomizeShape(swipeDistance > 0 ? 1 : -1);
         return;
       }
 
       // Handle quick tap (under 200ms)
       if (touchDuration < 200) {
         // Quick tap - only randomize camera zoom
-        const newRadius = Math.random() * 8;
-        setCameraControls({ cameraRadius: newRadius });
+        randomizeCamera();
       }
     };
 
@@ -806,10 +778,12 @@ function App() {
     touchStartTime,
     touchStartX,
     holdTimer,
-    setCameraControls,
-    setParticleControls,
+    randomizeCamera,
+    randomizePhysics,
     particleControls,
+    setParticleControls,
     showToast,
+    randomizeShape,
   ]);
 
   return (
