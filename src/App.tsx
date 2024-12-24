@@ -279,6 +279,7 @@ function App() {
   const [toasts, setToasts] = useState<Array<{ id: string; message: string }>>(
     []
   );
+  const [isActiveGesture, setIsActiveGesture] = useState(false);
 
   const showToast = useCallback((message: string) => {
     const id = Math.random().toString(36).substring(7);
@@ -829,15 +830,6 @@ function App() {
     randomizeShape,
   ]);
 
-  const [touchStartDistance, setTouchStartDistance] = useState<number | null>(
-    null
-  );
-  const [initialCameraRadius, setInitialCameraRadius] = useState<number | null>(
-    null
-  );
-  const [isActiveGesture, setIsActiveGesture] = useState(false);
-  const [isPinchGesture, setIsPinchGesture] = useState(false);
-
   // Add mousewheel handler
   useEffect(() => {
     let initialTouchTarget: EventTarget | null = null;
@@ -859,55 +851,22 @@ function App() {
       // If we got here, we're interacting with the scene
       setIsActiveGesture(true);
 
-      if (e.touches.length === 2) {
-        setIsPinchGesture(true);
-        const distance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        setTouchStartDistance(distance);
-        setInitialCameraRadius(cameraControls.cameraRadius);
-      } else {
-        setIsPinchGesture(false);
-        setTouchStartTime(Date.now());
-        setTouchStartX(e.touches[0].clientX);
+      setTouchStartTime(Date.now());
+      setTouchStartX(e.touches[0].clientX);
 
-        // Start hold timer
-        const timer = window.setTimeout(() => {
-          // Long press - randomize physics
-          if (isActiveGesture && !isPinchGesture) {
-            randomizePhysics();
-          }
-        }, 500); // 500ms hold time
+      // Start hold timer
+      const timer = window.setTimeout(() => {
+        // Long press - randomize physics
+        if (isActiveGesture) {
+          randomizePhysics();
+        }
+      }, 500); // 500ms hold time
 
-        setHoldTimer(timer);
-      }
+      setHoldTimer(timer);
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
+    const handleTouchMove = () => {
       if (!isActiveGesture) return;
-
-      // Handle pinch gesture
-      if (
-        isPinchGesture &&
-        e.touches.length === 2 &&
-        touchStartDistance !== null &&
-        initialCameraRadius !== null
-      ) {
-        e.preventDefault(); // Prevent default to avoid page zooming
-
-        const currentDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-
-        const scale = currentDistance / touchStartDistance;
-        const sensitivity = 2.0; // Adjust this value to control pinch sensitivity
-        const scaledRadius = initialCameraRadius * Math.pow(scale, sensitivity);
-        const newRadius = Math.max(0.3, Math.min(7, scaledRadius));
-
-        setCameraControls({ cameraRadius: newRadius });
-      }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
@@ -933,37 +892,20 @@ function App() {
         setHoldTimer(null);
       }
 
-      // Reset pinch state if all touches are gone
-      if (e.touches.length === 0) {
-        setTouchStartDistance(null);
-        setInitialCameraRadius(null);
-        setIsPinchGesture(false);
+      const touchDuration = Date.now() - touchStartTime;
+      const touchEndX = e.changedTouches[0].clientX;
+      const swipeDistance = touchEndX - touchStartX;
 
-        // Only handle swipe/tap if it wasn't a pinch gesture
-        if (!isPinchGesture && touchStartTime && touchStartX) {
-          const touchDuration = Date.now() - touchStartTime;
-          const touchEndX = e.changedTouches[0].clientX;
-          const swipeDistance = touchEndX - touchStartX;
-
-          // Handle swipe (minimum 50px distance)
-          if (Math.abs(swipeDistance) > 50) {
-            randomizeShape(swipeDistance > 0 ? 1 : -1);
-          }
-          // Handle quick tap (under 200ms)
-          else if (touchDuration < 200) {
-            randomizeCamera();
-          }
-        }
-
-        setIsActiveGesture(false);
+      // Handle swipe (minimum 50px distance)
+      if (Math.abs(swipeDistance) > 50) {
+        randomizeShape(swipeDistance > 0 ? 1 : -1);
       }
-      // If there's still one touch remaining after a pinch
-      else if (e.touches.length === 1 && isPinchGesture) {
-        setTouchStartTime(Date.now());
-        setTouchStartX(e.touches[0].clientX);
-        setIsPinchGesture(false);
+      // Handle quick tap (under 200ms)
+      else if (touchDuration < 200) {
+        randomizeCamera();
       }
 
+      setIsActiveGesture(false);
       initialTouchTarget = null;
     };
 
@@ -972,10 +914,7 @@ function App() {
         clearTimeout(holdTimer);
         setHoldTimer(null);
       }
-      setTouchStartDistance(null);
-      setInitialCameraRadius(null);
       setIsActiveGesture(false);
-      setIsPinchGesture(false);
       initialTouchTarget = null;
     };
 
@@ -994,8 +933,6 @@ function App() {
   }, [
     touchStartTime,
     touchStartX,
-    touchStartDistance,
-    initialCameraRadius,
     holdTimer,
     cameraControls.autoCameraEnabled,
     cameraControls.cameraRadius,
@@ -1007,7 +944,6 @@ function App() {
     randomizeShape,
     setCameraControls,
     isActiveGesture,
-    isPinchGesture,
   ]);
 
   return (
