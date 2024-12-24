@@ -520,7 +520,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
         shape === ParticleShape.Waveform
           ? shapeSizeBase *
             (expandWithAudio ? 1 + audioLevel * audioReactivity * 0.2 : 1)
-          : shapeSizeBase * (1 + audioLevel * audioReactivity * 0.5);
+          : shapeSizeBase * (0.5 + audioLevel * audioReactivity * 0.5);
       setShapeSize(newShapeSize);
 
       const startColorObj = new THREE.Color(startColor);

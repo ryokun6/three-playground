@@ -311,7 +311,7 @@ function App() {
     advanced: folder(
       {
         smoothing: {
-          value: 0.9,
+          value: 0.6,
           min: 0,
           max: 0.99,
           step: 0.01,
@@ -350,7 +350,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     cameraRadius: {
-      value: 2.5,
+      value: 3.2,
       min: 0.01,
       max: 7,
       step: 0.1,
@@ -358,7 +358,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     cameraTilt: {
-      value: 0.3,
+      value: 0.4,
       min: 0,
       max: 1,
       step: 0.1,
@@ -366,7 +366,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     verticalMovement: {
-      value: 0.5,
+      value: 1.7,
       min: 0,
       max: 2,
       step: 0.1,
@@ -374,7 +374,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     speedVariation: {
-      value: 0.3,
+      value: 0.4,
       min: 0,
       max: 1,
       step: 0.1,
@@ -395,14 +395,14 @@ function App() {
         label: "shape",
       },
       shapeSize: {
-        value: 3.8,
+        value: 2,
         min: 0.1,
         max: 5,
         step: 0.1,
         label: "shapeSize",
       },
       size: {
-        value: 0.1,
+        value: 0.08,
         min: 0.01,
         max: 0.4,
         step: 0.01,
@@ -427,48 +427,48 @@ function App() {
             label: "emissionRate",
           },
           particleLifetime: {
-            value: 2,
+            value: 0.28,
             min: 0.1,
-            max: 3,
+            max: 2,
             label: "lifetime",
           },
           gravity: {
-            value: -4.8,
+            value: -0.7,
             min: -9.8,
             max: 0,
             label: "gravity",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           initialSpeed: {
-            value: 5.0,
+            value: 10.0,
             min: 0,
             max: 20,
             label: "speed",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           spread: {
-            value: 0.5,
+            value: 1.6,
             min: 0,
             max: 2,
             label: "spread",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           rotationSpeed: {
-            value: 0.5,
+            value: 0.74,
             min: 0,
             max: 2,
             label: "rotation",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           spiralEffect: {
-            value: 0.2,
+            value: 0.46,
             min: 0,
             max: 1,
             label: "spiral",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           pulseStrength: {
-            value: 0.4,
+            value: 0.53,
             min: 0,
             max: 2,
             label: "pulse",
@@ -553,10 +553,10 @@ function App() {
       Math.random() * (max - min) + min;
 
     setParticleControls({
-      shapeSize: randomInRange(1, 3),
+      shapeSize: randomInRange(0.3, 1.5),
       emissionRate: randomInRange(300, 500),
-      particleLifetime: randomInRange(0.4, 1.5),
-      gravity: randomInRange(-20, 0),
+      particleLifetime: randomInRange(0.1, 1),
+      gravity: randomInRange(-9.8, 0),
       initialSpeed: randomInRange(0, 20),
       spread: randomInRange(0, 2),
       rotationSpeed: randomInRange(0, 2),
