@@ -814,6 +814,150 @@ function App() {
     randomizeShape,
   ]);
 
+  const [touchStartDistance, setTouchStartDistance] = useState<number | null>(
+    null
+  );
+  const [initialCameraRadius, setInitialCameraRadius] = useState<number | null>(
+    null
+  );
+
+  // Add mousewheel handler
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (cameraControls.autoCameraEnabled) {
+        e.preventDefault();
+        const delta = e.deltaY * -0.001; // Adjust sensitivity
+        const newRadius = Math.max(
+          0.01,
+          Math.min(7, cameraControls.cameraRadius + delta)
+        );
+        setCameraControls({ cameraRadius: newRadius });
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    return () => window.removeEventListener("wheel", handleWheel);
+  }, [
+    cameraControls.autoCameraEnabled,
+    cameraControls.cameraRadius,
+    setCameraControls,
+  ]);
+
+  // Add pinch handler
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        const distance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        setTouchStartDistance(distance);
+        setInitialCameraRadius(cameraControls.cameraRadius);
+      } else {
+        setTouchStartTime(Date.now());
+        setTouchStartX(e.touches[0].clientX);
+
+        // Start hold timer
+        const timer = window.setTimeout(() => {
+          // Long press - randomize physics
+          randomizePhysics();
+          showToast("Randomized Physics");
+        }, 500); // 500ms hold time
+
+        setHoldTimer(timer);
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (
+        e.touches.length === 2 &&
+        touchStartDistance !== null &&
+        initialCameraRadius !== null &&
+        cameraControls.autoCameraEnabled
+      ) {
+        const currentDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+
+        const scale = currentDistance / touchStartDistance;
+        const newRadius = Math.max(
+          0.01,
+          Math.min(7, initialCameraRadius * scale)
+        );
+        setCameraControls({ cameraRadius: newRadius });
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      // Clear hold timer
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        setHoldTimer(null);
+      }
+
+      // Reset pinch state
+      setTouchStartDistance(null);
+      setInitialCameraRadius(null);
+
+      // Only handle swipe/tap if it wasn't a pinch gesture
+      if (e.touches.length === 0 && touchStartTime && touchStartX) {
+        const touchDuration = Date.now() - touchStartTime;
+        const touchEndX = e.changedTouches[0].clientX;
+        const swipeDistance = touchEndX - touchStartX;
+
+        // Handle swipe (minimum 50px distance)
+        if (Math.abs(swipeDistance) > 50) {
+          randomizeShape(swipeDistance > 0 ? 1 : -1);
+          return;
+        }
+
+        // Handle quick tap (under 200ms)
+        if (touchDuration < 200) {
+          // Quick tap - only randomize camera zoom
+          randomizeCamera();
+        }
+      }
+    };
+
+    const handleTouchCancel = () => {
+      if (holdTimer) {
+        clearTimeout(holdTimer);
+        setHoldTimer(null);
+      }
+      setTouchStartDistance(null);
+      setInitialCameraRadius(null);
+    };
+
+    window.addEventListener("touchstart", handleTouchStart);
+    window.addEventListener("touchmove", handleTouchMove);
+    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("touchcancel", handleTouchCancel);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", handleTouchCancel);
+      if (holdTimer) clearTimeout(holdTimer);
+    };
+  }, [
+    touchStartTime,
+    touchStartX,
+    touchStartDistance,
+    initialCameraRadius,
+    holdTimer,
+    cameraControls.autoCameraEnabled,
+    cameraControls.cameraRadius,
+    randomizeCamera,
+    randomizePhysics,
+    particleControls,
+    setParticleControls,
+    showToast,
+    randomizeShape,
+    setCameraControls,
+  ]);
+
   return (
     <main className="w-screen h-[100dvh] bg-black select-none">
       {toasts.map((toast, index) => (
