@@ -596,6 +596,11 @@ function App() {
   }, [particleControls.autoColor, setParticleControls, showToast]);
 
   const randomizeCamera = useCallback(() => {
+    // Early return if cameraControls is not initialized or autoCameraEnabled is false
+    if (!cameraControls?.autoCameraEnabled) {
+      return;
+    }
+
     setCameraControls({
       cameraRadius: Math.random() * 5 + 0.1,
       cameraTilt: Math.random(),
@@ -603,7 +608,7 @@ function App() {
       speedVariation: Math.random() * 1.9 + 0.1, // Speed between 0.1 and 2
     });
     showToast("Camera switched");
-  }, [setCameraControls, showToast]);
+  }, [cameraControls, setCameraControls, showToast]);
 
   const toggleAudio = useCallback(() => {
     setAudioControls({ enabled: !audioControls.enabled });
@@ -791,12 +796,9 @@ function App() {
       // Handle swipe (minimum 50px distance)
       if (Math.abs(swipeDistance) > 50) {
         randomizeShape(swipeDistance > 0 ? 1 : -1);
-        return;
       }
-
       // Handle quick tap (under 200ms)
-      if (touchDuration < 200) {
-        // Quick tap - only randomize camera zoom
+      else if (touchDuration < 200) {
         randomizeCamera();
       }
     };
