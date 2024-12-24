@@ -358,7 +358,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     cameraTilt: {
-      value: 0.4,
+      value: 0.9,
       min: 0,
       max: 1,
       step: 0.1,
@@ -366,7 +366,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     verticalMovement: {
-      value: 1.7,
+      value: 0.9,
       min: 0,
       max: 2,
       step: 0.1,
@@ -374,7 +374,7 @@ function App() {
       render: (get) => get("Camera.autoCameraEnabled"),
     },
     speedVariation: {
-      value: 0.4,
+      value: 0.6,
       min: 0,
       max: 1,
       step: 0.1,
@@ -390,12 +390,12 @@ function App() {
     "Particle",
     () => ({
       shape: {
-        value: ParticleShape.Waveform,
+        value: ParticleShape.Sphere,
         options: Object.values(ParticleShape),
         label: "shape",
       },
       shapeSize: {
-        value: 2,
+        value: 0.8,
         min: 0.1,
         max: 5,
         step: 0.1,
@@ -421,61 +421,61 @@ function App() {
       physics: folder(
         {
           emissionRate: {
-            value: 350,
+            value: 497,
             min: 1,
             max: 500,
             label: "emissionRate",
           },
           particleLifetime: {
-            value: 0.28,
+            value: 0.24,
             min: 0.1,
             max: 2,
             label: "lifetime",
           },
           gravity: {
-            value: -0.7,
+            value: -4.6,
             min: -9.8,
             max: 0,
             label: "gravity",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           initialSpeed: {
-            value: 10.0,
+            value: 18.4,
             min: 0,
             max: 20,
             label: "speed",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           spread: {
-            value: 1.6,
+            value: 0.57,
             min: 0,
             max: 2,
             label: "spread",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           rotationSpeed: {
-            value: 0.74,
+            value: 0.89,
             min: 0,
             max: 2,
             label: "rotation",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           spiralEffect: {
-            value: 0.46,
+            value: 0.32,
             min: 0,
             max: 1,
             label: "spiral",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           pulseStrength: {
-            value: 0.53,
+            value: 0.65,
             min: 0,
             max: 2,
             label: "pulse",
             render: (get) => get("Particle.shape") !== "waveform",
           },
           swarmEffect: {
-            value: 0.2,
+            value: 0.37,
             min: 0,
             max: 1,
             label: "swarm",
