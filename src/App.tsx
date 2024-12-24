@@ -91,6 +91,42 @@ const ENVIRONMENT_PRESETS: Record<EnvironmentPreset, EnvironmentPreset> = {
   lobby: "lobby",
 } as const;
 
+// Toast component
+const Toast = ({
+  message,
+  onHide,
+}: {
+  message: string;
+  onHide: () => void;
+}) => {
+  const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    const exitTimer = setTimeout(() => {
+      setIsExiting(true);
+    }, 800);
+
+    const hideTimer = setTimeout(() => {
+      onHide();
+    }, 1000);
+
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [onHide]);
+
+  return (
+    <div
+      className={`fixed bottom-20 left-1/2 bg-black/80 text-white/80 px-4 py-2 rounded-lg shadow-lg font-mono text-sm z-[9999] ${
+        isExiting ? "animate-toast-out" : "animate-toast-in"
+      }`}
+    >
+      {message}
+    </div>
+  );
+};
+
 const KeyboardShortcuts = () => {
   const [isVisible, setIsVisible] = useState(() => {
     const dismissed = localStorage.getItem("keyboardShortcutsDismissed");
@@ -171,6 +207,7 @@ function App() {
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [holdTimer, setHoldTimer] = useState<number | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   const [audioControls, setAudioControls] = useControls("Audio", () => ({
     enabled: {
@@ -610,6 +647,7 @@ function App() {
           pulseStrength: Math.random() * 2,
           swarmEffect: Math.random(),
         });
+        setToast("Randomized Physics");
       }, 500); // 500ms hold time
 
       setHoldTimer(timer);
@@ -634,14 +672,18 @@ function App() {
           swipeDistance > 0
             ? (currentIndex + 1) % shapeValues.length
             : (currentIndex - 1 + shapeValues.length) % shapeValues.length;
-        setParticleControls({ shape: shapeValues[nextIndex] });
+        const nextShape = shapeValues[nextIndex];
+        setParticleControls({ shape: nextShape });
+        setToast(`Shape: ${nextShape}`);
         return;
       }
 
       // Handle quick tap (under 200ms)
       if (touchDuration < 200) {
         // Quick tap - only randomize camera zoom
-        setCameraControls({ cameraRadius: Math.random() * 8 });
+        const newRadius = Math.random() * 8;
+        setCameraControls({ cameraRadius: newRadius });
+        setToast(`Camera Zoom: ${newRadius.toFixed(1)}`);
       }
     };
 
@@ -669,10 +711,12 @@ function App() {
     setCameraControls,
     setParticleControls,
     particleControls,
+    setToast,
   ]);
 
   return (
     <main className="w-screen h-screen bg-black select-none">
+      {toast && <Toast message={toast} onHide={() => setToast(null)} />}
       <Scene
         environmentPreset={environmentPreset as EnvironmentPreset}
         backgroundBlur={backgroundBlur}

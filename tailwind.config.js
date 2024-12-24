@@ -81,10 +81,20 @@ export default {
             height: 0,
           },
         },
+        "toast-in": {
+          "0%": { opacity: 0, transform: "translate(-50%, 1rem)" },
+          "100%": { opacity: 1, transform: "translate(-50%, 0)" },
+        },
+        "toast-out": {
+          "0%": { opacity: 1, transform: "translate(-50%, 0)" },
+          "100%": { opacity: 0, transform: "translate(-50%, 1rem)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "toast-in": "toast-in 0.2s ease-out forwards",
+        "toast-out": "toast-out 0.2s ease-out forwards",
       },
     },
   },
