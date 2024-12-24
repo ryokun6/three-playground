@@ -302,7 +302,7 @@ function App() {
       label: "reactivity",
     },
     gain: {
-      value: 1.0,
+      value: 2.0,
       min: 0,
       max: 5,
       step: 0.1,
