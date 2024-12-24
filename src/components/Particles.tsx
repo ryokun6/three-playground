@@ -305,6 +305,28 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
       setExpandWithAudio(initialExpandWithAudio);
     }, [initialExpandWithAudio]);
 
+    // Add effect hooks for physics controls
+    useEffect(() => {
+      // Update existing particles with new physics values
+      particles.current.forEach((particle) => {
+        particle.rotationSpeed = (Math.random() - 0.5) * rotationSpeed;
+      });
+    }, [rotationSpeed]);
+
+    useEffect(() => {
+      // Force particle reset when core physics parameters change
+      particles.current.forEach((particle) => {
+        particle.lifetime = particle.maxLifetime + 1; // Force reset
+      });
+    }, [
+      gravity,
+      initialSpeed,
+      spread,
+      spiralEffect,
+      pulseStrength,
+      swarmEffect,
+    ]);
+
     const orbitControlsRef = useRef<OrbitControlsImpl>(null);
     const internalPointsRef = useRef<THREE.Points>(null);
     const geometry = useRef<THREE.BufferGeometry>(null);
