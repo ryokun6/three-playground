@@ -179,7 +179,7 @@ const KeyboardShortcuts = () => {
               <span className="text-white">A</span> toggle audio
             </div>
             <div>
-              <span className="text-white">S</span> next shape
+              <span className="text-white">S</span> randomize shape
             </div>
             <div>
               <span className="text-white">D</span> auto-play
@@ -249,7 +249,7 @@ const MobileGestures = () => {
           <div className="flex flex-col gap-2">
             <div className="flex gap-4 items-center">
               <div>
-                <span className="text-white">Tap</span> change zoom
+                <span className="text-white">Tap</span> change camera
               </div>
               <div>
                 <span className="text-white">Hold</span> randomize physics
@@ -677,18 +677,13 @@ function App() {
   }, [audioControls.enabled, setAudioControls, showToast]);
 
   // Add randomizeShape function
-  const randomizeShape = useCallback(
-    (direction: 1 | -1 = 1) => {
-      const shapeValues = Object.values(ParticleShape);
-      const currentIndex = shapeValues.indexOf(particleControls.shape);
-      const nextIndex =
-        (currentIndex + direction + shapeValues.length) % shapeValues.length;
-      const nextShape = shapeValues[nextIndex];
-      setParticleControls({ shape: nextShape });
-      showToast(`Shape: ${nextShape}`);
-    },
-    [particleControls.shape, setParticleControls, showToast]
-  );
+  const randomizeShape = useCallback(() => {
+    const shapeValues = Object.values(ParticleShape);
+    const randomIndex = Math.floor(Math.random() * shapeValues.length);
+    const nextShape = shapeValues[randomIndex];
+    setParticleControls({ shape: nextShape });
+    showToast(`Shape: ${nextShape}`);
+  }, [setParticleControls, showToast]);
 
   const setShape = useCallback(
     (index: number) => {
@@ -847,10 +842,10 @@ function App() {
       if (Math.random() < 0.3) {
         randomizePhysics();
       }
-      if (Math.random() < 0.6) {
+      if (Math.random() < 0.4) {
         randomizeCamera();
       }
-      if (Math.random() < 0.6) {
+      if (Math.random() < 0.3) {
         randomizeShape();
       }
       lastBeatTime.current = currentTime;
@@ -977,7 +972,7 @@ function App() {
 
       // Handle swipe (minimum 50px distance)
       if (Math.abs(swipeDistance) > 50) {
-        randomizeShape(swipeDistance > 0 ? 1 : -1);
+        randomizeShape();
       }
       // Handle quick tap (under 200ms)
       else if (touchDuration < 200) {
@@ -1082,7 +1077,7 @@ function App() {
 
       // Handle swipe (minimum 50px distance)
       if (Math.abs(swipeDistance) > 50) {
-        randomizeShape(swipeDistance > 0 ? 1 : -1);
+        randomizeShape();
       }
       // Handle quick tap (under 200ms)
       else if (touchDuration < 200) {
