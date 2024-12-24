@@ -214,6 +214,7 @@ const generateShapePosition = (
 interface ParticlesProps {
   audioEnabled: boolean;
   onAudioError?: () => void;
+  onAnalyserInit?: (analyser: AnalyserNode, dataArray: Uint8Array) => void;
   shape: string;
   shapeSize: number;
   orbitalSpeed: number;
@@ -247,6 +248,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
     {
       audioEnabled,
       onAudioError,
+      onAnalyserInit,
       shape: initialShape,
       shapeSize: initialShapeSize,
       orbitalSpeed: initialOrbitalSpeed,
@@ -375,6 +377,11 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           dataArray.current = new Uint8Array(
             analyser.current.frequencyBinCount
           );
+
+          // Call onAnalyserInit callback with the initialized analyser and dataArray
+          if (onAnalyserInit && analyser.current && dataArray.current) {
+            onAnalyserInit(analyser.current, dataArray.current);
+          }
         } catch (error) {
           console.error("Error accessing microphone:", error);
           onAudioError?.();
@@ -396,11 +403,12 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
       };
     }, [
       audioEnabled,
+      audioGain,
       audioSmoothing,
       audioMinDecibels,
       audioMaxDecibels,
-      audioGain,
       onAudioError,
+      onAnalyserInit,
     ]);
 
     // Use the forwarded ref if provided, otherwise use internal ref

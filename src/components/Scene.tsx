@@ -81,6 +81,7 @@ interface SceneProps {
     colorBrightness: number;
   };
   onAudioError?: () => void;
+  onAnalyserInit?: (analyser: AnalyserNode, dataArray: Uint8Array) => void;
 }
 
 export const Scene = ({
@@ -108,6 +109,7 @@ export const Scene = ({
   cameraControls,
   particleControls,
   onAudioError,
+  onAnalyserInit,
 }: SceneProps) => {
   const effects = (
     <>
@@ -169,6 +171,7 @@ export const Scene = ({
         audioMinDecibels={audioMinDecibels}
         audioMaxDecibels={audioMaxDecibels}
         onAudioError={onAudioError}
+        onAnalyserInit={onAnalyserInit}
         {...particleControls}
       />
       {cameraControls.autoCameraEnabled && (

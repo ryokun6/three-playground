@@ -1,6 +1,6 @@
 import { Leva, useControls, button, folder } from "leva";
 import { Scene } from "./components/Scene";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   PiKeyboardBold,
   PiSlidersBold,
@@ -8,6 +8,8 @@ import {
   PiMicrophoneBold,
   PiMicrophoneSlashBold,
   PiHandTapBold,
+  PiPlayBold,
+  PiPauseBold,
 } from "react-icons/pi";
 import { Vector2 } from "three";
 
@@ -179,7 +181,9 @@ const KeyboardShortcuts = () => {
             <div>
               <span className="text-white">S</span> next shape
             </div>
-
+            <div>
+              <span className="text-white">D</span> auto-play
+            </div>
             <div>
               <span className="text-white">Z</span> randomize physics
             </div>
@@ -282,6 +286,10 @@ function App() {
     return stored === null ? true : stored === "true";
   });
 
+  const lastBeatTime = useRef(0);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
+
   // Touch handling state
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
@@ -299,7 +307,7 @@ function App() {
     }, 1000);
   }, []);
 
-  const [audioControls, setAudioControls] = useControls("Audio", () => ({
+  const [audioControls, set] = useControls("Audio", () => ({
     enabled: {
       value: false,
       label: "audioEnabled",
@@ -318,6 +326,29 @@ function App() {
       step: 0.1,
       label: "gain",
     },
+    autoPlaySettings: folder(
+      {
+        autoPlay: {
+          value: false,
+          label: "autoPlay",
+        },
+        beatThreshold: {
+          value: 0.15,
+          min: 0.01,
+          max: 1,
+          step: 0.01,
+          label: "beatThreshold",
+        },
+        minBeatInterval: {
+          value: 1600,
+          min: 100,
+          max: 5000,
+          step: 100,
+          label: "minInterval",
+        },
+      },
+      { render: (get) => get("Audio.enabled") }
+    ),
     advanced: folder(
       {
         smoothing: {
@@ -345,6 +376,25 @@ function App() {
       { collapsed: true, render: (get) => get("Audio.enabled") }
     ),
   }));
+
+  const setAudioControls = useCallback(
+    (
+      values: Partial<{
+        enabled: boolean;
+        autoPlay: boolean;
+        reactivity: number;
+        gain: number;
+        smoothing: number;
+        minDecibels: number;
+        maxDecibels: number;
+        beatThreshold: number;
+        minBeatInterval: number;
+      }>
+    ) => {
+      set(values);
+    },
+    [set]
+  );
 
   const [cameraControls, setCameraControls] = useControls("Camera", () => ({
     autoCameraEnabled: {
@@ -790,7 +840,60 @@ function App() {
     localStorage.setItem("levaHidden", String(newState));
   };
 
-  // Add keyboard shortcut handler
+  const handleBeat = useCallback(() => {
+    const currentTime = Date.now();
+    if (currentTime - lastBeatTime.current >= audioControls.minBeatInterval) {
+      // Each effect has independent chance to be applied
+      if (Math.random() < 0.3) {
+        randomizePhysics();
+      }
+      if (Math.random() < 0.6) {
+        randomizeCamera();
+      }
+      if (Math.random() < 0.6) {
+        randomizeShape();
+      }
+      lastBeatTime.current = currentTime;
+    }
+  }, [
+    randomizePhysics,
+    randomizeCamera,
+    randomizeShape,
+    audioControls.minBeatInterval,
+  ]);
+
+  // Add beat detection effect
+  useEffect(() => {
+    if (!audioControls.enabled || !audioControls.autoPlay) return;
+
+    const checkBeat = () => {
+      if (analyserRef.current && dataArrayRef.current) {
+        // Get bass frequencies (roughly the first 1/8 of frequency data)
+        analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+        const bassRange = Math.floor(dataArrayRef.current.length / 8);
+        let bassSum = 0;
+        for (let i = 0; i < bassRange; i++) {
+          bassSum += dataArrayRef.current[i];
+        }
+        const bassAverage = bassSum / bassRange;
+        const beatIntensity = Math.pow(bassAverage / 255, 2);
+
+        if (beatIntensity > audioControls.beatThreshold) {
+          handleBeat();
+        }
+      }
+    };
+
+    const intervalId = setInterval(checkBeat, 50); // Check for beats every 50ms
+    return () => clearInterval(intervalId);
+  }, [
+    audioControls.enabled,
+    audioControls.autoPlay,
+    audioControls.beatThreshold,
+    handleBeat,
+  ]);
+
+  // Update keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       // Handle number keys for direct shape selection
@@ -820,6 +923,12 @@ function App() {
         }
         case "c":
           randomizeCamera();
+          break;
+        case "d":
+          setAudioControls({ autoPlay: !audioControls.autoPlay });
+          showToast(
+            `Auto-play ${!audioControls.autoPlay ? "enabled" : "disabled"}`
+          );
           break;
       }
     };
@@ -1063,6 +1172,10 @@ function App() {
         cameraControls={cameraControls}
         particleControls={particleControls}
         onAudioError={() => setAudioControls({ enabled: false })}
+        onAnalyserInit={(analyser, dataArray) => {
+          analyserRef.current = analyser;
+          dataArrayRef.current = dataArray;
+        }}
       />
       <div
         className="fixed bottom-4 right-4 flex gap-2"
@@ -1081,6 +1194,24 @@ function App() {
             <PiMicrophoneBold className="w-5 h-5" />
           ) : (
             <PiMicrophoneSlashBold className="w-5 h-5" />
+          )}
+        </button>
+        <button
+          onClick={() => {
+            setAudioControls({ autoPlay: !audioControls.autoPlay });
+            showToast(
+              `Auto-play ${!audioControls.autoPlay ? "enabled" : "disabled"}`
+            );
+          }}
+          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+          title={
+            audioControls.autoPlay ? "Disable auto-play" : "Enable auto-play"
+          }
+        >
+          {audioControls.autoPlay ? (
+            <PiPauseBold className="w-5 h-5" />
+          ) : (
+            <PiPlayBold className="w-5 h-5" />
           )}
         </button>
         <button
