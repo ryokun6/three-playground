@@ -20,7 +20,8 @@ function App() {
 
   const { toasts, showToast, hideToast } = useToast();
   const visualControls = useVisualControls();
-  const { cameraControls, updateCameraControls } = useCameraControls();
+  const { cameraControls, updateCameraControls, handleRandomizeCamera } =
+    useCameraControls();
   const {
     particleControls,
     updateParticleControls,
@@ -34,12 +35,7 @@ function App() {
       randomizePhysics(updateParticleControls);
     }
     if (Math.random() < 0.4) {
-      updateCameraControls({
-        cameraRadius: Math.random() * 4 + 1,
-        cameraTilt: Math.random(),
-        verticalMovement: Math.random() * 1.9 + 0.1,
-        speedVariation: Math.random() * 1.9 + 0.1,
-      });
+      handleRandomizeCamera();
     }
     if (Math.random() < 0.3) {
       handleRandomizeShape();
@@ -57,12 +53,7 @@ function App() {
       showToast("Randomized Physics");
     },
     onRandomizeCamera: () => {
-      updateCameraControls({
-        cameraRadius: Math.random() * 4 + 1,
-        cameraTilt: Math.random(),
-        verticalMovement: Math.random() * 1.9 + 0.1,
-        speedVariation: Math.random() * 1.9 + 0.1,
-      });
+      handleRandomizeCamera();
       showToast("Randomized Camera");
     },
     onRandomizeShape: () => {

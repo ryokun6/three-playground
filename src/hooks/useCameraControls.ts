@@ -61,8 +61,13 @@ export const useCameraControls = () => {
     [setCameraControls]
   );
 
+  const handleRandomizeCamera = useCallback(() => {
+    randomizeCamera(setCameraControls, cameraControls.autoCameraEnabled);
+  }, [cameraControls.autoCameraEnabled, setCameraControls]);
+
   return {
     cameraControls,
     updateCameraControls,
+    handleRandomizeCamera,
   };
 };
