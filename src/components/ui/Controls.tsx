@@ -14,6 +14,7 @@ import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MobileGestures } from "./MobileGestures";
 import { Leva } from "leva";
 import { SpotifyControls } from "../../hooks/useSpotifyPlayer";
+import { LyricsDisplay } from "../LyricsDisplay";
 
 interface ControlsProps {
   audioEnabled: boolean;
@@ -185,6 +186,12 @@ export const Controls = ({
           <Leva hidden={isLevaHidden} titleBar={false} fill={true} />
         </div>
       </div>
+
+      {spotifyControls?.currentTrack && (
+        <div className="mb-4">
+          <LyricsDisplay controls={spotifyControls} />
+        </div>
+      )}
     </>
   );
 };

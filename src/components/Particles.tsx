@@ -3,6 +3,16 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
+import {
+  MIN_FREQ,
+  MAX_FREQ,
+  getWaveformData,
+  getBeatIntensity,
+  createFrequencyBands,
+  getFrequencyBandEnergy,
+  initAudio,
+  type AudioConfig,
+} from "../utils/audio";
 
 // Add shape types enum
 enum ParticleShape {
@@ -26,105 +36,6 @@ interface Particle {
   orbitalSpeed: number;
   orbitalPhase: number;
 }
-
-// Add these helper functions before the Particles component
-const SAMPLE_RATE = 44100; // Standard sample rate
-const MIN_FREQ = 20;
-const MAX_FREQ = 20000;
-
-// Helper function to convert frequency bin index to frequency
-const binToFrequency = (binIndex: number, fftSize: number): number => {
-  return (binIndex * SAMPLE_RATE) / (fftSize * 2);
-};
-
-// Helper function to get the frequency bin range for audible spectrum
-const getAudibleFrequencyBins = (
-  fftSize: number
-): { start: number; end: number } => {
-  const binWidth = SAMPLE_RATE / (fftSize * 2);
-  const startBin = Math.floor(MIN_FREQ / binWidth);
-  const endBin = Math.ceil(MAX_FREQ / binWidth);
-  return { start: startBin, end: Math.min(endBin, fftSize / 2) };
-};
-
-// Modified getWaveformData function to focus on audible range
-const getWaveformData = (
-  analyser: AnalyserNode | null,
-  dataArray: Uint8Array | null
-): number[] => {
-  if (!analyser || !dataArray) return Array(1024).fill(128);
-
-  analyser.getByteFrequencyData(dataArray);
-  const { start, end } = getAudibleFrequencyBins(analyser.fftSize);
-
-  // Extract only the audible frequency range
-  const audibleData = Array.from(dataArray.slice(start, end));
-
-  // Apply logarithmic scaling to better represent human hearing
-  return audibleData.map((value, index) => {
-    const frequency = binToFrequency(index + start, analyser.fftSize);
-    // Logarithmic scaling factor (adjust human hearing perception)
-    const logScale =
-      Math.log10(frequency / MIN_FREQ) / Math.log10(MAX_FREQ / MIN_FREQ);
-    return value * (0.3 + 0.7 * logScale); // Boost lower frequencies slightly
-  });
-};
-
-// Add beat detection helper function at the top level
-const getBeatIntensity = (
-  analyser: AnalyserNode | null,
-  dataArray: Uint8Array | null
-): number => {
-  if (!analyser || !dataArray) return 0;
-  analyser.getByteFrequencyData(dataArray);
-
-  // Focus on bass frequencies (roughly the first 1/8 of frequency data)
-  const bassRange = Math.floor(dataArray.length / 8);
-  let bassSum = 0;
-  for (let i = 0; i < bassRange; i++) {
-    bassSum += dataArray[i];
-  }
-  const bassAverage = bassSum / bassRange;
-  return Math.pow(bassAverage / 255, 2); // Squared for more aggressive response
-};
-
-// Add these helper functions for frequency band calculations
-const createFrequencyBands = (
-  minFreq: number,
-  maxFreq: number,
-  bandCount: number
-): { start: number; end: number }[] => {
-  const bands: { start: number; end: number }[] = [];
-  // Use logarithmic scale for frequency bands to better match human hearing
-  for (let i = 0; i < bandCount; i++) {
-    const start = minFreq * Math.pow(maxFreq / minFreq, i / bandCount);
-    const end = minFreq * Math.pow(maxFreq / minFreq, (i + 1) / bandCount);
-    bands.push({ start, end });
-  }
-  return bands;
-};
-
-const getFrequencyBandEnergy = (
-  analyser: AnalyserNode | null,
-  dataArray: Uint8Array | null,
-  bandStart: number,
-  bandEnd: number,
-  fftSize: number
-): number => {
-  if (!analyser || !dataArray) return 0;
-
-  const startBin = Math.floor((bandStart * fftSize * 2) / SAMPLE_RATE);
-  const endBin = Math.ceil((bandEnd * fftSize * 2) / SAMPLE_RATE);
-  let sum = 0;
-  let count = 0;
-
-  for (let i = startBin; i < endBin && i < dataArray.length; i++) {
-    sum += dataArray[i];
-    count++;
-  }
-
-  return count > 0 ? sum / (count * 255) : 0;
-};
 
 // Add shape generation functions
 const generateShapePosition = (
@@ -350,37 +261,27 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
 
     // Initialize audio when enabled changes
     useEffect(() => {
-      const initAudio = async () => {
+      const setupAudio = async () => {
         try {
-          audioContext.current = new AudioContext();
-          const stream = await navigator.mediaDevices.getUserMedia({
-            audio: true,
-          });
-          const source = audioContext.current.createMediaStreamSource(stream);
-          const gainNode = audioContext.current.createGain();
-          analyser.current = audioContext.current.createAnalyser();
+          const config: AudioConfig = {
+            audioGain,
+            audioSmoothing,
+            audioMinDecibels,
+            audioMaxDecibels,
+          };
 
-          // Configure analyser for frequency analysis
-          analyser.current.fftSize = 2048;
-          analyser.current.smoothingTimeConstant = audioSmoothing;
-          analyser.current.minDecibels = audioMinDecibels;
-          analyser.current.maxDecibels = audioMaxDecibels;
+          const {
+            audioContext: context,
+            analyser: newAnalyser,
+            dataArray: newDataArray,
+          } = await initAudio(config);
+          audioContext.current = context;
+          analyser.current = newAnalyser;
+          dataArray.current = newDataArray;
 
-          // Configure gain
-          gainNode.gain.value = audioGain;
-
-          // Connect nodes
-          source.connect(gainNode);
-          gainNode.connect(analyser.current);
-
-          // Initialize data array for frequency data
-          dataArray.current = new Uint8Array(
-            analyser.current.frequencyBinCount
-          );
-
-          // Call onAnalyserInit callback with the initialized analyser and dataArray
-          if (onAnalyserInit && analyser.current && dataArray.current) {
-            onAnalyserInit(analyser.current, dataArray.current);
+          // Call onAnalyserInit callback
+          if (onAnalyserInit) {
+            onAnalyserInit(newAnalyser, newDataArray);
           }
         } catch (error) {
           console.error("Error accessing microphone:", error);
@@ -389,7 +290,7 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
       };
 
       if (audioEnabled) {
-        initAudio();
+        setupAudio();
       } else if (audioContext.current) {
         audioContext.current.close();
         audioContext.current = null;
@@ -727,12 +628,6 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
           rotationMatrix.makeRotationAxis(particle.orbitalPlane, orbitalAngle);
 
           const position = basePosition.clone().applyMatrix4(rotationMatrix);
-
-          // Apply audio-reactive effects
-          // if (expandWithAudio) {
-          //   const expansionFactor = 1 + audioLevel * audioReactivity * 0.2;
-          //   position.multiplyScalar(expansionFactor);
-          // }
 
           const wobbleAmount = smoothedBandEnergy * 0.1;
           const wobbleFreq = time * 1.5;
