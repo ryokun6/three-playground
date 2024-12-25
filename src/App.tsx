@@ -159,22 +159,11 @@ const KeyboardShortcuts = () => {
 
   if (isMobile) return null;
 
-  const handleDismiss = () => {
-    setIsVisible(false);
-    localStorage.setItem("keyboardShortcutsDismissed", "true");
-  };
-
-  const handleToggle = () => {
-    const newState = !isVisible;
-    setIsVisible(newState);
-    localStorage.setItem("keyboardShortcutsDismissed", String(!newState));
-  };
-
   return (
-    <>
-      {isVisible ? (
-        <div className="bg-black/80 text-white/40 px-4 py-2 rounded-lg shadow-lg font-mono text-xs">
-          <div className="flex gap-4 items-center">
+    <div className="relative">
+      {isVisible && (
+        <div className="absolute whitespace-nowrap bottom-12 right-0 bg-black/80 text-white/40 px-4 py-2 rounded-lg shadow-lg font-mono text-xs">
+          <div className="flex flex-col gap-1">
             <div>
               <span className="text-white">A</span> toggle audio
             </div>
@@ -193,25 +182,25 @@ const KeyboardShortcuts = () => {
             <div>
               <span className="text-white">C</span> switch camera
             </div>
-            <button
-              onClick={handleDismiss}
-              className="ml-2 text-white/40 hover:text-white transition-colors"
-              title="Hide keyboard shortcuts"
-            >
-              <PiXBold className="w-4 h-4" />
-            </button>
+            <div>
+              <span className="text-white">1-6</span> select shape
+            </div>
+            <div>
+              <span className="text-white">ESC</span> toggle UI
+            </div>
           </div>
         </div>
-      ) : (
-        <button
-          onClick={handleToggle}
-          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-          title="Show keyboard shortcuts"
-        >
-          <PiKeyboardBold className="w-5 h-5" />
-        </button>
       )}
-    </>
+      <button
+        onClick={() => setIsVisible((v) => !v)}
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+        title="Show keyboard shortcuts"
+      >
+        <PiKeyboardBold className="w-5 h-5" />
+      </button>
+    </div>
   );
 };
 
@@ -285,6 +274,7 @@ function App() {
     const stored = localStorage.getItem("levaHidden");
     return stored === null ? true : stored === "true";
   });
+  const [isUIHidden, setIsUIHidden] = useState(false);
 
   const lastBeatTime = useRef(0);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -491,73 +481,70 @@ function App() {
       randomizeStyle: button(() => {
         randomizeStyle();
       }),
-      physics: folder(
-        {
-          gravity: {
-            value: -4.6,
-            min: -9.8,
-            max: 0,
-            label: "gravity",
-            render: (get) => get("Particle.shape") !== "waveform",
-          },
-          initialSpeed: {
-            value: 18.4,
-            min: 0,
-            max: 20,
-            label: "speed",
-            render: (get) => get("Particle.shape") !== "waveform",
-          },
-          spread: {
-            value: 0.57,
-            min: 0,
-            max: 2,
-            label: "spread",
-            render: (get) => get("Particle.shape") !== "waveform",
-          },
-          rotationSpeed: {
-            value: 0.89,
-            min: 0,
-            max: 2,
-            label: "rotation",
-            render: (get) => get("Particle.shape") !== "waveform",
-          },
-          spiralEffect: {
-            value: 0.32,
-            min: 0,
-            max: 1,
-            label: "spiral",
-            render: (get) => get("Particle.shape") !== "waveform",
-          },
-          pulseStrength: {
-            value: 0.65,
-            min: 0,
-            max: 2,
-            label: "pulse",
-            render: (get) => get("Particle.shape") !== "waveform",
-          },
-          swarmEffect: {
-            value: 0.37,
-            min: 0,
-            max: 1,
-            label: "swarm",
-            render: (get) => get("Particle.shape") !== "waveform",
-          },
-          orbitalSpeed: {
-            value: 1,
-            min: 0,
-            max: 2,
-            step: 0.1,
-            label: "orbitalSpeed",
-            render: (get) => get("Particle.shape") === "waveform",
-          },
-          expandWithAudio: {
-            value: true,
-            label: "expandWithAudio",
-            render: (get) => get("Particle.shape") === "waveform",
-          },
+      physics: folder({
+        gravity: {
+          value: -4.6,
+          min: -9.8,
+          max: 0,
+          label: "gravity",
+          render: (get) => get("Particle.shape") !== "waveform",
         },
-        { collapsed: true }
-      ),
+        initialSpeed: {
+          value: 18.4,
+          min: 0,
+          max: 20,
+          label: "speed",
+          render: (get) => get("Particle.shape") !== "waveform",
+        },
+        spread: {
+          value: 0.57,
+          min: 0,
+          max: 2,
+          label: "spread",
+          render: (get) => get("Particle.shape") !== "waveform",
+        },
+        rotationSpeed: {
+          value: 0.89,
+          min: 0,
+          max: 2,
+          label: "rotation",
+          render: (get) => get("Particle.shape") !== "waveform",
+        },
+        spiralEffect: {
+          value: 0.32,
+          min: 0,
+          max: 1,
+          label: "spiral",
+          render: (get) => get("Particle.shape") !== "waveform",
+        },
+        pulseStrength: {
+          value: 0.65,
+          min: 0,
+          max: 2,
+          label: "pulse",
+          render: (get) => get("Particle.shape") !== "waveform",
+        },
+        swarmEffect: {
+          value: 0.37,
+          min: 0,
+          max: 1,
+          label: "swarm",
+          render: (get) => get("Particle.shape") !== "waveform",
+        },
+        orbitalSpeed: {
+          value: 1,
+          min: 0,
+          max: 2,
+          step: 0.1,
+          label: "orbitalSpeed",
+          render: (get) => get("Particle.shape") === "waveform",
+        },
+        expandWithAudio: {
+          value: true,
+          label: "expandWithAudio",
+          render: (get) => get("Particle.shape") === "waveform",
+        },
+      }),
       styles: folder(
         {
           startColor: {
@@ -896,6 +883,12 @@ function App() {
   // Update keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
+      // Handle ESC key for UI toggle
+      if (event.key === "Escape") {
+        setIsUIHidden((prev) => !prev);
+        return;
+      }
+
       // Handle number keys for direct shape selection
       const num = parseInt(event.key);
       if (
@@ -1130,16 +1123,17 @@ function App() {
 
   return (
     <main className="w-screen h-[100dvh] bg-black select-none">
-      {toasts.map((toast, index) => (
-        <Toast
-          key={toast.id}
-          index={index}
-          message={toast.message}
-          onHide={() =>
-            setToasts((prev) => prev.filter((t) => t.id !== toast.id))
-          }
-        />
-      ))}
+      {!isUIHidden &&
+        toasts.map((toast, index) => (
+          <Toast
+            key={toast.id}
+            index={index}
+            message={toast.message}
+            onHide={() =>
+              setToasts((prev) => prev.filter((t) => t.id !== toast.id))
+            }
+          />
+        ))}
       <Scene
         environmentPreset={environmentPreset as EnvironmentPreset}
         backgroundBlur={backgroundBlur}
@@ -1176,7 +1170,9 @@ function App() {
         }}
       />
       <div
-        className="fixed bottom-4 right-4 flex gap-2"
+        className={`fixed bottom-4 right-4 flex gap-2 transition-opacity duration-200 ${
+          isUIHidden ? "opacity-0 pointer-events-none" : "opacity-100"
+        }`}
         onTouchStart={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
