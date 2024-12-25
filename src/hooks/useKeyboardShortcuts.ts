@@ -1,5 +1,9 @@
 import { useEffect } from "react";
-import { randomizePhysics, randomizeStyle } from "../utils/randomizers";
+import {
+  randomizePhysics,
+  randomizeStyle,
+  randomizeCamera,
+} from "../utils/randomizers";
 import { CameraControls } from "../types/scene";
 import { ParticleControls } from "../types/particles";
 
@@ -63,12 +67,7 @@ export const useKeyboardShortcuts = ({
           break;
         }
         case "c":
-          updateCameraControls({
-            cameraRadius: Math.random() * 4 + 1,
-            cameraTilt: Math.random(),
-            verticalMovement: Math.random() * 1.9 + 0.1,
-            speedVariation: Math.random() * 1.9 + 0.1,
-          });
+          randomizeCamera(updateCameraControls, true);
           showToast("Randomized Camera");
           break;
         case "d":
