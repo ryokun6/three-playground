@@ -165,22 +165,22 @@ const KeyboardShortcuts = () => {
         <div className="absolute whitespace-nowrap bottom-12 right-0 bg-black/80 text-white/40 px-4 py-2 rounded-lg shadow-lg font-mono text-xs">
           <div className="flex flex-col gap-1">
             <div>
-              <span className="text-white">A</span> toggle audio
+              <span className="text-white">A</span> audio
             </div>
             <div>
-              <span className="text-white">S</span> randomize shape
+              <span className="text-white">S</span> shape
             </div>
             <div>
               <span className="text-white">D</span> auto-play
             </div>
             <div>
-              <span className="text-white">Z</span> randomize physics
+              <span className="text-white">Z</span> physics
             </div>
             <div>
-              <span className="text-white">X</span> randomize style
+              <span className="text-white">X</span> style
             </div>
             <div>
-              <span className="text-white">C</span> switch camera
+              <span className="text-white">C</span> camera
             </div>
             <div>
               <span className="text-white">1-6</span> select shape
