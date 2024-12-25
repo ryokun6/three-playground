@@ -9,6 +9,8 @@ import { useVisualControls } from "./hooks/useVisualControls";
 import { useCameraControls } from "./hooks/useCameraControls";
 import { useParticleControls } from "./hooks/useParticleControls";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useSpotifyPlayer } from "./hooks/useSpotifyPlayer";
+import { useSpotifyAuth } from "./hooks/useSpotifyAuth";
 import { randomizePhysics } from "./utils/randomizers";
 
 function App() {
@@ -28,6 +30,9 @@ function App() {
     handleRandomizeShape,
     setShape,
   } = useParticleControls();
+
+  const { token, login, logout } = useSpotifyAuth();
+  const spotifyControls = useSpotifyPlayer(token, showToast);
 
   const handleBeat = () => {
     // Each effect has independent chance to be applied
@@ -125,6 +130,15 @@ function App() {
           }}
           onLevaToggle={handleLevaToggle}
           showToast={showToast}
+          spotifyControls={spotifyControls}
+          onSpotifyLogin={() => {
+            login();
+            showToast("Connecting to Spotify...");
+          }}
+          onSpotifyLogout={() => {
+            logout();
+            showToast("Disconnected from Spotify");
+          }}
         />
       </div>
     </main>
