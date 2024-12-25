@@ -1,7 +1,6 @@
 import { useControls, folder } from "leva";
 import { Vector2 } from "three";
-import { EnvironmentPreset } from "../types/scene";
-import { ENVIRONMENT_PRESETS } from "../constants/environment";
+import { EnvironmentPreset, ENVIRONMENT_PRESETS } from "../types/scene";
 
 export const useVisualControls = () => {
   const visualControls = useControls(
@@ -10,7 +9,7 @@ export const useVisualControls = () => {
       environment: folder({
         environmentPreset: {
           value: "sunset" as EnvironmentPreset,
-          options: Object.keys(ENVIRONMENT_PRESETS),
+          options: ENVIRONMENT_PRESETS,
           label: "preset",
         },
         backgroundBlur: {

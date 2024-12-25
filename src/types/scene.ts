@@ -1,17 +1,20 @@
 import { Vector2 } from "three";
 import { ParticleControls } from "./particles";
 
-export type EnvironmentPreset =
-  | "apartment"
-  | "city"
-  | "dawn"
-  | "forest"
-  | "lobby"
-  | "night"
-  | "park"
-  | "studio"
-  | "sunset"
-  | "warehouse";
+export const ENVIRONMENT_PRESETS = [
+  "night",
+  "sunset",
+  "dawn",
+  "warehouse",
+  "forest",
+  "apartment",
+  "studio",
+  "city",
+  "park",
+  "lobby",
+] as const;
+
+export type EnvironmentPreset = (typeof ENVIRONMENT_PRESETS)[number];
 
 export interface SceneProps {
   environmentPreset: EnvironmentPreset;
