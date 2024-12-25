@@ -481,70 +481,73 @@ function App() {
       randomizeStyle: button(() => {
         randomizeStyle();
       }),
-      physics: folder({
-        gravity: {
-          value: -4.6,
-          min: -9.8,
-          max: 0,
-          label: "gravity",
-          render: (get) => get("Particle.shape") !== "waveform",
+      physics: folder(
+        {
+          gravity: {
+            value: -4.6,
+            min: -9.8,
+            max: 0,
+            label: "gravity",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          initialSpeed: {
+            value: 18.4,
+            min: 0,
+            max: 20,
+            label: "speed",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          spread: {
+            value: 0.57,
+            min: 0,
+            max: 2,
+            label: "spread",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          rotationSpeed: {
+            value: 0.89,
+            min: 0,
+            max: 2,
+            label: "rotation",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          spiralEffect: {
+            value: 0.32,
+            min: 0,
+            max: 1,
+            label: "spiral",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          pulseStrength: {
+            value: 0.65,
+            min: 0,
+            max: 2,
+            label: "pulse",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          swarmEffect: {
+            value: 0.37,
+            min: 0,
+            max: 1,
+            label: "swarm",
+            render: (get) => get("Particle.shape") !== "waveform",
+          },
+          orbitalSpeed: {
+            value: 1,
+            min: 0,
+            max: 2,
+            step: 0.1,
+            label: "orbitalSpeed",
+            render: (get) => get("Particle.shape") === "waveform",
+          },
+          expandWithAudio: {
+            value: true,
+            label: "expandWithAudio",
+            render: (get) => get("Particle.shape") === "waveform",
+          },
         },
-        initialSpeed: {
-          value: 18.4,
-          min: 0,
-          max: 20,
-          label: "speed",
-          render: (get) => get("Particle.shape") !== "waveform",
-        },
-        spread: {
-          value: 0.57,
-          min: 0,
-          max: 2,
-          label: "spread",
-          render: (get) => get("Particle.shape") !== "waveform",
-        },
-        rotationSpeed: {
-          value: 0.89,
-          min: 0,
-          max: 2,
-          label: "rotation",
-          render: (get) => get("Particle.shape") !== "waveform",
-        },
-        spiralEffect: {
-          value: 0.32,
-          min: 0,
-          max: 1,
-          label: "spiral",
-          render: (get) => get("Particle.shape") !== "waveform",
-        },
-        pulseStrength: {
-          value: 0.65,
-          min: 0,
-          max: 2,
-          label: "pulse",
-          render: (get) => get("Particle.shape") !== "waveform",
-        },
-        swarmEffect: {
-          value: 0.37,
-          min: 0,
-          max: 1,
-          label: "swarm",
-          render: (get) => get("Particle.shape") !== "waveform",
-        },
-        orbitalSpeed: {
-          value: 1,
-          min: 0,
-          max: 2,
-          step: 0.1,
-          label: "orbitalSpeed",
-          render: (get) => get("Particle.shape") === "waveform",
-        },
-        expandWithAudio: {
-          value: true,
-          label: "expandWithAudio",
-          render: (get) => get("Particle.shape") === "waveform",
-        },
-      }),
+        { collapsed: true }
+      ),
       styles: folder(
         {
           startColor: {
