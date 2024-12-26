@@ -1,6 +1,39 @@
 import { type SpotifyControls } from "../hooks/useSpotifyPlayer";
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
+
+const ANIMATION_CONFIG = {
+  spring: {
+    type: "spring" as const,
+    stiffness: 200,
+    damping: 30,
+    mass: 1,
+  },
+  fade: {
+    duration: 0.2,
+  },
+} as const;
+
+const getVariants = (position: number) => ({
+  initial: {
+    opacity: 0,
+    scale: 0.8,
+    filter: "blur(3px)",
+    y: 20,
+  },
+  animate: {
+    opacity: position === 0 ? 1 : position === 1 ? 0.5 : 0.1,
+    scale: position === 0 || position === 1 ? 1 : 0.9,
+    filter: `blur(${position === 0 || position === 1 ? 0 : 3}px)`,
+    y: 0,
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.9,
+    filter: "blur(5px)",
+    y: -20,
+  },
+});
 
 interface LyricsDisplayProps {
   controls: SpotifyControls;
@@ -18,27 +51,26 @@ export const LyricsDisplay = ({ controls }: LyricsDisplayProps) => {
     lyrics: { lines, currentLine, isLoading, error },
   } = controls;
   const containerRef = useRef<HTMLDivElement>(null);
-  const lineRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const currentLineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (
-      currentLine >= 0 &&
-      containerRef.current &&
-      lineRefs.current[currentLine]
-    ) {
-      const container = containerRef.current;
-      const element = lineRefs.current[currentLine];
-      const containerHeight = container.clientHeight;
-      const elementTop = element!.offsetTop;
-      const elementHeight = element!.clientHeight;
+    const container = containerRef.current;
+    const element = currentLineRef.current;
+    if (!container || !element || currentLine < 0) return;
 
-      const targetScroll = elementTop - (containerHeight - elementHeight) / 2;
-      container.scrollTo({
-        top: targetScroll,
-        behavior: "smooth",
-      });
-    }
+    container.scrollTo({
+      top:
+        element.offsetTop -
+        container.clientHeight / 2 +
+        element.clientHeight / 2,
+      behavior: "smooth",
+    });
   }, [currentLine]);
+
+  const visibleLines = useMemo(() => {
+    if (currentLine < 0) return lines.slice(0, 2);
+    return lines.slice(Math.max(0, currentLine - 1), currentLine + 2);
+  }, [lines, currentLine]);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState message={error} />;
@@ -48,62 +80,38 @@ export const LyricsDisplay = ({ controls }: LyricsDisplayProps) => {
     <motion.div
       ref={containerRef}
       layout
-      transition={{
-        type: "spring",
-        stiffness: 200,
-        damping: 40,
-        mass: 1,
-      }}
+      transition={ANIMATION_CONFIG.spring}
       className="fixed bottom-[5vh] left-1/2 -translate-x-1/2 w-full h-[30vh] overflow-hidden flex flex-col items-center"
       style={{
-        WebkitMaskImage:
-          "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent 100%)",
         maskImage:
           "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent 100%)",
       }}
     >
       <AnimatePresence mode="popLayout">
-        {lines
-          .slice(Math.max(0, currentLine - 1), currentLine + 2)
-          .map((line, index) => {
-            const position = index - (currentLine > 0 ? 1 : 0); // -1: prev, 0: current, 1: next
-            return (
-              <motion.div
-                key={`${line.startTimeMs}`}
-                layoutId={`${line.startTimeMs}`}
-                ref={(el) => (lineRefs.current[currentLine + position] = el)}
-                initial={{
-                  opacity: 0,
-                  scale: 0.8,
-                  filter: "blur(3px)",
-                  y: 20,
-                }}
-                animate={{
-                  opacity: position === 0 ? 1 : position === 1 ? 0.5 : 0.1,
-                  scale: position === 0 || position === 1 ? 1 : 0.9,
-                  filter: `blur(${position === 0 || position === 1 ? 0 : 3}px)`,
-                  y: 0,
-                }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.9,
-                  filter: "blur(5px)",
-                  y: -20,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 30,
-                  mass: 1,
-                  opacity: { duration: 0.2 },
-                  filter: { duration: 0.2 },
-                }}
-                className="px-4 text-[clamp(1rem,4vw,5rem)] text-center whitespace-pre-wrap break-words max-w-full text-white font-semibold"
-              >
-                {line.words}
-              </motion.div>
-            );
-          })}
+        {visibleLines.map((line, index) => {
+          const position = index - (currentLine > 0 ? 1 : 0);
+          const variants = getVariants(position);
+
+          return (
+            <motion.div
+              key={line.startTimeMs}
+              layoutId={`${line.startTimeMs}`}
+              ref={position === 0 ? currentLineRef : undefined}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={variants}
+              transition={{
+                ...ANIMATION_CONFIG.spring,
+                opacity: ANIMATION_CONFIG.fade,
+                filter: ANIMATION_CONFIG.fade,
+              }}
+              className="px-4 text-[clamp(1rem,4vw,5rem)] text-center whitespace-pre-wrap break-words max-w-full text-white font-semibold"
+            >
+              {line.words}
+            </motion.div>
+          );
+        })}
       </AnimatePresence>
     </motion.div>
   );
