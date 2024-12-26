@@ -2,14 +2,10 @@ import { useState, useEffect } from "react";
 import { PiKeyboardBold } from "react-icons/pi";
 
 export const KeyboardShortcuts = () => {
-  const [isVisible, setIsVisible] = useState(() => {
-    const dismissed = localStorage.getItem("keyboardShortcutsDismissed");
-    return dismissed !== "true";
-  });
+  const [isHovered, setIsHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Check if user is on mobile
     const checkMobile = () => {
       setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
     };
@@ -20,7 +16,7 @@ export const KeyboardShortcuts = () => {
 
   return (
     <div className="relative">
-      {isVisible && (
+      {isHovered && (
         <div className="absolute whitespace-nowrap bottom-12 right-0 bg-black/80 text-white/40 px-4 py-2 rounded-lg shadow-lg font-mono text-xs">
           <div className="flex flex-col gap-1">
             <div>
@@ -54,9 +50,8 @@ export const KeyboardShortcuts = () => {
         </div>
       )}
       <button
-        onClick={() => setIsVisible((v) => !v)}
-        onMouseEnter={() => setIsVisible(true)}
-        onMouseLeave={() => setIsVisible(false)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
         title="Show keyboard shortcuts"
       >
