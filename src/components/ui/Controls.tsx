@@ -63,46 +63,9 @@ export const Controls = ({
           >
             {spotifyControls?.isConnected ? (
               <div className="flex gap-2">
-                <button
-                  onClick={spotifyControls.previousTrack}
-                  className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                  title="Previous track"
-                >
-                  <PiSkipBackBold className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={spotifyControls.togglePlay}
-                  className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                  title={spotifyControls.isPlaying ? "Pause" : "Play"}
-                >
-                  {spotifyControls.isPlaying ? (
-                    <PiPauseBold className="w-5 h-5" />
-                  ) : (
-                    <PiPlayBold className="w-5 h-5" />
-                  )}
-                </button>
-                <button
-                  onClick={spotifyControls.nextTrack}
-                  className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                  title="Next track"
-                >
-                  <PiSkipForwardBold className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => {
-                    onLyricsToggle();
-                    showToast(`Lyrics ${!showLyrics ? "shown" : "hidden"}`);
-                  }}
-                  className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                  title={showLyrics ? "Hide lyrics" : "Show lyrics"}
-                >
-                  <PiTextTBold
-                    className={`w-5 h-5 ${showLyrics ? "text-white" : ""}`}
-                  />
-                </button>
-                {spotifyControls.currentTrack && (
+                <div className="group relative">
                   <div className="bg-black/40 text-white/60 p-2 rounded-lg shadow-lg flex items-center gap-2">
-                    {spotifyControls.currentTrack.album?.images?.[0]?.url ? (
+                    {spotifyControls.currentTrack?.album?.images?.[0]?.url ? (
                       <img
                         src={spotifyControls.currentTrack.album.images[0].url}
                         alt="Album artwork"
@@ -112,25 +75,67 @@ export const Controls = ({
                       <PiSpotifyLogoBold className="w-5 h-5" />
                     )}
                     <span className="text-sm truncate max-w-[200px]">
-                      {spotifyControls.currentTrack.name} -{" "}
-                      {spotifyControls.currentTrack.artists[0].name}
+                      {spotifyControls.currentTrack?.name ?? "Not playing"}{" "}
+                      {spotifyControls.currentTrack?.artists?.[0]?.name
+                        ? `- ${spotifyControls.currentTrack.artists[0].name}`
+                        : ""}
                     </span>
                   </div>
-                )}
-                {onSpotifyLogout && (
-                  <button
-                    onClick={() => {
-                      onSpotifyLogout();
-                      if (spotifyControls.error) {
-                        showToast(spotifyControls.error);
-                      }
-                    }}
-                    className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                    title="Disconnect Spotify"
-                  >
-                    <PiSignOutBold className="w-5 h-5" />
-                  </button>
-                )}
+
+                  <div className="absolute left-0 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    <button
+                      onClick={spotifyControls.previousTrack}
+                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                      title="Previous track"
+                    >
+                      <PiSkipBackBold className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={spotifyControls.togglePlay}
+                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                      title={spotifyControls.isPlaying ? "Pause" : "Play"}
+                    >
+                      {spotifyControls.isPlaying ? (
+                        <PiPauseBold className="w-5 h-5" />
+                      ) : (
+                        <PiPlayBold className="w-5 h-5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={spotifyControls.nextTrack}
+                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                      title="Next track"
+                    >
+                      <PiSkipForwardBold className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        onLyricsToggle();
+                        showToast(`Lyrics ${!showLyrics ? "shown" : "hidden"}`);
+                      }}
+                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                      title={showLyrics ? "Hide lyrics" : "Show lyrics"}
+                    >
+                      <PiTextTBold
+                        className={`w-5 h-5 ${showLyrics ? "text-white" : ""}`}
+                      />
+                    </button>
+                    {onSpotifyLogout && (
+                      <button
+                        onClick={() => {
+                          onSpotifyLogout();
+                          if (spotifyControls.error) {
+                            showToast(spotifyControls.error);
+                          }
+                        }}
+                        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                        title="Disconnect Spotify"
+                      >
+                        <PiSignOutBold className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             ) : (
               onSpotifyLogin && (
