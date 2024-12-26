@@ -2,6 +2,7 @@ import { Scene } from "./components/Scene";
 import { useState, useEffect } from "react";
 import { Toast } from "./components/ui/Toast";
 import { Controls } from "./components/ui/Controls";
+import { LyricsDisplay } from "./components/LyricsDisplay";
 import { useToast } from "./hooks/useToast";
 import { useGestureHandling } from "./hooks/useGestureHandling";
 import { useAudioControls } from "./hooks/useAudioControls";
@@ -109,36 +110,15 @@ function App() {
 
   return (
     <main className="w-screen h-[100dvh] bg-black select-none">
-      {!isUIHidden &&
-        toasts.map((toast, index) => (
-          <Toast
-            key={toast.id}
-            index={index}
-            message={toast.message}
-            onHide={() => hideToast(toast.id)}
-          />
-        ))}
-      <Scene
-        {...visualControls}
-        audioEnabled={audioControls.enabled}
-        audioGain={audioControls.gain}
-        audioReactivity={audioControls.reactivity}
-        audioSmoothing={audioControls.smoothing}
-        audioMinDecibels={audioControls.minDecibels}
-        audioMaxDecibels={audioControls.maxDecibels}
-        cameraControls={cameraControls}
-        particleControls={particleControls}
-        onAudioError={() => setAudioControls({ enabled: false })}
-        onAnalyserInit={(analyser, dataArray) => {
-          analyserRef.current = analyser;
-          dataArrayRef.current = dataArray;
-        }}
-      />
-      <div className={isUIHidden ? "opacity-0 pointer-events-none" : ""}>
+      <div
+        className={`fixed inset-0 z-50 ${
+          isUIHidden ? "opacity-0 pointer-events-none" : ""
+        }`}
+      >
         <style>{`
           @media (min-width: 768px) {
             .controls-wrapper {
-              transition: opacity 0.6s;
+              transition: opacity 1.2s ease;
               opacity: ${isUIDimmed ? "0" : "1"};
             }
           }
@@ -169,6 +149,34 @@ function App() {
           }}
         />
       </div>
+      {!isUIHidden &&
+        toasts.map((toast, index) => (
+          <Toast
+            key={toast.id}
+            index={index}
+            message={toast.message}
+            onHide={() => hideToast(toast.id)}
+          />
+        ))}
+      <Scene
+        {...visualControls}
+        audioEnabled={audioControls.enabled}
+        audioGain={audioControls.gain}
+        audioReactivity={audioControls.reactivity}
+        audioSmoothing={audioControls.smoothing}
+        audioMinDecibels={audioControls.minDecibels}
+        audioMaxDecibels={audioControls.maxDecibels}
+        cameraControls={cameraControls}
+        particleControls={particleControls}
+        onAudioError={() => setAudioControls({ enabled: false })}
+        onAnalyserInit={(analyser, dataArray) => {
+          analyserRef.current = analyser;
+          dataArrayRef.current = dataArray;
+        }}
+      />
+      {!isUIHidden && spotifyControls?.currentTrack && showLyrics && (
+        <LyricsDisplay controls={spotifyControls} />
+      )}
     </main>
   );
 }

@@ -15,7 +15,6 @@ import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MobileGestures } from "./MobileGestures";
 import { Leva } from "leva";
 import { SpotifyControls } from "../../hooks/useSpotifyPlayer";
-import { LyricsDisplay } from "../LyricsDisplay";
 
 interface ControlsProps {
   audioEnabled: boolean;
@@ -210,13 +209,6 @@ export const Controls = ({
           </div>
         </div>
       </div>
-
-      {/* Lyrics Display - Outside of dimming wrapper */}
-      {spotifyControls?.currentTrack && showLyrics && (
-        <div className="mb-4">
-          <LyricsDisplay controls={spotifyControls} />
-        </div>
-      )}
     </>
   );
 };
