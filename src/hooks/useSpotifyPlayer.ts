@@ -219,5 +219,6 @@ export const useSpotifyPlayer = (
     togglePlay: () => playerAction(() => playerRef.current!.togglePlay()),
     nextTrack: () => playerAction(() => playerRef.current!.nextTrack()),
     previousTrack: () => playerAction(() => playerRef.current!.previousTrack()),
+    isPlaying: controls.isPlaying,
   };
 };

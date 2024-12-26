@@ -11,7 +11,6 @@ import {
   createFrequencyBands,
   getFrequencyBandEnergy,
   initAudio,
-  type AudioConfig,
 } from "../utils/audio";
 
 // Add shape types enum
@@ -259,58 +258,65 @@ export const Particles = forwardRef<THREE.Points, ParticlesProps>(
       return normalizedLevel;
     };
 
+    const audioConfig = useMemo(
+      () => ({
+        audioGain,
+        audioSmoothing,
+        audioMinDecibels,
+        audioMaxDecibels,
+      }),
+      [audioGain, audioSmoothing, audioMinDecibels, audioMaxDecibels]
+    );
+
     // Initialize audio when enabled changes
     useEffect(() => {
-      const setupAudio = async () => {
-        try {
-          const config: AudioConfig = {
-            audioGain,
-            audioSmoothing,
-            audioMinDecibels,
-            audioMaxDecibels,
-          };
-
-          const {
-            audioContext: context,
-            analyser: newAnalyser,
-            dataArray: newDataArray,
-          } = await initAudio(config);
-          audioContext.current = context;
-          analyser.current = newAnalyser;
-          dataArray.current = newDataArray;
-
-          // Call onAnalyserInit callback
-          if (onAnalyserInit) {
-            onAnalyserInit(newAnalyser, newDataArray);
-          }
-        } catch (error) {
-          console.error("Error accessing microphone:", error);
-          onAudioError?.();
-        }
-      };
-
-      if (audioEnabled) {
-        setupAudio();
-      } else if (audioContext.current) {
-        audioContext.current.close();
-        audioContext.current = null;
-      }
-
-      return () => {
+      const cleanup = () => {
         if (audioContext.current) {
           audioContext.current.close();
           audioContext.current = null;
+          analyser.current = null;
+          dataArray.current = null;
         }
       };
-    }, [
-      audioEnabled,
-      audioGain,
-      audioSmoothing,
-      audioMinDecibels,
-      audioMaxDecibels,
-      onAudioError,
-      onAnalyserInit,
-    ]);
+
+      if (audioEnabled && !audioContext.current) {
+        const setupAudio = async () => {
+          try {
+            const {
+              audioContext: context,
+              analyser: newAnalyser,
+              dataArray: newDataArray,
+            } = await initAudio(audioConfig);
+            audioContext.current = context;
+            analyser.current = newAnalyser;
+            dataArray.current = newDataArray;
+
+            // Call onAnalyserInit callback
+            if (onAnalyserInit) {
+              onAnalyserInit(newAnalyser, newDataArray);
+            }
+          } catch (error) {
+            console.error("Error accessing microphone:", error);
+            onAudioError?.();
+          }
+        };
+
+        setupAudio();
+      } else if (!audioEnabled) {
+        cleanup();
+      }
+
+      return cleanup;
+    }, [audioEnabled, onAudioError, onAnalyserInit, audioConfig]);
+
+    // Update audio parameters without reinitializing
+    useEffect(() => {
+      if (!analyser.current) return;
+
+      analyser.current.smoothingTimeConstant = audioSmoothing;
+      analyser.current.minDecibels = audioMinDecibels;
+      analyser.current.maxDecibels = audioMaxDecibels;
+    }, [audioSmoothing, audioMinDecibels, audioMaxDecibels]);
 
     // Use the forwarded ref if provided, otherwise use internal ref
     const pointsRef =
