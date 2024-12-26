@@ -52,3 +52,30 @@ export interface CameraControls {
   verticalMovement: number;
   speedVariation: number;
 }
+
+export enum LyricsFont {
+  Default = "default",
+  Serif = "serif",
+  Rounded = "rounded",
+}
+
+export enum LyricsAlignment {
+  Center = "center",
+  Alternating = "alternating",
+}
+
+export interface LyricsControls {
+  font: LyricsFont;
+  alignment: LyricsAlignment;
+  fontSize: number;
+}
+
+export enum ChineseVariant {
+  Original = "original",
+  Traditional = "traditional",
+}
+
+export enum KoreanDisplay {
+  Original = "original",
+  Romanized = "romanized",
+}

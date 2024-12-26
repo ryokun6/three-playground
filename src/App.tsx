@@ -13,6 +13,7 @@ import { useParticleControls } from "./hooks/useParticleControls";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useSpotifyPlayer } from "./hooks/useSpotifyPlayer";
 import { useSpotifyAuth } from "./hooks/useSpotifyAuth";
+import { useLyricsControls } from "./hooks/useLyricsControls";
 import { randomizePhysics } from "./utils/randomizers";
 
 function App() {
@@ -44,6 +45,12 @@ function App() {
 
   const { toasts, showToast, hideToast } = useToast();
   const visualControls = useVisualControls();
+  const {
+    lyricsControls,
+    toggleChineseVariant,
+    toggleKoreanDisplay,
+    toggleKtvMode,
+  } = useLyricsControls();
   const { cameraControls, updateCameraControls, handleRandomizeCamera } =
     useCameraControls();
   const {
@@ -149,6 +156,12 @@ function App() {
             logout();
             showToast("Disconnected from Spotify");
           }}
+          onChineseVariantToggle={toggleChineseVariant}
+          onKoreanDisplayToggle={toggleKoreanDisplay}
+          chineseVariant={lyricsControls.chineseVariant}
+          koreanDisplay={lyricsControls.koreanDisplay}
+          ktvMode={lyricsControls.ktvMode}
+          onKtvToggle={toggleKtvMode}
         />
       </div>
 
@@ -222,7 +235,14 @@ function App() {
         }}
       />
       {!isUIHidden && spotifyControls?.currentTrack && showLyrics && (
-        <LyricsDisplay controls={spotifyControls} />
+        <LyricsDisplay
+          controls={spotifyControls}
+          font={lyricsControls.font}
+          alignment={lyricsControls.alignment}
+          chineseVariant={lyricsControls.chineseVariant}
+          koreanDisplay={lyricsControls.koreanDisplay}
+          fontSize={lyricsControls.fontSize}
+        />
       )}
     </main>
   );

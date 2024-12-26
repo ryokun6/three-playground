@@ -36,6 +36,7 @@ export const useSpotifyPlayer = (
   });
   const playerRef = useRef<Spotify.Player | null>(null);
   const progressIntervalRef = useRef<number | null>(null);
+  const notificationTimeoutRef = useRef<NodeJS.Timeout>();
 
   const {
     lyrics: lines,
@@ -77,18 +78,6 @@ export const useSpotifyPlayer = (
     };
   }, [controls.isPlaying, updateCurrentLine]);
 
-  // Track change notification
-  useEffect(() => {
-    if (!controls.currentTrack) return;
-
-    setControls((prev) => ({ ...prev, showTrackNotification: true }));
-    const timer = setTimeout(() => {
-      setControls((prev) => ({ ...prev, showTrackNotification: false }));
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [controls.currentTrack]);
-
   const handlePlayerStateChanged = useCallback(
     (state: Spotify.PlaybackState | null) => {
       if (!state) return;
@@ -96,11 +85,22 @@ export const useSpotifyPlayer = (
       setControls((prev) => {
         const trackChanged =
           prev.currentTrack?.id !== state.track_window.current_track.id;
+
+        if (trackChanged) {
+          if (notificationTimeoutRef.current) {
+            clearTimeout(notificationTimeoutRef.current);
+          }
+          notificationTimeoutRef.current = setTimeout(() => {
+            setControls((prev) => ({ ...prev, showTrackNotification: false }));
+          }, 3000);
+        }
+
         return {
           ...prev,
           isPlaying: !state.paused,
           currentTrack: state.track_window.current_track,
           ...(trackChanged && {
+            showTrackNotification: true,
             lyrics: {
               lines: [],
               currentLine: 0,

@@ -10,11 +10,13 @@ import {
   PiSignOutBold,
   PiDiceFiveBold,
   PiTextTBold,
+  PiMicrophoneStageBold,
 } from "react-icons/pi";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MobileGestures } from "./MobileGestures";
 import { Leva } from "leva";
 import { SpotifyControls } from "../../hooks/useSpotifyPlayer";
+import { ChineseVariant, KoreanDisplay } from "../../types/scene";
 
 interface ControlsProps {
   audioEnabled: boolean;
@@ -33,6 +35,12 @@ interface ControlsProps {
   };
   onSpotifyLogin?: () => void;
   onSpotifyLogout?: () => void;
+  onChineseVariantToggle: () => ChineseVariant;
+  onKoreanDisplayToggle: () => KoreanDisplay;
+  chineseVariant: ChineseVariant;
+  koreanDisplay: KoreanDisplay;
+  ktvMode: boolean;
+  onKtvToggle: () => void;
 }
 
 export const Controls = ({
@@ -48,6 +56,12 @@ export const Controls = ({
   spotifyControls,
   onSpotifyLogin,
   onSpotifyLogout,
+  onChineseVariantToggle,
+  onKoreanDisplayToggle,
+  chineseVariant,
+  koreanDisplay,
+  ktvMode,
+  onKtvToggle,
 }: ControlsProps) => {
   return (
     <>
@@ -129,6 +143,54 @@ export const Controls = ({
                         className={`w-5 h-5 ${showLyrics ? "text-white" : ""}`}
                       />
                     </button>
+                    <button
+                      onClick={() => {
+                        onKtvToggle();
+                        showToast(`KTV mode ${!ktvMode ? "on" : "off"}`);
+                      }}
+                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                      title={ktvMode ? "KTV mode off" : "KTV mode on"}
+                    >
+                      <PiMicrophoneStageBold
+                        className={`w-5 h-5 ${ktvMode ? "text-white" : ""}`}
+                      />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const next = onChineseVariantToggle();
+                        showToast(`Chinese: ${next}`);
+                      }}
+                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                      title={`Chinese: ${chineseVariant}`}
+                    >
+                      <span
+                        className={`text-sm font-bold ${
+                          chineseVariant !== ChineseVariant.Original
+                            ? "text-white"
+                            : ""
+                        }`}
+                      >
+                        繁
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        const next = onKoreanDisplayToggle();
+                        showToast(`Korean: ${next}`);
+                      }}
+                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                      title={`Korean: ${koreanDisplay}`}
+                    >
+                      <span
+                        className={`text-sm font-bold ${
+                          koreanDisplay !== KoreanDisplay.Original
+                            ? "text-white"
+                            : ""
+                        }`}
+                      >
+                        한
+                      </span>
+                    </button>
                     {onSpotifyLogout && (
                       <button
                         onClick={() => {
@@ -193,11 +255,11 @@ export const Controls = ({
             className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
             title={autoPlay ? "Turn off auto-play" : "Turn on auto-play"}
           >
-            {autoPlay ? (
-              <PiPauseBold className="w-5 h-5" />
-            ) : (
-              <PiDiceFiveBold className="w-5 h-5" />
-            )}
+            <PiDiceFiveBold
+              className={`w-5 h-5 transition-transform duration-[4000ms] ${
+                autoPlay ? "animate-[spin_4s_linear_infinite]" : ""
+              }`}
+            />
           </button>
           <button
             onClick={onLevaToggle}
