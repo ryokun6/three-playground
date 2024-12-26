@@ -112,7 +112,7 @@ export const LyricsDisplay = ({
       case LyricsFont.Rounded:
         return "'Arial Rounded MT Bold','YuanTi TC', 'Yuanti SC', 'Hiragino Maru Gothic ProN', 'BM Jua',  system-ui";
       default:
-        return "-apple-system, BlinkMacSystemFont, Segoe UI Variable, Segoe UI, system-ui";
+        return "-apple-system, BlinkMacSystemFont, 'Yu Gothic', 'Hiragino Sans', 'PingFang TC', 'PingFang SC', 'Segoe UI Variable', Segoe UI, system-ui";
     }
   };
 
