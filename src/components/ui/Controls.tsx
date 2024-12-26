@@ -9,7 +9,8 @@ import {
   PiSkipForwardBold,
   PiSignOutBold,
   PiDiceFiveBold,
-  PiTextTBold,
+  PiTextAlignCenterBold,
+  PiTextAlignJustifyBold,
   PiMicrophoneStageBold,
 } from "react-icons/pi";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
@@ -139,58 +140,59 @@ export const Controls = ({
                       className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
                       title={showLyrics ? "Hide lyrics" : "Show lyrics"}
                     >
-                      <PiTextTBold
+                      <PiMicrophoneStageBold
                         className={`w-5 h-5 ${showLyrics ? "text-white" : ""}`}
                       />
                     </button>
-                    <button
-                      onClick={() => {
-                        onKtvToggle();
-                        showToast(`KTV mode ${!ktvMode ? "on" : "off"}`);
-                      }}
-                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                      title={ktvMode ? "KTV mode off" : "KTV mode on"}
-                    >
-                      <PiMicrophoneStageBold
-                        className={`w-5 h-5 ${ktvMode ? "text-white" : ""}`}
-                      />
-                    </button>
-                    <button
-                      onClick={() => {
-                        const next = onChineseVariantToggle();
-                        showToast(`Chinese: ${next}`);
-                      }}
-                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                      title={`Chinese: ${chineseVariant}`}
-                    >
-                      <span
-                        className={`text-sm font-bold ${
-                          chineseVariant !== ChineseVariant.Original
-                            ? "text-white"
-                            : ""
-                        }`}
-                      >
-                        繁
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        const next = onKoreanDisplayToggle();
-                        showToast(`Korean: ${next}`);
-                      }}
-                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                      title={`Korean: ${koreanDisplay}`}
-                    >
-                      <span
-                        className={`text-sm font-bold ${
-                          koreanDisplay !== KoreanDisplay.Original
-                            ? "text-white"
-                            : ""
-                        }`}
-                      >
-                        한
-                      </span>
-                    </button>
+                    {showLyrics && (
+                      <>
+                        <button
+                          onClick={() => {
+                            const next = onChineseVariantToggle();
+                            showToast(`Chinese: ${next}`);
+                          }}
+                          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                          title={`Toggle Chinese variant`}
+                        >
+                          <span>
+                            {chineseVariant === ChineseVariant.Original
+                              ? "简"
+                              : "繁"}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            const next = onKoreanDisplayToggle();
+                            showToast(`Korean: ${next}`);
+                          }}
+                          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                          title={`Toggle Korean romanization`}
+                        >
+                          <span
+                            className={`w-5 h-5 inline-flex items-center justify-center text-md font-bold 
+                            }`}
+                          >
+                            {koreanDisplay === KoreanDisplay.Original
+                              ? "한"
+                              : "EN"}
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            onKtvToggle();
+                            showToast(`KTV mode ${!ktvMode ? "on" : "off"}`);
+                          }}
+                          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                          title={`Turn ${ktvMode ? "off" : "on"} KTV mode`}
+                        >
+                          {ktvMode ? (
+                            <PiTextAlignJustifyBold className="w-5 h-5" />
+                          ) : (
+                            <PiTextAlignCenterBold className="w-5 h-5" />
+                          )}
+                        </button>
+                      </>
+                    )}
                     {onSpotifyLogout && (
                       <button
                         onClick={() => {
