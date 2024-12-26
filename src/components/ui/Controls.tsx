@@ -123,7 +123,8 @@ export const Controls = ({
                             : "text-white/30"
                         }
                       >
-                        {spotifyControls.currentTrack?.name ?? "Connected"}
+                        {spotifyControls.currentTrack?.name ??
+                          "Play on Particle Simulator"}
                       </span>{" "}
                       {spotifyControls.currentTrack?.artists?.[0]?.name ? (
                         <span className="text-white/30 pl-1">
@@ -277,9 +278,15 @@ export const Controls = ({
         {/* Other Controls - Bottom Right */}
         <div
           className="fixed bottom-4 right-4 flex gap-2 md:flex-row flex-col"
-          onTouchStart={(e) => e.stopPropagation()}
-          onTouchMove={(e) => e.stopPropagation()}
-          onTouchEnd={(e) => e.stopPropagation()}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+          }}
+          onTouchMove={(e) => {
+            e.stopPropagation();
+          }}
+          onTouchEnd={(e) => {
+            e.stopPropagation();
+          }}
         >
           <KeyboardShortcuts />
           <MobileGestures />

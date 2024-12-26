@@ -17,11 +17,6 @@ export const MobileGestures = () => {
 
   if (!isMobile) return null;
 
-  const handleDismiss = () => {
-    setIsVisible(false);
-    localStorage.setItem("mobileGesturesDismissed", "true");
-  };
-
   const handleToggle = () => {
     const newState = !isVisible;
     setIsVisible(newState);
@@ -29,39 +24,36 @@ export const MobileGestures = () => {
   };
 
   return (
-    <>
-      {isVisible ? (
-        <div className="bg-black/80 text-white/40 px-4 py-2 rounded-lg shadow-lg font-mono text-xs">
+    <div className="relative">
+      {isVisible && (
+        <div
+          onClick={handleToggle}
+          className="absolute right-12 ml-4 bg-black/80 text-white/40 px-4 py-2 rounded-lg shadow-lg font-mono text-xs whitespace-nowrap cursor-pointer hover:bg-black hover:text-white/60 transition-colors"
+        >
           <div className="flex flex-col gap-2">
-            <div className="flex gap-4 items-center">
-              <div>
-                <span className="text-white">Tap</span> change camera
-              </div>
-              <div>
-                <span className="text-white">Hold</span> randomize physics
-              </div>
-              <div>
-                <span className="text-white">Swipe</span> change shape
-              </div>
-              <button
-                onClick={handleDismiss}
-                className="ml-2 text-white/40 hover:text-white transition-colors"
-                title="Hide gesture tips"
-              >
-                <PiXBold className="w-4 h-4" />
-              </button>
+            <div>
+              <span className="text-white">Tap</span> change camera
+            </div>
+            <div>
+              <span className="text-white">Hold</span> randomize physics
+            </div>
+            <div>
+              <span className="text-white">Swipe</span> change shape
             </div>
           </div>
         </div>
-      ) : (
-        <button
-          onClick={handleToggle}
-          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-          title="Show gesture tips"
-        >
-          <PiHandTapBold className="w-5 h-5" />
-        </button>
       )}
-    </>
+      <button
+        onClick={handleToggle}
+        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+        title="Show gesture tips"
+      >
+        {isVisible ? (
+          <PiXBold className="w-5 h-5" />
+        ) : (
+          <PiHandTapBold className="w-5 h-5" />
+        )}
+      </button>
+    </div>
   );
 };

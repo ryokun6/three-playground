@@ -20,48 +20,35 @@ export const useGestureHandling = ({
     let initialTouchTarget: EventTarget | null = null;
 
     const handleTouchStart = (e: TouchEvent) => {
-      // Store the initial touch target
       initialTouchTarget = e.target;
-
-      // Check if the touch event originated from UI elements
       const target = e.target as HTMLElement;
-      if (
-        target.closest("button") ||
-        target.closest("[class^='leva-']") ||
-        target.closest(".fixed")
-      ) {
+
+      // Only prevent gestures on obvious UI elements
+      if (target.tagName === "BUTTON" || target.closest("[role='button']")) {
         return;
       }
 
-      // If we got here, we're interacting with the scene
       setIsActiveGesture(true);
-
       setTouchStartTime(Date.now());
       setTouchStartX(e.touches[0].clientX);
 
-      // Start hold timer
       const timer = window.setTimeout(() => {
-        // Long press - randomize physics
         if (isActiveGesture) {
           onRandomizePhysics();
         }
-      }, 500); // 500ms hold time
+      }, 500);
 
       setHoldTimer(timer);
     };
 
-    const handleTouchMove = () => {
+    const handleTouchMove = (e: TouchEvent) => {
       if (!isActiveGesture) return;
+      e.preventDefault();
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      // Check if this touch end is for a UI element touch that started on a UI element
       const target = initialTouchTarget as HTMLElement;
-      if (
-        target?.closest("button") ||
-        target?.closest("[class^='leva-']") ||
-        target?.closest(".fixed")
-      ) {
+      if (target?.tagName === "BUTTON" || target?.closest("[role='button']")) {
         initialTouchTarget = null;
         return;
       }
@@ -71,7 +58,6 @@ export const useGestureHandling = ({
         return;
       }
 
-      // Clear hold timer
       if (holdTimer) {
         clearTimeout(holdTimer);
         setHoldTimer(null);
@@ -81,12 +67,9 @@ export const useGestureHandling = ({
       const touchEndX = e.changedTouches[0].clientX;
       const swipeDistance = touchEndX - touchStartX;
 
-      // Handle swipe (minimum 50px distance)
       if (Math.abs(swipeDistance) > 50) {
         onRandomizeShape();
-      }
-      // Handle quick tap (under 200ms)
-      else if (touchDuration < 200) {
+      } else if (touchDuration < 200) {
         onRandomizeCamera();
       }
 
@@ -103,16 +86,19 @@ export const useGestureHandling = ({
       initialTouchTarget = null;
     };
 
-    window.addEventListener("touchstart", handleTouchStart, { passive: false });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd);
-    window.addEventListener("touchcancel", handleTouchCancel);
+    // Add listeners to document instead of canvas
+    document.addEventListener("touchstart", handleTouchStart, {
+      passive: false,
+    });
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
+    document.addEventListener("touchcancel", handleTouchCancel);
 
     return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("touchcancel", handleTouchCancel);
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+      document.removeEventListener("touchcancel", handleTouchCancel);
       if (holdTimer) clearTimeout(holdTimer);
     };
   }, [
