@@ -188,7 +188,7 @@ function App() {
               }}
               className="fixed bottom-2 left-2 origin-bottom-left z-50"
             >
-              <div className="bg-black/40 backdrop-blur-sm p-3 min-w-[300px] rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-black/20 backdrop-blur-md p-3 min-w-[300px] rounded-xl shadow-lg flex items-center gap-4">
                 {spotifyControls.currentTrack.album?.images?.[0]?.url && (
                   <img
                     src={spotifyControls.currentTrack.album.images[0].url}

@@ -194,12 +194,20 @@ export const LyricsDisplay = ({
                   ease: "easeInOut",
                 },
               }}
-              className="px-4 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white font-semibold"
+              className="px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white font-semibold"
               style={{
                 fontFamily: getFontFamily(font),
                 textAlign: getTextAlign(index),
                 width: "100%",
                 fontSize: `calc(clamp(2rem,4vw,5rem) * ${fontSize})`,
+                paddingLeft:
+                  alignment === LyricsAlignment.Alternating && index === 0
+                    ? "5%"
+                    : undefined,
+                paddingRight:
+                  alignment === LyricsAlignment.Alternating && index === 1
+                    ? "5%"
+                    : undefined,
               }}
             >
               {processText(line.words)}
