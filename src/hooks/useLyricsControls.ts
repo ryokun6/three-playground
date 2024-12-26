@@ -69,7 +69,7 @@ export const useLyricsControls = () => {
   const toggleKtvMode = useCallback(() => {
     const newKtvMode = !lyricsControls.ktvMode;
     setLyricsControls({
-      font: newKtvMode ? LyricsFont.Rounded : LyricsFont.Default,
+      font: newKtvMode ? LyricsFont.Serif : LyricsFont.Default,
       alignment: newKtvMode
         ? LyricsAlignment.Alternating
         : LyricsAlignment.Center,

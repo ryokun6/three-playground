@@ -94,7 +94,7 @@ export const Controls = ({
                   onMouseLeave={() => setShowSpotifyControls(false)}
                 >
                   <div
-                    className="bg-black/40 text-white/60 p-2 rounded-lg shadow-lg flex items-center gap-2 cursor-pointer hover:bg-black/60"
+                    className="text-white/60 p-2 rounded-lg hover:shadow-lg flex items-center gap-2 cursor-pointer hover:bg-black/60 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowSpotifyControls(!showSpotifyControls);
@@ -104,7 +104,7 @@ export const Controls = ({
                       <img
                         src={spotifyControls.currentTrack.album.images[0].url}
                         alt="Album artwork"
-                        className="w-5 h-5 object-cover rounded cursor-pointer"
+                        className="w-6 h-6 object-cover rounded cursor-pointer"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -113,10 +113,18 @@ export const Controls = ({
                         }}
                       />
                     ) : (
-                      <PiSpotifyLogoBold className="w-5 h-5" />
+                      <PiSpotifyLogoBold className="w-5 h-5 text-white/30" />
                     )}
                     <span className="text-sm truncate max-w-[280px] flex items-center gap-1">
-                      {spotifyControls.currentTrack?.name ?? "Connected"}{" "}
+                      <span
+                        className={
+                          spotifyControls.currentTrack?.name
+                            ? "text-white/60"
+                            : "text-white/30"
+                        }
+                      >
+                        {spotifyControls.currentTrack?.name ?? "Connected"}
+                      </span>{" "}
                       {spotifyControls.currentTrack?.artists?.[0]?.name ? (
                         <span className="text-white/30 pl-1">
                           {spotifyControls.currentTrack.artists[0].name}
@@ -124,11 +132,13 @@ export const Controls = ({
                       ) : (
                         ""
                       )}
-                      <PiCaretRightBold
-                        className={`w-3 h-3 text-white/20 transition-transform ${
-                          showSpotifyControls ? "rotate-90" : ""
-                        }`}
-                      />
+                      {spotifyControls.currentTrack && (
+                        <PiCaretRightBold
+                          className={`w-3 h-3 text-white/20 transition-transform ${
+                            showSpotifyControls ? "rotate-90" : ""
+                          }`}
+                        />
+                      )}
                     </span>
                   </div>
 
@@ -191,7 +201,7 @@ export const Controls = ({
                             className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
                             title={`Toggle Chinese variant`}
                           >
-                            <span>
+                            <span className="w-5 h-5 inline-flex items-center justify-center text-md font-bold">
                               {chineseVariant === ChineseVariant.Original
                                 ? "简"
                                 : "繁"}
@@ -205,10 +215,7 @@ export const Controls = ({
                             className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
                             title={`Toggle Korean romanization`}
                           >
-                            <span
-                              className={`w-5 h-5 inline-flex items-center justify-center text-md font-bold 
-                              }`}
-                            >
+                            <span className="w-5 h-5 inline-flex items-center justify-center text-md font-bold">
                               {koreanDisplay === KoreanDisplay.Original
                                 ? "한"
                                 : "EN"}
