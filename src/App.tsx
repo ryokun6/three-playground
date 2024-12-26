@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Toast } from "./components/ui/Toast";
 import { Controls } from "./components/ui/Controls";
 import { LyricsDisplay } from "./components/LyricsDisplay";
+import { motion, AnimatePresence } from "motion/react";
 import { useToast } from "./hooks/useToast";
 import { useGestureHandling } from "./hooks/useGestureHandling";
 import { useAudioControls } from "./hooks/useAudioControls";
@@ -149,6 +150,51 @@ function App() {
           }}
         />
       </div>
+
+      <AnimatePresence>
+        {spotifyControls?.showTrackNotification &&
+          spotifyControls?.currentTrack && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, x: 16, y: -16 }}
+              animate={{ opacity: 1, scale: 1, x: 16, y: -16 }}
+              exit={{
+                opacity: 0,
+                scale: 0.3,
+                x: 0,
+                y: 0,
+                transition: {
+                  duration: 0.3,
+                  ease: "easeInOut",
+                },
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 400,
+                damping: 25,
+              }}
+              className="fixed bottom-2 left-2 origin-bottom-left z-50"
+            >
+              <div className="bg-black/40 backdrop-blur-sm p-3 min-w-[300px] rounded-lg shadow-lg flex items-center gap-4">
+                {spotifyControls.currentTrack.album?.images?.[0]?.url && (
+                  <img
+                    src={spotifyControls.currentTrack.album.images[0].url}
+                    alt="Album artwork"
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                )}
+                <div className="flex flex-col items-start">
+                  <span className="text-white font-medium text-lg">
+                    {spotifyControls.currentTrack.name}
+                  </span>
+                  <span className="text-white/60">
+                    {spotifyControls.currentTrack.artists[0].name}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+      </AnimatePresence>
+
       {!isUIHidden &&
         toasts.map((toast, index) => (
           <Toast

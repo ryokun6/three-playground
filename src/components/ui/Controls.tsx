@@ -61,7 +61,13 @@ export const Controls = ({
             onTouchEnd={(e) => e.stopPropagation()}
           >
             {spotifyControls?.isConnected ? (
-              <div className="flex gap-2">
+              <div
+                className={`flex gap-2 transition-opacity duration-300 ${
+                  spotifyControls.showTrackNotification
+                    ? "opacity-0"
+                    : "opacity-100"
+                }`}
+              >
                 <div className="group relative">
                   <div className="bg-black/40 text-white/60 p-2 rounded-lg shadow-lg flex items-center gap-2">
                     {spotifyControls.currentTrack?.album?.images?.[0]?.url ? (
@@ -73,11 +79,15 @@ export const Controls = ({
                     ) : (
                       <PiSpotifyLogoBold className="w-5 h-5" />
                     )}
-                    <span className="text-sm truncate max-w-[200px]">
-                      {spotifyControls.currentTrack?.name ?? "Not playing"}{" "}
-                      {spotifyControls.currentTrack?.artists?.[0]?.name
-                        ? `- ${spotifyControls.currentTrack.artists[0].name}`
-                        : ""}
+                    <span className="text-sm truncate max-w-[280px]">
+                      {spotifyControls.currentTrack?.name ?? "Connected"}{" "}
+                      {spotifyControls.currentTrack?.artists?.[0]?.name ? (
+                        <span className="text-white/30 pl-1">
+                          {spotifyControls.currentTrack.artists[0].name}
+                        </span>
+                      ) : (
+                        ""
+                      )}
                     </span>
                   </div>
 

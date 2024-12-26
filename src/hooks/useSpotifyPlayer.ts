@@ -12,6 +12,7 @@ export interface SpotifyControls {
     isLoading: boolean;
     error: string | null;
   };
+  showTrackNotification: boolean;
 }
 
 declare global {
@@ -31,6 +32,7 @@ export const useSpotifyPlayer = (
     currentTrack: null,
     error: null,
     lyrics: { lines: [], currentLine: 0, isLoading: false, error: null },
+    showTrackNotification: false,
   });
   const playerRef = useRef<Spotify.Player | null>(null);
   const progressIntervalRef = useRef<number | null>(null);
@@ -74,6 +76,18 @@ export const useSpotifyPlayer = (
       }
     };
   }, [controls.isPlaying, updateCurrentLine]);
+
+  // Track change notification
+  useEffect(() => {
+    if (!controls.currentTrack) return;
+
+    setControls((prev) => ({ ...prev, showTrackNotification: true }));
+    const timer = setTimeout(() => {
+      setControls((prev) => ({ ...prev, showTrackNotification: false }));
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [controls.currentTrack]);
 
   const handlePlayerStateChanged = useCallback(
     (state: Spotify.PlaybackState | null) => {
