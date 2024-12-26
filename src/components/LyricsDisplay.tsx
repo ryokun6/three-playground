@@ -44,7 +44,7 @@ const getVariants = (position: number, isAlternating: boolean) => ({
     filter: isAlternating
       ? "blur(0px)"
       : `blur(${position === 0 || position === 1 ? 0 : 3}px)`,
-    y: 0,
+    y: isAlternating ? 0 : position === 0 ? -10 : position === 1 ? -10 : 0,
     textShadow:
       position === 0
         ? "0 0 20px rgba(255,255,255,0.8)"
@@ -150,11 +150,12 @@ export const LyricsDisplay = ({
       ref={containerRef}
       layout
       transition={ANIMATION_CONFIG.spring}
-      className="fixed inset-x-0 mx-auto bottom-[6vh] w-[90%] overflow-hidden flex flex-col items-center gap-4 pointer-events-none z-30 pt-8"
+      className="fixed inset-x-0 mx-auto bottom-16 w-[90%] overflow-hidden flex flex-col items-center gap-4 pointer-events-none z-30 pt-12"
       style={{
         maskImage:
           "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent 100%)",
         height: `calc(30vh * ${Math.sqrt(fontSize)})`,
+        minHeight: "250px",
       }}
     >
       <AnimatePresence mode="popLayout">
