@@ -108,9 +108,9 @@ export const LyricsDisplay = ({
   const getFontFamily = (font: LyricsFont) => {
     switch (font) {
       case LyricsFont.Serif:
-        return "Hiragino Mincho ProN, serif";
+        return "YuMincho, 'Hiragino Mincho ProN', 'Nanum Myeongjo', serif";
       case LyricsFont.Rounded:
-        return "'YuanTi SC', 'Hiragino Maru Gothic Pro N', Arial Rounded MT Pro, system-ui";
+        return "'Arial Rounded MT Bold','YuanTi TC', 'Yuanti SC', 'Hiragino Maru Gothic ProN', 'BM Jua',  system-ui";
       default:
         return "-apple-system, BlinkMacSystemFont, Segoe UI Variable, Segoe UI, system-ui";
     }

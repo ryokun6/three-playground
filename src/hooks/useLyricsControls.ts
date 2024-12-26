@@ -38,12 +38,12 @@ export const useLyricsControls = () => {
         chineseVariant: {
           value: ChineseVariant.Traditional,
           options: Object.values(ChineseVariant),
-          label: "chinese variant",
+          label: "chineseVariant",
         },
         koreanDisplay: {
           value: KoreanDisplay.Original,
           options: Object.values(KoreanDisplay),
-          label: "korean display",
+          label: "koreanDisplay",
         },
       }),
     }),
