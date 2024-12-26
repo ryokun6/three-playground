@@ -1,5 +1,5 @@
 import { Scene } from "./components/Scene";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toast } from "./components/ui/Toast";
 import { Controls } from "./components/ui/Controls";
 import { useToast } from "./hooks/useToast";
@@ -19,6 +19,25 @@ function App() {
     return stored === null ? true : stored === "true";
   });
   const [isUIHidden, setIsUIHidden] = useState(false);
+  const [isUIDimmed, setIsUIDimmed] = useState(false);
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    const resetTimer = () => {
+      setIsUIDimmed(false);
+      clearTimeout(timeout);
+      timeout = setTimeout(() => setIsUIDimmed(true), 3000);
+    };
+
+    const events = ["mousemove", "keydown", "touchstart"];
+    events.forEach((event) => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+      clearTimeout(timeout);
+    };
+  }, []);
 
   const { toasts, showToast, hideToast } = useToast();
   const visualControls = useVisualControls();
@@ -112,11 +131,15 @@ function App() {
           dataArrayRef.current = dataArray;
         }}
       />
-      <div
-        className={`transition-opacity duration-200 ${
-          isUIHidden ? "opacity-0 pointer-events-none" : "opacity-100"
-        }`}
-      >
+      <div className={isUIHidden ? "opacity-0 pointer-events-none" : ""}>
+        <style>{`
+          @media (min-width: 768px) {
+            .controls-wrapper {
+              transition: opacity 0.6s;
+              opacity: ${isUIDimmed ? "0" : "1"};
+            }
+          }
+        `}</style>
         <Controls
           audioEnabled={audioControls.enabled}
           autoPlay={audioControls.autoPlay}
