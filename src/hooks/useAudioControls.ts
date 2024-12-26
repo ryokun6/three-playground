@@ -45,7 +45,7 @@ export const useAudioControls = ({ onBeat }: UseAudioControlsProps) => {
     autoPlaySettings: folder(
       {
         autoPlay: {
-          value: false,
+          value: true,
           label: "autoPlay",
         },
         beatThreshold: {

@@ -20,6 +20,7 @@ function App() {
   });
   const [isUIHidden, setIsUIHidden] = useState(false);
   const [isUIDimmed, setIsUIDimmed] = useState(false);
+  const [showLyrics, setShowLyrics] = useState(true);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -96,6 +97,8 @@ function App() {
     updateCameraControls,
     handleRandomizeShape,
     showToast,
+    setShowLyrics,
+    showLyrics,
   });
 
   const handleLevaToggle = () => {
@@ -144,6 +147,7 @@ function App() {
           audioEnabled={audioControls.enabled}
           autoPlay={audioControls.autoPlay}
           isLevaHidden={isLevaHidden}
+          showLyrics={showLyrics}
           onAudioToggle={() => {
             setAudioControls({ enabled: !audioControls.enabled });
             showToast(`Audio ${!audioControls.enabled ? "on" : "off"}`);
@@ -152,6 +156,7 @@ function App() {
             setAudioControls({ autoPlay: !audioControls.autoPlay });
           }}
           onLevaToggle={handleLevaToggle}
+          onLyricsToggle={() => setShowLyrics(!showLyrics)}
           showToast={showToast}
           spotifyControls={spotifyControls}
           onSpotifyLogin={() => {

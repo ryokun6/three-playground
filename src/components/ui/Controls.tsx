@@ -9,6 +9,7 @@ import {
   PiSkipForwardBold,
   PiSignOutBold,
   PiDiceFiveBold,
+  PiTextTBold,
 } from "react-icons/pi";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MobileGestures } from "./MobileGestures";
@@ -20,9 +21,11 @@ interface ControlsProps {
   audioEnabled: boolean;
   autoPlay: boolean;
   isLevaHidden: boolean;
+  showLyrics: boolean;
   onAudioToggle: () => void;
   onAutoPlayToggle: () => void;
   onLevaToggle: () => void;
+  onLyricsToggle: () => void;
   showToast: (message: string) => void;
   spotifyControls?: SpotifyControls & {
     togglePlay: () => Promise<void>;
@@ -37,9 +40,11 @@ export const Controls = ({
   audioEnabled,
   autoPlay,
   isLevaHidden,
+  showLyrics,
   onAudioToggle,
   onAutoPlayToggle,
   onLevaToggle,
+  onLyricsToggle,
   showToast,
   spotifyControls,
   onSpotifyLogin,
@@ -82,6 +87,18 @@ export const Controls = ({
                   title="Next track"
                 >
                   <PiSkipForwardBold className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => {
+                    onLyricsToggle();
+                    showToast(`Lyrics ${!showLyrics ? "shown" : "hidden"}`);
+                  }}
+                  className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                  title={showLyrics ? "Hide lyrics" : "Show lyrics"}
+                >
+                  <PiTextTBold
+                    className={`w-5 h-5 ${showLyrics ? "text-white" : ""}`}
+                  />
                 </button>
                 {spotifyControls.currentTrack && (
                   <div className="bg-black/40 text-white/60 p-2 rounded-lg shadow-lg flex items-center gap-2">
@@ -179,7 +196,7 @@ export const Controls = ({
             <PiSlidersBold className="w-5 h-5" />
           </button>
           <div
-            className="leva-container absolute bottom-12 right-4 w-72 max-w-[calc(100vw-24px)] max-h-[calc(100vh-100px)] overflow-y-auto"
+            className="leva-container absolute bottom-12 right-4 w-72 max-w-[calc(100vw-24px)] max-h-[calc(100vh-100px)] overflow-y-auto z-50"
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
@@ -190,7 +207,7 @@ export const Controls = ({
       </div>
 
       {/* Lyrics Display - Outside of dimming wrapper */}
-      {spotifyControls?.currentTrack && (
+      {spotifyControls?.currentTrack && showLyrics && (
         <div className="mb-4">
           <LyricsDisplay controls={spotifyControls} />
         </div>

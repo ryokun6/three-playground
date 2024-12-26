@@ -19,6 +19,8 @@ interface UseKeyboardShortcutsProps {
   updateCameraControls: (values: Partial<CameraControls>) => void;
   handleRandomizeShape: () => string | null;
   showToast: (message: string) => void;
+  setShowLyrics: (show: boolean) => void;
+  showLyrics: boolean;
 }
 
 export const useKeyboardShortcuts = ({
@@ -31,6 +33,8 @@ export const useKeyboardShortcuts = ({
   updateCameraControls,
   handleRandomizeShape,
   showToast,
+  setShowLyrics,
+  showLyrics,
 }: UseKeyboardShortcutsProps) => {
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -74,6 +78,10 @@ export const useKeyboardShortcuts = ({
           setAudioControls({ autoPlay: !audioControls.autoPlay });
           showToast(`Auto-play ${!audioControls.autoPlay ? "on" : "off"}`);
           break;
+        case "f":
+          setShowLyrics(!showLyrics);
+          showToast(`Lyrics ${!showLyrics ? "shown" : "hidden"}`);
+          break;
       }
     };
 
@@ -89,5 +97,7 @@ export const useKeyboardShortcuts = ({
     showToast,
     handleRandomizeShape,
     setShape,
+    setShowLyrics,
+    showLyrics,
   ]);
 };

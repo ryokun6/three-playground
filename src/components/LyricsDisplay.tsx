@@ -1,6 +1,6 @@
 import { type SpotifyControls } from "../hooks/useSpotifyPlayer";
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useRef, useMemo } from "react";
+import { useRef, useMemo } from "react";
 
 const ANIMATION_CONFIG = {
   spring: {
@@ -19,19 +19,25 @@ const getVariants = (position: number) => ({
     opacity: 0,
     scale: 0.8,
     filter: "blur(3px)",
-    y: 20,
+    y: 10,
+    textShadow: "0 0 0px rgba(255,255,255,0)",
   },
   animate: {
     opacity: position === 0 ? 1 : position === 1 ? 0.5 : 0.1,
     scale: position === 0 || position === 1 ? 1 : 0.9,
     filter: `blur(${position === 0 || position === 1 ? 0 : 3}px)`,
-    y: 0,
+    y: position === 0 ? 0 : position === 1 ? 0 : 0,
+    textShadow:
+      position === 0
+        ? "0 0 20px rgba(255,255,255,0.8)"
+        : "0 0 0px rgba(255,255,255,0)",
   },
   exit: {
     opacity: 0,
     scale: 0.9,
     filter: "blur(5px)",
-    y: -20,
+    y: -10,
+    textShadow: "0 0 0px rgba(255,255,255,0)",
   },
 });
 
@@ -53,20 +59,6 @@ export const LyricsDisplay = ({ controls }: LyricsDisplayProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const currentLineRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    const element = currentLineRef.current;
-    if (!container || !element || currentLine < 0) return;
-
-    container.scrollTo({
-      top:
-        element.offsetTop -
-        container.clientHeight / 2 +
-        element.clientHeight / 2,
-      behavior: "smooth",
-    });
-  }, [currentLine]);
-
   const visibleLines = useMemo(() => {
     if (currentLine < 0) return lines.slice(0, 2);
     return lines.slice(Math.max(0, currentLine - 1), currentLine + 2);
@@ -81,7 +73,7 @@ export const LyricsDisplay = ({ controls }: LyricsDisplayProps) => {
       ref={containerRef}
       layout
       transition={ANIMATION_CONFIG.spring}
-      className="fixed bottom-[5vh] left-1/2 -translate-x-1/2 w-full h-[30vh] overflow-hidden flex flex-col items-center"
+      className="fixed inset-x-0 mx-auto bottom-[6vh] w-[90%] h-[30vh] overflow-hidden flex flex-col items-center gap-4 pointer-events-none"
       style={{
         maskImage:
           "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent 100%)",
@@ -105,8 +97,17 @@ export const LyricsDisplay = ({ controls }: LyricsDisplayProps) => {
                 ...ANIMATION_CONFIG.spring,
                 opacity: ANIMATION_CONFIG.fade,
                 filter: ANIMATION_CONFIG.fade,
+                textShadow: {
+                  duration:
+                    position === 0 && index < visibleLines.length - 1
+                      ? (parseInt(visibleLines[index + 1].startTimeMs) -
+                          parseInt(line.startTimeMs)) /
+                        1000
+                      : 2,
+                  ease: "easeInOut",
+                },
               }}
-              className="px-4 text-[clamp(1rem,4vw,5rem)] text-center whitespace-pre-wrap break-words max-w-full text-white font-semibold"
+              className="px-4 text-[clamp(1rem,4vw,5rem)] leading-[1] text-center whitespace-pre-wrap break-words max-w-full text-white font-semibold"
             >
               {line.words}
             </motion.div>

@@ -33,6 +33,9 @@ export const KeyboardShortcuts = () => {
               <span className="text-white">D</span> auto-play
             </div>
             <div>
+              <span className="text-white">F</span> lyrics
+            </div>
+            <div>
               <span className="text-white">Z</span> physics
             </div>
             <div>
