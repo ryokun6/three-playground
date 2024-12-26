@@ -114,6 +114,20 @@ export const useSpotifyPlayer = (
     []
   );
 
+  const setShowTrackNotification = useCallback((show: boolean) => {
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current);
+    }
+
+    setControls((prev) => ({ ...prev, showTrackNotification: show }));
+
+    if (show) {
+      notificationTimeoutRef.current = setTimeout(() => {
+        setControls((prev) => ({ ...prev, showTrackNotification: false }));
+      }, 3000);
+    }
+  }, []);
+
   const initializePlayer = useCallback(
     async (deviceId: string, player: Spotify.Player) => {
       if (!token) return;
@@ -220,5 +234,6 @@ export const useSpotifyPlayer = (
     nextTrack: () => playerAction(() => playerRef.current!.nextTrack()),
     previousTrack: () => playerAction(() => playerRef.current!.previousTrack()),
     isPlaying: controls.isPlaying,
+    setShowTrackNotification,
   };
 };

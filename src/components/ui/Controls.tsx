@@ -1,3 +1,4 @@
+import React from "react";
 import {
   PiMicrophoneBold,
   PiMicrophoneSlashBold,
@@ -12,6 +13,7 @@ import {
   PiTextAlignCenterBold,
   PiTextAlignJustifyBold,
   PiMicrophoneStageBold,
+  PiCaretRightBold,
 } from "react-icons/pi";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MobileGestures } from "./MobileGestures";
@@ -33,6 +35,7 @@ interface ControlsProps {
     togglePlay: () => Promise<void>;
     nextTrack: () => Promise<void>;
     previousTrack: () => Promise<void>;
+    setShowTrackNotification: (show: boolean) => void;
   };
   onSpotifyLogin?: () => void;
   onSpotifyLogout?: () => void;
@@ -64,13 +67,15 @@ export const Controls = ({
   ktvMode,
   onKtvToggle,
 }: ControlsProps) => {
+  const [showSpotifyControls, setShowSpotifyControls] = React.useState(false);
+
   return (
     <>
       {/* Spotify Controls - Bottom Left */}
       <div className="controls-wrapper">
         {(spotifyControls?.isConnected || onSpotifyLogin) && (
           <div
-            className="fixed bottom-4 left-4 flex gap-2"
+            className="fixed bottom-4 left-4 flex gap-2 md:flex-row flex-col"
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
@@ -83,18 +88,34 @@ export const Controls = ({
                     : "opacity-100"
                 }`}
               >
-                <div className="group relative">
-                  <div className="bg-black/40 text-white/60 p-2 rounded-lg shadow-lg flex items-center gap-2">
+                <div
+                  className="group relative"
+                  onMouseEnter={() => setShowSpotifyControls(true)}
+                  onMouseLeave={() => setShowSpotifyControls(false)}
+                >
+                  <div
+                    className="bg-black/40 text-white/60 p-2 rounded-lg shadow-lg flex items-center gap-2 cursor-pointer hover:bg-black/60"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSpotifyControls(!showSpotifyControls);
+                    }}
+                  >
                     {spotifyControls.currentTrack?.album?.images?.[0]?.url ? (
                       <img
                         src={spotifyControls.currentTrack.album.images[0].url}
                         alt="Album artwork"
-                        className="w-5 h-5 object-cover rounded"
+                        className="w-5 h-5 object-cover rounded cursor-pointer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          spotifyControls.setShowTrackNotification(true);
+                          setShowSpotifyControls(false);
+                        }}
                       />
                     ) : (
                       <PiSpotifyLogoBold className="w-5 h-5" />
                     )}
-                    <span className="text-sm truncate max-w-[280px]">
+                    <span className="text-sm truncate max-w-[280px] flex items-center gap-1">
                       {spotifyControls.currentTrack?.name ?? "Connected"}{" "}
                       {spotifyControls.currentTrack?.artists?.[0]?.name ? (
                         <span className="text-white/30 pl-1">
@@ -103,110 +124,127 @@ export const Controls = ({
                       ) : (
                         ""
                       )}
+                      <PiCaretRightBold
+                        className={`w-3 h-3 text-white/20 transition-transform ${
+                          showSpotifyControls ? "rotate-90" : ""
+                        }`}
+                      />
                     </span>
                   </div>
 
-                  <div className="absolute left-0 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                    <button
-                      onClick={spotifyControls.previousTrack}
-                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                      title="Previous track"
-                    >
-                      <PiSkipBackBold className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={spotifyControls.togglePlay}
-                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                      title={spotifyControls.isPlaying ? "Pause" : "Play"}
-                    >
-                      {spotifyControls.isPlaying ? (
-                        <PiPauseBold className="w-5 h-5" />
-                      ) : (
-                        <PiPlayBold className="w-5 h-5" />
-                      )}
-                    </button>
-                    <button
-                      onClick={spotifyControls.nextTrack}
-                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                      title="Next track"
-                    >
-                      <PiSkipForwardBold className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        onLyricsToggle();
-                        showToast(`Lyrics ${!showLyrics ? "shown" : "hidden"}`);
-                      }}
-                      className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                      title={showLyrics ? "Hide lyrics" : "Show lyrics"}
-                    >
-                      <PiMicrophoneStageBold
-                        className={`w-5 h-5 ${showLyrics ? "text-white" : ""}`}
-                      />
-                    </button>
-                    {showLyrics && (
-                      <>
-                        <button
-                          onClick={() => {
-                            const next = onChineseVariantToggle();
-                            showToast(`Chinese: ${next}`);
-                          }}
-                          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                          title={`Toggle Chinese variant`}
-                        >
-                          <span>
-                            {chineseVariant === ChineseVariant.Original
-                              ? "简"
-                              : "繁"}
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            const next = onKoreanDisplayToggle();
-                            showToast(`Korean: ${next}`);
-                          }}
-                          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                          title={`Toggle Korean romanization`}
-                        >
-                          <span
-                            className={`w-5 h-5 inline-flex items-center justify-center text-md font-bold 
-                            }`}
-                          >
-                            {koreanDisplay === KoreanDisplay.Original
-                              ? "한"
-                              : "EN"}
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            onKtvToggle();
-                            showToast(`KTV mode ${!ktvMode ? "on" : "off"}`);
-                          }}
-                          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                          title={`Turn ${ktvMode ? "off" : "on"} KTV mode`}
-                        >
-                          {ktvMode ? (
-                            <PiTextAlignJustifyBold className="w-5 h-5" />
-                          ) : (
-                            <PiTextAlignCenterBold className="w-5 h-5" />
-                          )}
-                        </button>
-                      </>
-                    )}
-                    {onSpotifyLogout && (
+                  <div
+                    className={`absolute left-0 bottom-full transition-all ${
+                      showSpotifyControls
+                        ? "opacity-100"
+                        : "opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <div className="flex gap-2 pb-2">
+                      <button
+                        onClick={spotifyControls.previousTrack}
+                        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                        title="Previous track"
+                      >
+                        <PiSkipBackBold className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={spotifyControls.togglePlay}
+                        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                        title={spotifyControls.isPlaying ? "Pause" : "Play"}
+                      >
+                        {spotifyControls.isPlaying ? (
+                          <PiPauseBold className="w-5 h-5" />
+                        ) : (
+                          <PiPlayBold className="w-5 h-5" />
+                        )}
+                      </button>
+                      <button
+                        onClick={spotifyControls.nextTrack}
+                        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                        title="Next track"
+                      >
+                        <PiSkipForwardBold className="w-5 h-5" />
+                      </button>
                       <button
                         onClick={() => {
-                          onSpotifyLogout();
-                          if (spotifyControls.error) {
-                            showToast(spotifyControls.error);
-                          }
+                          onLyricsToggle();
+                          showToast(
+                            `Lyrics ${!showLyrics ? "shown" : "hidden"}`
+                          );
                         }}
                         className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-                        title="Disconnect Spotify"
+                        title={showLyrics ? "Hide lyrics" : "Show lyrics"}
                       >
-                        <PiSignOutBold className="w-5 h-5" />
+                        <PiMicrophoneStageBold
+                          className={`w-5 h-5 ${
+                            showLyrics ? "text-white" : ""
+                          }`}
+                        />
                       </button>
-                    )}
+                      {showLyrics && (
+                        <>
+                          <button
+                            onClick={() => {
+                              const next = onChineseVariantToggle();
+                              showToast(`Chinese: ${next}`);
+                            }}
+                            className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                            title={`Toggle Chinese variant`}
+                          >
+                            <span>
+                              {chineseVariant === ChineseVariant.Original
+                                ? "简"
+                                : "繁"}
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              const next = onKoreanDisplayToggle();
+                              showToast(`Korean: ${next}`);
+                            }}
+                            className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                            title={`Toggle Korean romanization`}
+                          >
+                            <span
+                              className={`w-5 h-5 inline-flex items-center justify-center text-md font-bold 
+                              }`}
+                            >
+                              {koreanDisplay === KoreanDisplay.Original
+                                ? "한"
+                                : "EN"}
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              onKtvToggle();
+                              showToast(`KTV mode ${!ktvMode ? "on" : "off"}`);
+                            }}
+                            className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                            title={`Turn ${ktvMode ? "off" : "on"} KTV mode`}
+                          >
+                            {ktvMode ? (
+                              <PiTextAlignJustifyBold className="w-5 h-5" />
+                            ) : (
+                              <PiTextAlignCenterBold className="w-5 h-5" />
+                            )}
+                          </button>
+                        </>
+                      )}
+                      {onSpotifyLogout && (
+                        <button
+                          onClick={() => {
+                            onSpotifyLogout();
+                            if (spotifyControls.error) {
+                              showToast(spotifyControls.error);
+                            }
+                          }}
+                          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                          title="Disconnect Spotify"
+                        >
+                          <PiSignOutBold className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -231,7 +269,7 @@ export const Controls = ({
 
         {/* Other Controls - Bottom Right */}
         <div
-          className="fixed bottom-4 right-4 flex gap-2"
+          className="fixed bottom-4 right-4 flex gap-2 md:flex-row flex-col"
           onTouchStart={(e) => e.stopPropagation()}
           onTouchMove={(e) => e.stopPropagation()}
           onTouchEnd={(e) => e.stopPropagation()}
@@ -274,7 +312,7 @@ export const Controls = ({
             <PiSlidersBold className="w-5 h-5" />
           </button>
           <div
-            className="leva-container absolute bottom-12 right-4 w-72 max-w-[calc(100vw-24px)] max-h-[calc(100vh-100px)] overflow-y-auto z-50"
+            className="leva-container absolute md:bottom-12 md:right-4 bottom-4 right-12 w-72 max-w-[calc(100vw-24px)] max-h-[calc(100vh-100px)] overflow-y-auto z-50"
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
