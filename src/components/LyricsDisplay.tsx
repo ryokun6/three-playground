@@ -73,7 +73,7 @@ export const LyricsDisplay = ({ controls }: LyricsDisplayProps) => {
       ref={containerRef}
       layout
       transition={ANIMATION_CONFIG.spring}
-      className="fixed inset-x-0 mx-auto bottom-[6vh] w-[90%] h-[30vh] overflow-hidden flex flex-col items-center gap-4 pointer-events-none"
+      className="fixed inset-x-0 mx-auto bottom-[4vh] w-[90%] h-[30vh] overflow-hidden flex flex-col items-center gap-4 pointer-events-none"
       style={{
         maskImage:
           "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent 100%)",
