@@ -150,11 +150,11 @@ export const LyricsDisplay = ({
       ref={containerRef}
       layout
       transition={ANIMATION_CONFIG.spring}
-      className="fixed inset-x-0 mx-auto bottom-16 w-[90%] overflow-hidden flex flex-col items-center gap-4 pointer-events-none z-30 pt-12"
+      className="fixed inset-x-0 mx-auto bottom-16 w-[90%] overflow-hidden flex flex-col items-center justify-end gap-4 pointer-events-none z-30 pb-12"
       style={{
         maskImage:
           "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent 100%)",
-        height: `calc(30vh * ${Math.sqrt(fontSize)})`,
+        height: `calc(35vh * ${Math.sqrt(fontSize)})`,
         minHeight: "250px",
       }}
     >
