@@ -150,7 +150,7 @@ export const LyricsDisplay = ({
       ref={containerRef}
       layout
       transition={ANIMATION_CONFIG.spring}
-      className="fixed inset-x-0 mx-auto bottom-16 w-[95%] overflow-hidden flex flex-col items-center justify-end gap-4 pointer-events-none z-30 pb-12"
+      className="fixed inset-x-0 mx-auto bottom-16 w-[95%] overflow-hidden flex flex-col items-center justify-end gap-4 pointer-events-none z-30 pb-12 pt-12"
     >
       <AnimatePresence mode="popLayout">
         {visibleLines.map((line, index) => {

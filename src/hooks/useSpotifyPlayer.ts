@@ -129,40 +129,29 @@ export const useSpotifyPlayer = (
 
       try {
         const currentState = await fetchSpotifyAPI("/me/player");
+        const isPlaying = currentState?.is_playing || false;
 
-        if (currentState?.item) {
-          setState((prev) => ({
-            ...prev,
-            currentTrack: currentState.item,
-            isPlaying: currentState.is_playing || false,
-          }));
+        if (isPlaying) {
+          await player.activateElement();
         }
 
         await fetchSpotifyAPI("/me/player", {
           method: "PUT",
           body: JSON.stringify({
             device_ids: [deviceId],
-            play: currentState?.is_playing || false,
+            play: isPlaying,
           }),
         });
-
-        if (currentState?.item) {
-          await fetchSpotifyAPI("/me/player/play", {
-            method: "PUT",
-            body: JSON.stringify({
-              uris: [currentState.item.uri],
-              position_ms: currentState.progress_ms || 0,
-            }),
-          });
-          if (!currentState.is_playing) {
-            await player.pause();
-          }
-        }
 
         const state = await player.getCurrentState();
         if (state) handlePlayerStateChanged(state);
 
-        setState((prev) => ({ ...prev, isConnected: true }));
+        setState((prev) => ({
+          ...prev,
+          isConnected: true,
+          currentTrack: currentState?.item || null,
+          isPlaying,
+        }));
       } catch {
         onError?.("Failed to initialize player");
       }
