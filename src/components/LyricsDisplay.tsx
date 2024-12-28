@@ -185,10 +185,10 @@ export const LyricsDisplay = ({
                           parseInt(line.startTimeMs)) /
                         1000
                       : 2,
-                  ease: "easeInOut",
+                  ease: "circInOut",
                 },
               }}
-              className="px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white"
+              className="px-4 md:px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white"
               style={{
                 fontFamily: getFontFamily(font),
                 textAlign: getTextAlign(index),

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface GestureHandlingProps {
   onRandomizePhysics: () => void;
@@ -16,6 +16,15 @@ export const useGestureHandling = ({
   const [holdTimer, setHoldTimer] = useState<number | null>(null);
   const [isActiveGesture, setIsActiveGesture] = useState(false);
 
+  const startHoldTimer = useCallback(() => {
+    const timer = window.setTimeout(() => {
+      if (isActiveGesture) {
+        onRandomizePhysics();
+      }
+    }, 500);
+    setHoldTimer(timer);
+  }, [isActiveGesture, onRandomizePhysics]);
+
   useEffect(() => {
     let initialTouchTarget: EventTarget | null = null;
 
@@ -31,14 +40,7 @@ export const useGestureHandling = ({
       setIsActiveGesture(true);
       setTouchStartTime(Date.now());
       setTouchStartX(e.touches[0].clientX);
-
-      const timer = window.setTimeout(() => {
-        if (isActiveGesture) {
-          onRandomizePhysics();
-        }
-      }, 500);
-
-      setHoldTimer(timer);
+      startHoldTimer();
     };
 
     const handleTouchMove = (e: TouchEvent) => {
@@ -109,6 +111,7 @@ export const useGestureHandling = ({
     onRandomizePhysics,
     onRandomizeShape,
     isActiveGesture,
+    startHoldTimer,
   ]);
 
   return {
