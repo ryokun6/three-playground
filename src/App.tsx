@@ -87,18 +87,14 @@ function App() {
   useGestureHandling({
     onRandomizePhysics: () => {
       randomizePhysics(updateParticleControls);
-      showToast("Randomized Physics");
     },
     onRandomizeCamera: () => {
       handleRandomizeCamera();
-      showToast("Randomized Camera");
     },
     onRandomizeShape: () => {
       const shape = handleRandomizeShape();
-      if (shape) showToast(`Shape: ${shape}`);
     },
     onToggleUI: () => setIsUIHidden(!isUIHidden),
-    showToast,
     isUIHidden,
   });
 
