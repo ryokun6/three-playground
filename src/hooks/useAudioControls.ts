@@ -4,7 +4,6 @@ import { checkBeat } from "../utils/audio";
 
 interface UseAudioControlsProps {
   onBeat: () => void;
-  isSpotifyPlaying?: boolean;
 }
 
 interface AudioControls {
@@ -19,10 +18,7 @@ interface AudioControls {
   maxDecibels: number;
 }
 
-export const useAudioControls = ({
-  onBeat,
-  isSpotifyPlaying,
-}: UseAudioControlsProps) => {
+export const useAudioControls = ({ onBeat }: UseAudioControlsProps) => {
   const lastBeatTime = useRef(0);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
@@ -133,13 +129,6 @@ export const useAudioControls = ({
     audioControls.minBeatInterval,
     onBeat,
   ]);
-
-  // Enable audio when Spotify starts playing
-  useEffect(() => {
-    if (isSpotifyPlaying) {
-      setAudioControls({ enabled: true });
-    }
-  }, [isSpotifyPlaying, setAudioControls]);
 
   return {
     audioControls,

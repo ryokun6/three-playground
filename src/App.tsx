@@ -79,7 +79,6 @@ function App() {
   const { audioControls, setAudioControls, analyserRef, dataArrayRef } =
     useAudioControls({
       onBeat: handleBeat,
-      isSpotifyPlaying: spotifyControls?.isPlaying,
     });
 
   useGestureHandling({
