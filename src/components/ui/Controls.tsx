@@ -123,6 +123,7 @@ export const Controls = ({
                             e.preventDefault();
                             e.stopPropagation();
                             spotifyControls.togglePlay();
+                            setShowSpotifyControls(false);
                           }}
                         >
                           {spotifyControls.isPlaying ? (
