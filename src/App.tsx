@@ -97,6 +97,9 @@ function App() {
       const shape = handleRandomizeShape();
       if (shape) showToast(`Shape: ${shape}`);
     },
+    onToggleUI: () => setIsUIHidden(!isUIHidden),
+    showToast,
+    isUIHidden,
   });
 
   useKeyboardShortcuts({
@@ -122,7 +125,7 @@ function App() {
   return (
     <main className="w-screen h-[100dvh] bg-black select-none">
       <div
-        className={`fixed inset-0 z-50 ${
+        className={`fixed inset-0 z-50 transition-opacity duration-300 ease-in-out ${
           isUIHidden ? "opacity-0 pointer-events-none" : ""
         }`}
       >
@@ -236,7 +239,7 @@ function App() {
           dataArrayRef.current = dataArray;
         }}
       />
-      {!isUIHidden && spotifyControls?.currentTrack && showLyrics && (
+      {spotifyControls?.currentTrack && showLyrics && (
         <LyricsDisplay
           controls={spotifyControls}
           font={lyricsControls.font}

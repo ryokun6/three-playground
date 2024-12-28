@@ -4,17 +4,24 @@ interface GestureHandlingProps {
   onRandomizePhysics: () => void;
   onRandomizeCamera: () => void;
   onRandomizeShape: () => void;
+  onToggleUI: () => void;
+  showToast: (message: string) => void;
+  isUIHidden: boolean;
 }
 
 export const useGestureHandling = ({
   onRandomizePhysics,
   onRandomizeCamera,
   onRandomizeShape,
+  onToggleUI,
+  showToast,
+  isUIHidden,
 }: GestureHandlingProps) => {
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [holdTimer, setHoldTimer] = useState<number | null>(null);
   const [isActiveGesture, setIsActiveGesture] = useState(false);
+  const [lastTapTime, setLastTapTime] = useState(0);
 
   const startHoldTimer = useCallback(() => {
     const timer = window.setTimeout(() => {
@@ -68,11 +75,19 @@ export const useGestureHandling = ({
       const touchDuration = Date.now() - touchStartTime;
       const touchEndX = e.changedTouches[0].clientX;
       const swipeDistance = touchEndX - touchStartX;
+      const now = Date.now();
 
       if (Math.abs(swipeDistance) > 50) {
         onRandomizeShape();
       } else if (touchDuration < 200) {
-        onRandomizeCamera();
+        if (now - lastTapTime < 300) {
+          onToggleUI();
+          showToast(`UI ${isUIHidden ? "shown" : "hidden"}`);
+          setLastTapTime(0); // Reset to prevent triple tap
+        } else {
+          onRandomizeCamera();
+          setLastTapTime(now);
+        }
       }
 
       setIsActiveGesture(false);
@@ -112,6 +127,10 @@ export const useGestureHandling = ({
     onRandomizeShape,
     isActiveGesture,
     startHoldTimer,
+    lastTapTime,
+    onToggleUI,
+    isUIHidden,
+    showToast,
   ]);
 
   return {

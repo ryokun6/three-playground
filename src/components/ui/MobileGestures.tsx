@@ -40,6 +40,9 @@ export const MobileGestures = () => {
             <div>
               <span className="text-white">Swipe</span> change shape
             </div>
+            <div>
+              <span className="text-white">Double tap</span> toggle UI
+            </div>
           </div>
         </div>
       )}
