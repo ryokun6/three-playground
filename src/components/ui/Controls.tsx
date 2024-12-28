@@ -95,29 +95,23 @@ export const Controls = ({
                   onMouseEnter={() => setShowSpotifyControls(true)}
                   onMouseLeave={() => setShowSpotifyControls(false)}
                 >
-                  <div
-                    className="text-white/60 p-2 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowSpotifyControls(!showSpotifyControls);
-                    }}
-                  >
+                  <div className="text-white/60 p-2 rounded-xl flex items-center gap-2 cursor-pointer transition-colors">
                     {spotifyControls.currentTrack?.album?.images?.[0]?.url ? (
                       <div className="relative w-6 h-6">
                         <img
                           src={spotifyControls.currentTrack.album.images[0].url}
                           alt="Album artwork"
-                          className={`absolute w-6 h-6 object-cover rounded cursor-pointer transition-all duration-300 ${
+                          className={`absolute w-6 h-6 object-cover rounded transition-all duration-300 ${
                             !spotifyControls.isPlaying
                               ? "opacity-0 scale-75"
-                              : "opacity-100 scale-100 hover:opacity-0"
+                              : "opacity-100 scale-100"
                           }`}
                         />
                         <div
-                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:opacity-100 ${
+                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all rounded duration-200 hover:scale-110 hover:opacity-100 ${
                             !spotifyControls.isPlaying
                               ? "opacity-100 scale-100 bg-white/80 md:bg-white/40 md:hover:bg-white/80 rounded-full"
-                              : "opacity-0 scale-75 bg-black/20 rounded"
+                              : "opacity-0 scale-75 md:bg-black/40 rounded"
                           }`}
                           onClick={(e) => {
                             e.preventDefault();
@@ -127,7 +121,7 @@ export const Controls = ({
                           }}
                         >
                           {spotifyControls.isPlaying ? (
-                            <PiPauseFill className="w-3 h-3 text-white" />
+                            <PiPauseFill className="w-3 h-3 text-transparent md:text-white" />
                           ) : (
                             <PiPlayFill className="w-3 h-3 text-black" />
                           )}
@@ -136,7 +130,13 @@ export const Controls = ({
                     ) : (
                       <PiSpotifyLogoBold className="w-5 h-5 text-white/30" />
                     )}
-                    <span className="text-sm truncate max-w-[220px] flex items-center gap-1">
+                    <span
+                      className="text-sm truncate max-w-[220px] flex items-center gap-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSpotifyControls(!showSpotifyControls);
+                      }}
+                    >
                       <span
                         className={`${
                           spotifyControls.isPlaying &&
