@@ -150,17 +150,17 @@ export const Controls = ({
                         : "opacity-0 pointer-events-none"
                     }`}
                   >
-                    <div className="flex gap-2 pb-2">
+                    <div className="flex gap-0.5 p-1 bg-black/40 mb-2 rounded-xl shadow-lg h-11 items-center">
                       <button
                         onClick={spotifyControls.previousTrack}
-                        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                        className="bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9"
                         title="Previous track"
                       >
                         <PiSkipBackBold className="w-5 h-5" />
                       </button>
                       <button
                         onClick={spotifyControls.togglePlay}
-                        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                        className="bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9"
                         title={spotifyControls.isPlaying ? "Pause" : "Play"}
                       >
                         {spotifyControls.isPlaying ? (
@@ -171,7 +171,7 @@ export const Controls = ({
                       </button>
                       <button
                         onClick={spotifyControls.nextTrack}
-                        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                        className="bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9"
                         title="Next track"
                       >
                         <PiSkipForwardBold className="w-5 h-5" />
@@ -183,7 +183,7 @@ export const Controls = ({
                             `Lyrics ${!showLyrics ? "shown" : "hidden"}`
                           );
                         }}
-                        className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                        className="bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9"
                         title={showLyrics ? "Hide lyrics" : "Show lyrics"}
                       >
                         <PiMicrophoneStageBold
@@ -197,12 +197,12 @@ export const Controls = ({
                           const next = onChineseVariantToggle();
                           showToast(`Chinese: ${next}`);
                         }}
-                        className={`bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors ${
+                        className={`bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9 inline-flex items-center justify-center text-md font-bold ${
                           !showLyrics ? "opacity-50 pointer-events-none" : ""
                         }`}
                         title={`Toggle Chinese variant`}
                       >
-                        <span className="w-5 h-5 inline-flex items-center justify-center text-md font-bold">
+                        <span>
                           {chineseVariant === ChineseVariant.Original
                             ? "简"
                             : "繁"}
@@ -213,12 +213,12 @@ export const Controls = ({
                           const next = onKoreanDisplayToggle();
                           showToast(`Korean: ${next}`);
                         }}
-                        className={`bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors ${
+                        className={`bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9 inline-flex items-center justify-center text-md font-bold${
                           !showLyrics ? "opacity-50 pointer-events-none" : ""
                         }`}
                         title={`Toggle Korean romanization`}
                       >
-                        <span className="w-5 h-5 inline-flex items-center justify-center text-md font-bold">
+                        <span>
                           {koreanDisplay === KoreanDisplay.Original
                             ? "한"
                             : "EN"}
@@ -229,7 +229,7 @@ export const Controls = ({
                           onKtvToggle();
                           showToast(`KTV mode ${!ktvMode ? "on" : "off"}`);
                         }}
-                        className={`bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors ${
+                        className={`bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9 ${
                           !showLyrics ? "opacity-50 pointer-events-none" : ""
                         }`}
                         title={`Turn ${ktvMode ? "off" : "on"} KTV mode`}
@@ -248,7 +248,7 @@ export const Controls = ({
                               showToast(spotifyControls.error);
                             }
                           }}
-                          className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                          className="bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9"
                           title="Disconnect Spotify"
                         >
                           <PiSignOutBold className="w-5 h-5" />

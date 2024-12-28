@@ -188,7 +188,9 @@ export const LyricsDisplay = ({
                   ease: "easeInOut",
                 },
               }}
-              className="px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white font-semibold"
+              className={`px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white ${
+                font === LyricsFont.Rounded ? "font-bold" : "font-semibold"
+              }`}
               style={{
                 fontFamily: getFontFamily(font),
                 textAlign: getTextAlign(index),
