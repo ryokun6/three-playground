@@ -130,8 +130,6 @@ export const useSpotifyPlayer = (
       try {
         const currentState = await fetchSpotifyAPI("/me/player");
 
-        await player.activateElement();
-
         await fetchSpotifyAPI("/me/player", {
           method: "PUT",
           body: JSON.stringify({
@@ -217,6 +215,7 @@ export const useSpotifyPlayer = (
       });
 
       player.connect();
+      player.activateElement();
       playerRef.current = player;
     };
 
