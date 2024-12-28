@@ -114,9 +114,9 @@ export const Controls = ({
                           }`}
                         />
                         <div
-                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-300 rounded-full hover:scale-110 hover:opacity-100 ${
+                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:opacity-100 ${
                             !spotifyControls.isPlaying
-                              ? "opacity-100 scale-100 bg-white/80 md:bg-white/40 md:hover:bg-white/80"
+                              ? "opacity-100 scale-100 bg-white/80 md:bg-white/40 md:hover:bg-white/80 rounded-full"
                               : "opacity-0 scale-75 bg-black/20 rounded"
                           }`}
                           onClick={(e) => {
