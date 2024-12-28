@@ -8,33 +8,32 @@ import {
 import { useCallback } from "react";
 
 export const useLyricsControls = () => {
-  const [lyricsControls, setLyricsControls] = useControls(
-    "Lyrics",
-    () => ({
-      display: folder({
-        font: {
-          value: LyricsFont.Default,
-          options: Object.values(LyricsFont),
-          label: "font",
-        },
-        alignment: {
-          value: LyricsAlignment.Center,
-          options: Object.values(LyricsAlignment),
-          label: "alignment",
-        },
-        fontSize: {
-          value: 1,
-          min: 0.5,
-          max: 2,
-          step: 0.1,
-          label: "font size",
-        },
-        ktvMode: {
-          value: false,
-          label: "ktv mode",
-        },
-      }),
-      language: folder({
+  const [lyricsControls, setLyricsControls] = useControls("Lyrics", () => ({
+    display: folder({
+      font: {
+        value: LyricsFont.Default,
+        options: Object.values(LyricsFont),
+        label: "font",
+      },
+      alignment: {
+        value: LyricsAlignment.Center,
+        options: Object.values(LyricsAlignment),
+        label: "alignment",
+      },
+      fontSize: {
+        value: 1,
+        min: 0.5,
+        max: 2,
+        step: 0.1,
+        label: "font size",
+      },
+      ktvMode: {
+        value: false,
+        label: "ktv mode",
+      },
+    }),
+    language: folder(
+      {
         chineseVariant: {
           value: ChineseVariant.Traditional,
           options: Object.values(ChineseVariant),
@@ -45,10 +44,10 @@ export const useLyricsControls = () => {
           options: Object.values(KoreanDisplay),
           label: "koreanDisplay",
         },
-      }),
-    }),
-    { collapsed: true }
-  );
+      },
+      { collapsed: true }
+    ),
+  }));
 
   const toggleChineseVariant = useCallback(() => {
     const variants = Object.values(ChineseVariant);
@@ -73,7 +72,7 @@ export const useLyricsControls = () => {
       alignment: newKtvMode
         ? LyricsAlignment.Alternating
         : LyricsAlignment.Center,
-      fontSize: newKtvMode ? 1.4 : 1.0,
+      fontSize: newKtvMode ? 1.2 : 1.0,
       ktvMode: newKtvMode,
     });
     return newKtvMode;

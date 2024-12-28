@@ -151,12 +151,6 @@ export const LyricsDisplay = ({
       layout
       transition={ANIMATION_CONFIG.spring}
       className="fixed inset-x-0 mx-auto bottom-16 w-[95%] overflow-hidden flex flex-col items-center justify-end gap-4 pointer-events-none z-30 pb-12"
-      style={{
-        maskImage:
-          "linear-gradient(to bottom, transparent, black 20%, black 80%, transparent 100%)",
-        height: `calc(35vh * ${Math.sqrt(fontSize)})`,
-        minHeight: "250px",
-      }}
     >
       <AnimatePresence mode="popLayout">
         {visibleLines.map((line, index) => {
@@ -194,7 +188,9 @@ export const LyricsDisplay = ({
                   ease: "easeInOut",
                 },
               }}
-              className="px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white font-semibold"
+              className={`px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white ${
+                font !== LyricsFont.Rounded ? "font-semibold" : ""
+              }`}
               style={{
                 fontFamily: getFontFamily(font),
                 textAlign: getTextAlign(index),

@@ -43,26 +43,6 @@ function App() {
     };
   }, []);
 
-  const { toasts, showToast, hideToast } = useToast();
-  const visualControls = useVisualControls();
-  const {
-    lyricsControls,
-    toggleChineseVariant,
-    toggleKoreanDisplay,
-    toggleKtvMode,
-  } = useLyricsControls();
-  const { cameraControls, updateCameraControls, handleRandomizeCamera } =
-    useCameraControls();
-  const {
-    particleControls,
-    updateParticleControls,
-    handleRandomizeShape,
-    setShape,
-  } = useParticleControls();
-
-  const { token, login, logout } = useSpotifyAuth();
-  const spotifyControls = useSpotifyPlayer(token, showToast);
-
   const handleBeat = () => {
     // Each effect has independent chance to be applied
     if (Math.random() < 0.3) {
@@ -76,10 +56,33 @@ function App() {
     }
   };
 
+  const { toasts, showToast, hideToast } = useToast();
+
+  const visualControls = useVisualControls();
+  const { cameraControls, updateCameraControls, handleRandomizeCamera } =
+    useCameraControls();
+
+  const {
+    lyricsControls,
+    toggleChineseVariant,
+    toggleKoreanDisplay,
+    toggleKtvMode,
+  } = useLyricsControls();
+
   const { audioControls, setAudioControls, analyserRef, dataArrayRef } =
     useAudioControls({
       onBeat: handleBeat,
     });
+
+  const {
+    particleControls,
+    updateParticleControls,
+    handleRandomizeShape,
+    setShape,
+  } = useParticleControls();
+
+  const { token, login, logout } = useSpotifyAuth();
+  const spotifyControls = useSpotifyPlayer(token, showToast);
 
   useGestureHandling({
     onRandomizePhysics: () => {
