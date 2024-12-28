@@ -15,6 +15,7 @@ import {
   PiMicrophoneStageBold,
   PiCaretRightBold,
   PiPlayFill,
+  PiPauseFill,
 } from "react-icons/pi";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MobileGestures } from "./MobileGestures";
@@ -109,17 +110,11 @@ export const Controls = ({
                           className={`absolute w-6 h-6 object-cover rounded cursor-pointer transition-all duration-300 ${
                             !spotifyControls.isPlaying
                               ? "opacity-0 scale-75"
-                              : "opacity-100 scale-100"
+                              : "opacity-100 scale-100 hover:opacity-0"
                           }`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            spotifyControls.setShowTrackNotification(true);
-                            setShowSpotifyControls(false);
-                          }}
                         />
                         <div
-                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-300 rounded-full bg-white/40 hover:bg-white/80 ${
+                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-300 rounded-full bg-white/80 md:bg-white/40 md:hover:bg-white/80 hover:scale-110 hover:opacity-100 ${
                             !spotifyControls.isPlaying
                               ? "opacity-100 scale-100"
                               : "opacity-0 scale-75"
@@ -130,7 +125,11 @@ export const Controls = ({
                             spotifyControls.togglePlay();
                           }}
                         >
-                          <PiPlayFill className="w-3 h-3 text-black" />
+                          {spotifyControls.isPlaying ? (
+                            <PiPauseFill className="w-3 h-3 text-black" />
+                          ) : (
+                            <PiPlayFill className="w-3 h-3 text-black" />
+                          )}
                         </div>
                       </div>
                     ) : (
@@ -139,15 +138,22 @@ export const Controls = ({
                     <span className="text-sm truncate max-w-[220px] flex items-center gap-1">
                       <span
                         className={`${
+                          spotifyControls.isPlaying &&
                           spotifyControls.currentTrack?.name
-                            ? "text-white/60"
+                            ? "text-white/80"
                             : "text-white/30"
-                        } truncate max-w-[200px]`}
+                        } truncate max-w-[200px] transition-colors`}
                       >
                         {spotifyControls.currentTrack?.name ??
                           "Play on Particle Simulator"}
                         {spotifyControls.currentTrack?.artists?.[0]?.name && (
-                          <span className="text-white/30 pl-1">
+                          <span
+                            className={`${
+                              spotifyControls.isPlaying
+                                ? "text-white/50"
+                                : "text-white/20"
+                            } pl-1 transition-colors`}
+                          >
                             {spotifyControls.currentTrack.artists[0].name}
                           </span>
                         )}

@@ -5,7 +5,6 @@ interface GestureHandlingProps {
   onRandomizeCamera: () => void;
   onRandomizeShape: () => void;
   onToggleUI: () => void;
-  showToast: (message: string) => void;
   isUIHidden: boolean;
 }
 
@@ -14,7 +13,6 @@ export const useGestureHandling = ({
   onRandomizeCamera,
   onRandomizeShape,
   onToggleUI,
-  showToast,
   isUIHidden,
 }: GestureHandlingProps) => {
   const [touchStartTime, setTouchStartTime] = useState(0);
@@ -82,7 +80,6 @@ export const useGestureHandling = ({
       } else if (touchDuration < 200) {
         if (now - lastTapTime < 300) {
           onToggleUI();
-          showToast(`UI ${isUIHidden ? "shown" : "hidden"}`);
           setLastTapTime(0); // Reset to prevent triple tap
         } else {
           onRandomizeCamera();
@@ -130,7 +127,6 @@ export const useGestureHandling = ({
     lastTapTime,
     onToggleUI,
     isUIHidden,
-    showToast,
   ]);
 
   return {
