@@ -14,6 +14,7 @@ import {
   PiTextAlignJustifyBold,
   PiMicrophoneStageBold,
   PiCaretRightBold,
+  PiPlayFill,
 } from "react-icons/pi";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MobileGestures } from "./MobileGestures";
@@ -94,7 +95,7 @@ export const Controls = ({
                   onMouseLeave={() => setShowSpotifyControls(false)}
                 >
                   <div
-                    className="text-white/60 p-2 rounded-lg hover:shadow-lg flex items-center gap-2 cursor-pointer hover:bg-black/60 transition-colors"
+                    className="text-white/60 p-2 rounded-xl flex items-center gap-2 cursor-pointer transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowSpotifyControls(!showSpotifyControls);
@@ -118,7 +119,7 @@ export const Controls = ({
                           }}
                         />
                         <div
-                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-300 rounded hover:bg-white/5 ${
+                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-300 rounded-full bg-white/40 hover:bg-white/80 ${
                             !spotifyControls.isPlaying
                               ? "opacity-100 scale-100"
                               : "opacity-0 scale-75"
@@ -129,7 +130,7 @@ export const Controls = ({
                             spotifyControls.togglePlay();
                           }}
                         >
-                          <PiPlayBold className="w-4 h-4 text-white/60" />
+                          <PiPlayFill className="w-3 h-3 text-black" />
                         </div>
                       </div>
                     ) : (
@@ -155,7 +156,7 @@ export const Controls = ({
                       )}
                       {spotifyControls.currentTrack && (
                         <PiCaretRightBold
-                          className={`w-3 h-3 text-white/20 transition-transform ${
+                          className={`w-3 h-3 text-white/20 transition-transform md:opacity-0  ${
                             showSpotifyControls ? "rotate-90" : ""
                           }`}
                         />
@@ -206,11 +207,7 @@ export const Controls = ({
                         className="bg-transparent hover:bg-white/5 text-white/40 p-2 rounded-lg transition-colors w-9 h-9"
                         title={showLyrics ? "Hide lyrics" : "Show lyrics"}
                       >
-                        <PiMicrophoneStageBold
-                          className={`w-5 h-5 ${
-                            showLyrics ? "text-white" : ""
-                          }`}
-                        />
+                        <PiMicrophoneStageBold className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => {

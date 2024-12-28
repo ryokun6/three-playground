@@ -47,7 +47,7 @@ const getVariants = (position: number, isAlternating: boolean) => ({
     y: isAlternating ? 0 : position === 0 ? -10 : position === 1 ? -10 : 0,
     textShadow:
       position === 0
-        ? "0 0 20px rgba(255,255,255,0.8)"
+        ? "0 0 20px rgba(255,255,255,0.6)"
         : "0 0 0px rgba(255,255,255,0)",
   },
   exit: {
@@ -108,7 +108,7 @@ export const LyricsDisplay = ({
   const getFontFamily = (font: LyricsFont) => {
     switch (font) {
       case LyricsFont.Serif:
-        return "YuMincho, 'Hiragino Mincho ProN', 'Nanum Myeongjo', 'YuMincho', Georgia, serif";
+        return "Charter, Lyon, 'Hiragino Mincho ProN', 'Nanum Myeongjo', 'YuMincho', serif";
       case LyricsFont.Rounded:
         return "'YuanTi TC', 'Yuanti SC', 'Hiragino Maru Gothic ProN', 'BM Jua', 'Arial Rounded MT', system-ui";
       default:
