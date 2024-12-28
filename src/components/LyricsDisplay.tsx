@@ -110,9 +110,9 @@ export const LyricsDisplay = ({
       case LyricsFont.Serif:
         return "YuMincho, 'Hiragino Mincho ProN', 'Nanum Myeongjo', serif";
       case LyricsFont.Rounded:
-        return "'Arial Rounded MT Bold','YuanTi TC', 'Yuanti SC', 'Hiragino Maru Gothic ProN', 'BM Jua',  system-ui";
+        return "'YuanTi TC', 'Yuanti SC', 'Hiragino Maru Gothic ProN', 'BM Jua', 'Arial Rounded MT', system-ui";
       default:
-        return "-apple-system, BlinkMacSystemFont, 'Yu Gothic', 'Hiragino Sans', 'PingFang TC', 'PingFang SC', 'Segoe UI Variable', Segoe UI, system-ui";
+        return "-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Sans CNS', 'PingFang TC', 'PingFang SC', 'Segoe UI Variable', Segoe UI, system-ui";
     }
   };
 
@@ -188,9 +188,7 @@ export const LyricsDisplay = ({
                   ease: "easeInOut",
                 },
               }}
-              className={`px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white ${
-                font !== LyricsFont.Rounded ? "font-semibold" : ""
-              }`}
+              className="px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white font-semibold"
               style={{
                 fontFamily: getFontFamily(font),
                 textAlign: getTextAlign(index),

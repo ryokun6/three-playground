@@ -129,17 +129,14 @@ export const useSpotifyPlayer = (
 
       try {
         const currentState = await fetchSpotifyAPI("/me/player");
-        const isPlaying = currentState?.is_playing || false;
 
-        if (isPlaying) {
-          await player.activateElement();
-        }
+        await player.activateElement();
 
         await fetchSpotifyAPI("/me/player", {
           method: "PUT",
           body: JSON.stringify({
             device_ids: [deviceId],
-            play: isPlaying,
+            play: true,
           }),
         });
 
@@ -150,7 +147,7 @@ export const useSpotifyPlayer = (
           ...prev,
           isConnected: true,
           currentTrack: currentState?.item || null,
-          isPlaying,
+          isPlaying: true,
         }));
       } catch {
         onError?.("Failed to initialize player");
