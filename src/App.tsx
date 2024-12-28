@@ -92,7 +92,7 @@ function App() {
       handleRandomizeCamera();
     },
     onRandomizeShape: () => {
-      const shape = handleRandomizeShape();
+      handleRandomizeShape();
     },
     onToggleUI: () => setIsUIHidden(!isUIHidden),
     isUIHidden,
