@@ -49,7 +49,7 @@ export const useAudioControls = ({ onBeat }: UseAudioControlsProps) => {
           label: "autoPlay",
         },
         beatThreshold: {
-          value: 0.15,
+          value: 0.08,
           min: 0.01,
           max: 1,
           step: 0.01,
