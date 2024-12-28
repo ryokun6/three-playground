@@ -193,19 +193,21 @@ function App() {
               }}
               className="fixed bottom-2 left-2 origin-bottom-left z-50"
             >
-              <div className="bg-black/20 backdrop-blur-md p-3 min-w-[300px] rounded-xl shadow-lg flex items-center gap-4">
+              <div className="bg-black/20 backdrop-blur-md p-3 w-full min-w-[280px] max-w-[320px] rounded-xl shadow-lg flex items-center gap-4">
                 {spotifyControls.currentTrack.album?.images?.[0]?.url && (
-                  <img
-                    src={spotifyControls.currentTrack.album.images[0].url}
-                    alt="Album artwork"
-                    className="w-16 h-16 object-cover rounded"
-                  />
+                  <div className="flex w-16 h-16 shrink-0">
+                    <img
+                      src={spotifyControls.currentTrack.album.images[0].url}
+                      alt="Album artwork"
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  </div>
                 )}
-                <div className="flex flex-col items-start">
-                  <span className="text-white font-medium text-lg">
+                <div className="flex flex-col items-start flex-1 min-w-0">
+                  <span className="text-white font-medium text-lg truncate w-full">
                     {spotifyControls.currentTrack.name}
                   </span>
-                  <span className="text-white/60">
+                  <span className="text-white/60 truncate w-full">
                     {spotifyControls.currentTrack.artists[0].name}
                   </span>
                 </div>

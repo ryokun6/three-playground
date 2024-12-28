@@ -136,27 +136,25 @@ export const Controls = ({
                     ) : (
                       <PiSpotifyLogoBold className="w-5 h-5 text-white/30" />
                     )}
-                    <span className="text-sm truncate max-w-[280px] flex items-center gap-1">
+                    <span className="text-sm truncate max-w-[220px] flex items-center gap-1">
                       <span
-                        className={
+                        className={`${
                           spotifyControls.currentTrack?.name
                             ? "text-white/60"
                             : "text-white/30"
-                        }
+                        } truncate max-w-[200px]`}
                       >
                         {spotifyControls.currentTrack?.name ??
                           "Play on Particle Simulator"}
-                      </span>{" "}
-                      {spotifyControls.currentTrack?.artists?.[0]?.name ? (
-                        <span className="text-white/30 pl-1">
-                          {spotifyControls.currentTrack.artists[0].name}
-                        </span>
-                      ) : (
-                        ""
-                      )}
+                        {spotifyControls.currentTrack?.artists?.[0]?.name && (
+                          <span className="text-white/30 pl-1">
+                            {spotifyControls.currentTrack.artists[0].name}
+                          </span>
+                        )}
+                      </span>
                       {spotifyControls.currentTrack && (
                         <PiCaretRightBold
-                          className={`w-3 h-3 text-white/20 transition-transform md:opacity-0  ${
+                          className={`w-3 h-3 text-white/20 transition-transform md:opacity-0 ${
                             showSpotifyControls ? "rotate-90" : ""
                           }`}
                         />
