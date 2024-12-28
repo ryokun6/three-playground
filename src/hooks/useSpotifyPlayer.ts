@@ -86,6 +86,8 @@ export const useSpotifyPlayer = (
     (state: Spotify.PlaybackState | null) => {
       if (!state) return;
 
+      playerRef.current?.activateElement();
+
       setState((prev) => {
         const trackChanged =
           prev.currentTrack?.id !== state.track_window.current_track.id;
@@ -145,7 +147,7 @@ export const useSpotifyPlayer = (
           ...prev,
           isConnected: true,
           currentTrack: currentState?.item || null,
-          isPlaying: true,
+          isPlaying: currentState?.paused ? false : true,
         }));
       } catch {
         onError?.("Failed to initialize player");
@@ -214,8 +216,11 @@ export const useSpotifyPlayer = (
         });
       });
 
+      player.addListener("autoplay_failed", () => {
+        onError?.("Autoplay blocked by browser. Press play button to start.");
+      });
+
       player.connect();
-      player.activateElement();
       playerRef.current = player;
     };
 

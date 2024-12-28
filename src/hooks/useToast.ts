@@ -13,7 +13,7 @@ export const useToast = () => {
     setToasts((prev) => [...prev, { id, message }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 1000);
+    }, 1200);
   }, []);
 
   const hideToast = useCallback((id: string) => {

@@ -101,17 +101,37 @@ export const Controls = ({
                     }}
                   >
                     {spotifyControls.currentTrack?.album?.images?.[0]?.url ? (
-                      <img
-                        src={spotifyControls.currentTrack.album.images[0].url}
-                        alt="Album artwork"
-                        className="w-6 h-6 object-cover rounded cursor-pointer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          spotifyControls.setShowTrackNotification(true);
-                          setShowSpotifyControls(false);
-                        }}
-                      />
+                      <div className="relative w-6 h-6">
+                        <img
+                          src={spotifyControls.currentTrack.album.images[0].url}
+                          alt="Album artwork"
+                          className={`absolute w-6 h-6 object-cover rounded cursor-pointer transition-all duration-300 ${
+                            !spotifyControls.isPlaying
+                              ? "opacity-0 scale-75"
+                              : "opacity-100 scale-100"
+                          }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            spotifyControls.setShowTrackNotification(true);
+                            setShowSpotifyControls(false);
+                          }}
+                        />
+                        <div
+                          className={`absolute w-6 h-6 flex items-center justify-center cursor-pointer transition-all duration-300 rounded hover:bg-white/5 ${
+                            !spotifyControls.isPlaying
+                              ? "opacity-100 scale-100"
+                              : "opacity-0 scale-75"
+                          }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            spotifyControls.togglePlay();
+                          }}
+                        >
+                          <PiPlayBold className="w-4 h-4 text-white/60" />
+                        </div>
+                      </div>
                     ) : (
                       <PiSpotifyLogoBold className="w-5 h-5 text-white/30" />
                     )}

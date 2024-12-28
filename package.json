@@ -21,6 +21,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "hangul-romanization": "^1.0.1",
+    "kuroshiro": "^1.2.0",
+    "kuroshiro-analyzer-kuromoji": "^1.1.0",
     "leva": "^0.9.35",
     "lucide-react": "^0.469.0",
     "motion": "^11.15.0",

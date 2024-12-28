@@ -108,7 +108,7 @@ export const LyricsDisplay = ({
   const getFontFamily = (font: LyricsFont) => {
     switch (font) {
       case LyricsFont.Serif:
-        return "YuMincho, 'Hiragino Mincho ProN', 'Nanum Myeongjo', serif";
+        return "YuMincho, 'Hiragino Mincho ProN', 'Nanum Myeongjo', 'YuMincho', Georgia, serif";
       case LyricsFont.Rounded:
         return "'YuanTi TC', 'Yuanti SC', 'Hiragino Maru Gothic ProN', 'BM Jua', 'Arial Rounded MT', system-ui";
       default:
@@ -188,12 +188,11 @@ export const LyricsDisplay = ({
                   ease: "easeInOut",
                 },
               }}
-              className={`px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white ${
-                font === LyricsFont.Rounded ? "font-bold" : "font-semibold"
-              }`}
+              className="px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white"
               style={{
                 fontFamily: getFontFamily(font),
                 textAlign: getTextAlign(index),
+                fontWeight: font === LyricsFont.Rounded ? 700 : 600,
                 width: "100%",
                 fontSize: `calc(clamp(2rem,4vw,5rem) * ${fontSize})`,
                 paddingLeft:
