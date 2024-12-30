@@ -1,4 +1,4 @@
-# Particle Simulator 6
+# Particle Simulator 7
 
 An experiment built with Cursor, Three.js, and React that visualizes music with interactive particles.
 
@@ -12,9 +12,9 @@ An experiment built with Cursor, Three.js, and React that visualizes music with 
 - Performance-focused keyboard shortcuts
 - Touch & gesture support for mobile devices
 - Customizable UI to tweak all parameters
-- Lyrics display with language conversion support
-- Real-time particle count and FPS monitoring
-- Multiple color themes and particle behaviors
+- Spotify Connect for timesync and playback
+- Lyrics display with Chinese variants & Korean romanization
+
 
 ## Setup
 
