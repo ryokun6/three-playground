@@ -9,7 +9,10 @@ import {
 } from "../types/scene";
 import { Converter } from "opencc-js";
 import { convert as romanize } from "hangul-romanization";
-import { loadDefaultJapaneseParser } from "budoux";
+import {
+  loadDefaultJapaneseParser,
+  loadDefaultSimplifiedChineseParser,
+} from "budoux";
 
 const ANIMATION_CONFIG = {
   spring: {
@@ -93,7 +96,16 @@ export const LyricsDisplay = ({
     () => Converter({ from: "cn", to: "hk" }),
     []
   );
-  const parser = useMemo(() => loadDefaultJapaneseParser(), []);
+  const japaneseParser = useMemo(() => loadDefaultJapaneseParser(), []);
+  const chineseParser = useMemo(() => loadDefaultSimplifiedChineseParser(), []);
+
+  const isChineseText = (text: string) => {
+    // Check for Chinese characters (includes both simplified and traditional)
+    const chineseRegex = /[\u4E00-\u9FFF]/;
+    // Check for Japanese-specific characters (hiragana and katakana)
+    const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF]/;
+    return chineseRegex.test(text) && !japaneseRegex.test(text);
+  };
 
   const visibleLines = useMemo(() => {
     if (alignment === LyricsAlignment.Alternating) {
@@ -143,8 +155,8 @@ export const LyricsDisplay = ({
     }
 
     // If text contains CJK characters, parse into segments and wrap in spans
-    // This prevents unnatural line breaks within words/phrases
     if (/[\u3000-\u9fff]/.test(processed)) {
+      const parser = isChineseText(processed) ? chineseParser : japaneseParser;
       return parser.parse(processed).join("\u200b");
     }
 
