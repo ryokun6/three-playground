@@ -83,7 +83,7 @@ export const Controls = ({
 
         {/* Other Controls - Bottom Right */}
         <div
-          className={`fixed bottom-4 right-4 flex gap-2 md:flex-row flex-col transition-opacity duration-300 ease-in-out ${
+          className={`fixed bottom-4 right-4 flex gap-2 md:flex-row flex-col transition-opacity duration-300 ease-in-out controls-wrapper ${
             isUIHidden ? "opacity-0 pointer-events-none" : ""
           }`}
           onTouchStart={(e) => {
@@ -98,6 +98,22 @@ export const Controls = ({
         >
           <KeyboardShortcuts />
           <MobileGestures />
+          {audioEnabled && (
+            <button
+              onClick={() => {
+                onAutoPlayToggle();
+                showToast(`Auto-play ${!autoPlay ? "on" : "off"}`);
+              }}
+              className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+              title={autoPlay ? "Turn off auto-play" : "Turn on auto-play"}
+            >
+              <PiDiceFiveBold
+                className={`w-5 h-5 transition-transform duration-[4000ms] ${
+                  autoPlay ? "animate-[spin_4s_linear_infinite]" : ""
+                }`}
+              />
+            </button>
+          )}
           <button
             onClick={onAudioToggle}
             className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
@@ -109,20 +125,7 @@ export const Controls = ({
               <PiMicrophoneSlashBold className="w-5 h-5" />
             )}
           </button>
-          <button
-            onClick={() => {
-              onAutoPlayToggle();
-              showToast(`Auto-play ${!autoPlay ? "on" : "off"}`);
-            }}
-            className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-            title={autoPlay ? "Turn off auto-play" : "Turn on auto-play"}
-          >
-            <PiDiceFiveBold
-              className={`w-5 h-5 transition-transform duration-[4000ms] ${
-                autoPlay ? "animate-[spin_4s_linear_infinite]" : ""
-              }`}
-            />
-          </button>
+
           <button
             onClick={onLevaToggle}
             onTouchStart={(e) => e.stopPropagation()}

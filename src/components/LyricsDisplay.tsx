@@ -200,15 +200,6 @@ export const LyricsDisplay = ({
                 ...ANIMATION_CONFIG.spring,
                 opacity: ANIMATION_CONFIG.fade,
                 filter: ANIMATION_CONFIG.fade,
-                textShadow: {
-                  duration:
-                    position === 0 && index < visibleLines.length - 1
-                      ? (parseInt(visibleLines[index + 1].startTimeMs) -
-                          parseInt(line.startTimeMs)) /
-                        1000
-                      : 2,
-                  ease: "circInOut",
-                },
               }}
               className="px-4 md:px-12 text-[clamp(2rem,4vw,5rem)] leading-[1] whitespace-pre-wrap break-words max-w-full text-white"
               style={{

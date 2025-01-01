@@ -258,7 +258,7 @@ export const SpotifyControls = ({
                 showToast(spotifyControls.error);
               }
             }}
-            className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors flex items-center gap-2"
+            className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors flex items-center gap-2 controls-wrapper"
             title="Connect Spotify"
           >
             <PiSpotifyLogoBold className="w-5 h-5" />

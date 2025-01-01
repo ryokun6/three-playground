@@ -17,6 +17,7 @@ export const useGestureHandling = ({
 }: GestureHandlingProps) => {
   const [touchStartTime, setTouchStartTime] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
   const [holdTimer, setHoldTimer] = useState<number | null>(null);
   const [isActiveGesture, setIsActiveGesture] = useState(false);
   const [lastTapTime, setLastTapTime] = useState(0);
@@ -43,6 +44,7 @@ export const useGestureHandling = ({
       setIsActiveGesture(true);
       setTouchStartTime(Date.now());
       setTouchStartX(e.touches[0].clientX);
+      setTouchStartY(e.touches[0].clientY);
       startHoldTimer();
     };
 
@@ -70,7 +72,12 @@ export const useGestureHandling = ({
 
       const touchDuration = Date.now() - touchStartTime;
       const touchEndX = e.changedTouches[0].clientX;
-      const swipeDistance = touchEndX - touchStartX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const swipeDistanceX = touchEndX - touchStartX;
+      const swipeDistanceY = touchEndY - touchStartY;
+      const swipeDistance = Math.sqrt(
+        swipeDistanceX * swipeDistanceX + swipeDistanceY * swipeDistanceY
+      );
       const now = Date.now();
 
       // Don't trigger other gestures if it was a hold
@@ -80,7 +87,7 @@ export const useGestureHandling = ({
         return;
       }
 
-      if (Math.abs(swipeDistance) > 50) {
+      if (swipeDistance > 50) {
         onRandomizeShape();
       } else if (touchDuration < 200) {
         if (now - lastTapTime < 300) {
@@ -123,6 +130,7 @@ export const useGestureHandling = ({
   }, [
     touchStartTime,
     touchStartX,
+    touchStartY,
     holdTimer,
     onRandomizeCamera,
     onRandomizePhysics,
