@@ -9,6 +9,7 @@ import {
 } from "../types/scene";
 import { Converter } from "opencc-js";
 import { convert as romanize } from "hangul-romanization";
+import { loadDefaultJapaneseParser } from "budoux";
 
 const ANIMATION_CONFIG = {
   spring: {
@@ -36,10 +37,10 @@ const getVariants = (position: number, isAlternating: boolean) => ({
         ? 1
         : 0.5
       : position === 0
-        ? 1
-        : position === 1
-          ? 0.5
-          : 0.1,
+      ? 1
+      : position === 1
+      ? 0.5
+      : 0.1,
     scale: isAlternating ? 1 : position === 0 || position === 1 ? 1 : 0.9,
     filter: isAlternating
       ? "blur(0px)"
@@ -90,8 +91,9 @@ export const LyricsDisplay = ({
   const currentLineRef = useRef<HTMLDivElement>(null);
   const chineseConverter = useMemo(
     () => Converter({ from: "cn", to: "hk" }),
-    [],
+    []
   );
+  const parser = useMemo(() => loadDefaultJapaneseParser(), []);
 
   const visibleLines = useMemo(() => {
     if (alignment === LyricsAlignment.Alternating) {
@@ -127,15 +129,23 @@ export const LyricsDisplay = ({
   const processText = (text: string) => {
     let processed = text;
 
+    // Convert Simplified Chinese to Traditional if specified
     if (chineseVariant === ChineseVariant.Traditional) {
       processed = chineseConverter(processed);
     }
 
+    // Convert Korean text to romanized form if specified
     if (koreanDisplay === KoreanDisplay.Romanized) {
-      // Simple heuristic: if text contains Hangul characters
+      // Check if text contains Korean characters
       if (/[\u3131-\u314e\u314f-\u3163\uac00-\ud7a3]/.test(processed)) {
         processed = romanize(processed);
       }
+    }
+
+    // If text contains CJK characters, parse into segments and wrap in spans
+    // This prevents unnatural line breaks within words/phrases
+    if (/[\u3000-\u9fff]/.test(processed)) {
+      return parser.parse(processed).join("\u200b");
     }
 
     return processed;
@@ -162,7 +172,7 @@ export const LyricsDisplay = ({
               : index - (currentLine > 0 ? 1 : 0);
           const variants = getVariants(
             position,
-            alignment === LyricsAlignment.Alternating,
+            alignment === LyricsAlignment.Alternating
           );
 
           return (
@@ -203,6 +213,8 @@ export const LyricsDisplay = ({
                   alignment === LyricsAlignment.Alternating && index === 1
                     ? "5%"
                     : undefined,
+                wordBreak: "keep-all",
+                overflowWrap: "anywhere",
               }}
             >
               {processText(line.words)}

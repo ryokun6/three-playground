@@ -18,6 +18,8 @@
     "@types/spotify-web-playback-sdk": "^0.1.19",
     "@types/three": "^0.170.0",
     "autoprefixer": "^10.4.20",
+    "budoux": "^0.6.3",
+    "chinese-tokenizer": "^2.4.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "hangul-romanization": "^1.0.1",
@@ -37,7 +39,8 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
-    "three": "^0.170.0"
+    "three": "^0.170.0",
+    "tiny-segmenter": "^0.2.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
