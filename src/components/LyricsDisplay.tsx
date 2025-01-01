@@ -36,10 +36,10 @@ const getVariants = (position: number, isAlternating: boolean) => ({
         ? 1
         : 0.5
       : position === 0
-      ? 1
-      : position === 1
-      ? 0.5
-      : 0.1,
+        ? 1
+        : position === 1
+          ? 0.5
+          : 0.1,
     scale: isAlternating ? 1 : position === 0 || position === 1 ? 1 : 0.9,
     filter: isAlternating
       ? "blur(0px)"
@@ -90,7 +90,7 @@ export const LyricsDisplay = ({
   const currentLineRef = useRef<HTMLDivElement>(null);
   const chineseConverter = useMemo(
     () => Converter({ from: "cn", to: "hk" }),
-    []
+    [],
   );
 
   const visibleLines = useMemo(() => {
@@ -110,7 +110,7 @@ export const LyricsDisplay = ({
       case LyricsFont.Serif:
         return "Charter, Lyon, 'Hiragino Mincho ProN', 'Nanum Myeongjo', 'YuMincho', serif";
       case LyricsFont.Rounded:
-        return "'YuanTi TC', 'YuanTi SC', 'Hiragino Maru Gothic ProN', 'BM Jua', 'Arial Rounded MT', system-ui";
+        return "'Yuanti TC', 'Yuanti SC', 'Tsukushi A Round Gothic', 'BM Jua', sans-serif";
       default:
         return "-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Sans CNS', 'PingFang TC', 'PingFang SC', 'Segoe UI Variable', Segoe UI, system-ui";
     }
@@ -162,7 +162,7 @@ export const LyricsDisplay = ({
               : index - (currentLine > 0 ? 1 : 0);
           const variants = getVariants(
             position,
-            alignment === LyricsAlignment.Alternating
+            alignment === LyricsAlignment.Alternating,
           );
 
           return (
@@ -192,7 +192,7 @@ export const LyricsDisplay = ({
               style={{
                 fontFamily: getFontFamily(font),
                 textAlign: getTextAlign(index),
-                fontWeight: font === LyricsFont.Rounded ? 700 : 600,
+                fontWeight: font === LyricsFont.Rounded ? "bold" : 600,
                 width: "100%",
                 fontSize: `calc(clamp(2rem,4vw,5rem) * ${fontSize})`,
                 paddingLeft:
