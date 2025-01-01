@@ -120,11 +120,7 @@ function App() {
 
   return (
     <main className="w-screen h-[100dvh] bg-black select-none">
-      <div
-        className={`fixed inset-0 z-50 transition-opacity duration-300 ease-in-out ${
-          isUIHidden ? "opacity-0 pointer-events-none" : ""
-        }`}
-      >
+      <div className="fixed inset-0 z-50">
         <style>{`
           @media (min-width: 768px) {
             .controls-wrapper {
@@ -163,6 +159,7 @@ function App() {
           koreanDisplay={lyricsControls.koreanDisplay}
           ktvMode={lyricsControls.ktvMode}
           onKtvToggle={toggleKtvMode}
+          isUIHidden={isUIHidden}
         />
       </div>
 

@@ -23,12 +23,10 @@ export const useGestureHandling = ({
 
   const startHoldTimer = useCallback(() => {
     const timer = window.setTimeout(() => {
-      if (isActiveGesture) {
-        onRandomizePhysics();
-      }
+      onRandomizePhysics();
     }, 500);
     setHoldTimer(timer);
-  }, [isActiveGesture, onRandomizePhysics]);
+  }, [onRandomizePhysics]);
 
   useEffect(() => {
     let initialTouchTarget: EventTarget | null = null;
@@ -74,6 +72,13 @@ export const useGestureHandling = ({
       const touchEndX = e.changedTouches[0].clientX;
       const swipeDistance = touchEndX - touchStartX;
       const now = Date.now();
+
+      // Don't trigger other gestures if it was a hold
+      if (touchDuration >= 500) {
+        setIsActiveGesture(false);
+        initialTouchTarget = null;
+        return;
+      }
 
       if (Math.abs(swipeDistance) > 50) {
         onRandomizeShape();
