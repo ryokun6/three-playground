@@ -110,7 +110,7 @@ export const LyricsDisplay = ({
       case LyricsFont.Serif:
         return "Charter, Lyon, 'Hiragino Mincho ProN', 'Nanum Myeongjo', 'YuMincho', serif";
       case LyricsFont.Rounded:
-        return "'YuanTi TC', 'Yuanti SC', 'Hiragino Maru Gothic ProN', 'BM Jua', 'Arial Rounded MT', system-ui";
+        return "'YuanTi TC', 'YuanTi SC', 'Hiragino Maru Gothic ProN', 'BM Jua', 'Arial Rounded MT', system-ui";
       default:
         return "-apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Hiragino Sans CNS', 'PingFang TC', 'PingFang SC', 'Segoe UI Variable', Segoe UI, system-ui";
     }

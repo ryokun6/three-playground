@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useSpotifyLyrics } from "./useSpotifyLyrics";
+import { useLyrics } from "./useLyrics";
 
 export interface LyricsLine {
   startTimeMs: string;
@@ -58,7 +58,7 @@ export const useSpotifyPlayer = (
     isLoading,
     error: lyricsError,
     updateCurrentLine,
-  } = useSpotifyLyrics(
+  } = useLyrics(
     state.currentTrack
       ? {
           title: state.currentTrack.name,
@@ -132,14 +132,6 @@ export const useSpotifyPlayer = (
       try {
         const currentState = await fetchSpotifyAPI("/me/player");
 
-        await fetchSpotifyAPI("/me/player", {
-          method: "PUT",
-          body: JSON.stringify({
-            device_ids: [deviceId],
-            play: true,
-          }),
-        });
-
         const state = await player.getCurrentState();
         if (state) handlePlayerStateChanged(state);
 
@@ -149,6 +141,16 @@ export const useSpotifyPlayer = (
           currentTrack: currentState?.item || null,
           isPlaying: currentState?.paused ? false : true,
         }));
+
+        await fetchSpotifyAPI("/me/player", {
+          method: "PUT",
+          body: JSON.stringify({
+            device_ids: [deviceId],
+            play: true,
+          }),
+        });
+
+        playerRef.current?.activateElement();
       } catch {
         onError?.("Failed to initialize player");
       }

@@ -11,11 +11,12 @@ interface Track {
   album?: string;
 }
 
-export const useSpotifyLyrics = (track: Track | null) => {
+export const useLyrics = (track: Track | null) => {
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
   const [currentLine, setCurrentLine] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const prevTrackRef = useRef<string>("");
 
   useEffect(() => {
@@ -54,27 +55,7 @@ export const useSpotifyLyrics = (track: Track | null) => {
           return;
         }
 
-        // Parse LRC format
-        const lines = lrcText
-          .split("\n")
-          .map((line) => {
-            const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\](.+)/);
-            if (!match) return null;
-
-            const [, min, sec, ms, text] = match;
-            const timeMs = (
-              parseInt(min) * 60000 +
-              parseInt(sec) * 1000 +
-              parseInt(ms.padEnd(3, "0"))
-            ).toString();
-
-            return {
-              startTimeMs: timeMs,
-              words: text.trim(),
-            };
-          })
-          .filter((line): line is LyricLine => line !== null);
-
+        const lines = parseLRC(lrcText);
         setLyrics(lines);
       } catch (err) {
         setError("Failed to fetch lyrics");
@@ -86,6 +67,28 @@ export const useSpotifyLyrics = (track: Track | null) => {
 
     fetchLyrics();
   }, [track]);
+
+  const parseLRC = (lrcText: string): LyricLine[] => {
+    return lrcText
+      .split("\n")
+      .map((line) => {
+        const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\](.+)/);
+        if (!match) return null;
+
+        const [, min, sec, ms, text] = match;
+        const timeMs = (
+          parseInt(min) * 60000 +
+          parseInt(sec) * 1000 +
+          parseInt(ms.padEnd(3, "0"))
+        ).toString();
+
+        return {
+          startTimeMs: timeMs,
+          words: text.trim(),
+        };
+      })
+      .filter((line): line is LyricLine => line !== null);
+  };
 
   const updateCurrentLine = (currentTimeMs: number) => {
     const newLineIndex = lyrics.findIndex((line, index) => {
