@@ -72,7 +72,7 @@ export const useLyricsControls = () => {
       alignment: newKtvMode
         ? LyricsAlignment.Alternating
         : LyricsAlignment.Center,
-      fontSize: newKtvMode ? 1.2 : 1.0,
+      fontSize: newKtvMode ? 1.4 : 1.0,
       ktvMode: newKtvMode,
     });
     return newKtvMode;

@@ -3,6 +3,8 @@ import {
   PiMicrophoneSlashBold,
   PiSlidersBold,
   PiDiceFiveBold,
+  PiVideoBold,
+  PiConfettiBold,
 } from "react-icons/pi";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { MobileGestures } from "./MobileGestures";
@@ -16,10 +18,12 @@ interface ControlsProps {
   autoPlay: boolean;
   isLevaHidden: boolean;
   showLyrics: boolean;
+  showVideo: boolean;
   onAudioToggle: () => void;
   onAutoPlayToggle: () => void;
   onLevaToggle: () => void;
   onLyricsToggle: () => void;
+  onVideoToggle: () => void;
   showToast: (message: string) => void;
   spotifyControls?: SpotifyControlsType & {
     togglePlay: () => Promise<void>;
@@ -43,10 +47,12 @@ export const Controls = ({
   autoPlay,
   isLevaHidden,
   showLyrics,
+  showVideo,
   onAudioToggle,
   onAutoPlayToggle,
   onLevaToggle,
   onLyricsToggle,
+  onVideoToggle,
   showToast,
   spotifyControls,
   onSpotifyLogin,
@@ -97,31 +103,47 @@ export const Controls = ({
         >
           <KeyboardShortcuts />
           <MobileGestures />
-          {audioEnabled && (
-            <button
-              onClick={() => {
-                onAutoPlayToggle();
-                showToast(`Auto-play ${!autoPlay ? "on" : "off"}`);
-              }}
-              className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-              title={autoPlay ? "Turn off auto-play" : "Turn on auto-play"}
-            >
-              <PiDiceFiveBold
-                className={`w-5 h-5 transition-transform duration-[4000ms] ${
-                  autoPlay ? "animate-[spin_4s_linear_infinite]" : ""
-                }`}
-              />
-            </button>
+          {!showVideo && (
+            <>
+              {audioEnabled && (
+                <button
+                  onClick={() => {
+                    onAutoPlayToggle();
+                    showToast(`Auto-play ${!autoPlay ? "on" : "off"}`);
+                  }}
+                  className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                  title={autoPlay ? "Turn off auto-play" : "Turn on auto-play"}
+                >
+                  <PiDiceFiveBold
+                    className={`w-5 h-5 transition-transform duration-[4000ms] ${
+                      autoPlay ? "animate-[spin_4s_linear_infinite]" : ""
+                    }`}
+                  />
+                </button>
+              )}
+              <button
+                onClick={onAudioToggle}
+                className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
+                title={audioEnabled ? "Turn off audio" : "Turn on audio"}
+              >
+                {audioEnabled ? (
+                  <PiMicrophoneBold className="w-5 h-5" />
+                ) : (
+                  <PiMicrophoneSlashBold className="w-5 h-5" />
+                )}
+              </button>
+            </>
           )}
+
           <button
-            onClick={onAudioToggle}
+            onClick={onVideoToggle}
             className="bg-black/40 hover:bg-black text-white/40 hover:text-white p-2 rounded-lg shadow-lg transition-colors"
-            title={audioEnabled ? "Turn off audio" : "Turn on audio"}
+            title={showVideo ? "Show particles" : "Show music video"}
           >
-            {audioEnabled ? (
-              <PiMicrophoneBold className="w-5 h-5" />
+            {showVideo ? (
+              <PiConfettiBold className="w-5 h-5" />
             ) : (
-              <PiMicrophoneSlashBold className="w-5 h-5" />
+              <PiVideoBold className="w-5 h-5" />
             )}
           </button>
 

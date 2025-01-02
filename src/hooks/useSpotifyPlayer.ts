@@ -12,6 +12,8 @@ type SpotifyState = {
   currentTrack: Spotify.Track | null;
   error: string | null;
   showTrackNotification: boolean;
+  progress?: number;
+  videoId?: string | null;
 };
 
 export interface SpotifyControls extends SpotifyState {
@@ -46,6 +48,7 @@ export const useSpotifyPlayer = (
     currentTrack: null,
     error: null,
     showTrackNotification: false,
+    videoId: null,
   });
 
   const playerRef = useRef<Spotify.Player | null>(null);
@@ -82,6 +85,41 @@ export const useSpotifyPlayer = (
     }
   }, []);
 
+  const searchVideo = useCallback(async (track: Spotify.Track) => {
+    try {
+      const INVIDIOUS_INSTANCES = [
+        "https://invidious.snopyta.org",
+        "https://vid.puffyan.us",
+        "https://invidious.kavin.rocks",
+      ];
+
+      const query = encodeURIComponent(
+        `${track.name} ${track.artists[0].name} official music video`
+      );
+
+      // Try each instance until one works
+      for (const instance of INVIDIOUS_INSTANCES) {
+        try {
+          const response = await fetch(
+            `${instance}/api/v1/search?q=${query}&type=video`
+          );
+          if (!response.ok) continue;
+
+          const data = await response.json();
+          if (data[0]?.videoId) {
+            setState((prev) => ({ ...prev, videoId: data[0].videoId }));
+            return;
+          }
+        } catch (e) {
+          console.warn(`Failed to fetch from ${instance}:`, e);
+          continue;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch YouTube video:", error);
+    }
+  }, []);
+
   const handlePlayerStateChanged = useCallback(
     (state: Spotify.PlaybackState | null) => {
       if (!state) return;
@@ -94,6 +132,7 @@ export const useSpotifyPlayer = (
 
         if (trackChanged) {
           updateNotification(true);
+          searchVideo(state.track_window.current_track);
         }
 
         return {
@@ -103,10 +142,11 @@ export const useSpotifyPlayer = (
           showTrackNotification: trackChanged
             ? true
             : prev.showTrackNotification,
+          progress: state.position,
         };
       });
     },
-    [updateNotification]
+    [updateNotification, searchVideo]
   );
 
   const fetchSpotifyAPI = useCallback(
@@ -171,6 +211,7 @@ export const useSpotifyPlayer = (
       const state = await playerRef.current?.getCurrentState();
       if (state?.position !== undefined) {
         updateCurrentLine(state.position);
+        setState((prev) => ({ ...prev, progress: state.position }));
       }
     }, 100);
 

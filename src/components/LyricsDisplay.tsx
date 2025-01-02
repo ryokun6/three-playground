@@ -218,6 +218,8 @@ export const LyricsDisplay = ({
                     : undefined,
                 wordBreak: "keep-all",
                 overflowWrap: "anywhere",
+                WebkitTextStroke:
+                  font === LyricsFont.Rounded ? "2px rgba(0,0,0,1)" : "none",
               }}
             >
               {processText(line.words)}

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Toast } from "./components/ui/Toast";
 import { Controls } from "./components/ui/Controls";
 import { LyricsDisplay } from "./components/LyricsDisplay";
+import { YouTubeVideo } from "./components/YouTubeVideo";
 import { motion, AnimatePresence } from "motion/react";
 import { useToast } from "./hooks/useToast";
 import { useGestureHandling } from "./hooks/useGestureHandling";
@@ -24,6 +25,7 @@ function App() {
   const [isUIHidden, setIsUIHidden] = useState(false);
   const [isUIDimmed, setIsUIDimmed] = useState(false);
   const [showLyrics, setShowLyrics] = useState(true);
+  const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
@@ -134,6 +136,8 @@ function App() {
           autoPlay={audioControls.autoPlay}
           isLevaHidden={isLevaHidden}
           showLyrics={showLyrics}
+          showVideo={showVideo}
+          onVideoToggle={() => setShowVideo(!showVideo)}
           onAudioToggle={() => {
             setAudioControls({ enabled: !audioControls.enabled });
             showToast(`Audio ${!audioControls.enabled ? "on" : "off"}`);
@@ -218,22 +222,27 @@ function App() {
             onHide={() => hideToast(toast.id)}
           />
         ))}
-      <Scene
-        {...visualControls}
-        audioEnabled={audioControls.enabled}
-        audioGain={audioControls.gain}
-        audioReactivity={audioControls.reactivity}
-        audioSmoothing={audioControls.smoothing}
-        audioMinDecibels={audioControls.minDecibels}
-        audioMaxDecibels={audioControls.maxDecibels}
-        cameraControls={cameraControls}
-        particleControls={particleControls}
-        onAudioError={() => setAudioControls({ enabled: false })}
-        onAnalyserInit={(analyser, dataArray) => {
-          analyserRef.current = analyser;
-          dataArrayRef.current = dataArray;
-        }}
-      />
+      {!showVideo && (
+        <Scene
+          {...visualControls}
+          audioEnabled={audioControls.enabled}
+          audioGain={audioControls.gain}
+          audioReactivity={audioControls.reactivity}
+          audioSmoothing={audioControls.smoothing}
+          audioMinDecibels={audioControls.minDecibels}
+          audioMaxDecibels={audioControls.maxDecibels}
+          cameraControls={cameraControls}
+          particleControls={particleControls}
+          onAudioError={() => setAudioControls({ enabled: false })}
+          onAnalyserInit={(analyser, dataArray) => {
+            analyserRef.current = analyser;
+            dataArrayRef.current = dataArray;
+          }}
+        />
+      )}
+      {showVideo && spotifyControls?.currentTrack && (
+        <YouTubeVideo controls={spotifyControls} />
+      )}
       {spotifyControls?.currentTrack && showLyrics && (
         <LyricsDisplay
           controls={spotifyControls}

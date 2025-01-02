@@ -15,10 +15,21 @@ const SKIP_PREFIXES = [
   "母带",
   "和声",
   "版权",
+  "吉他",
+  "贝斯",
+  "鼓",
+  "键盘",
+  "企划",
   "词",
   "曲",
   "OP",
   "SP",
+  "Produced",
+  "Keyboard",
+  "Guitar",
+  "Bass",
+  "Drum",
+  "Vocal",
 ] as const;
 
 export const parseLRC = (
