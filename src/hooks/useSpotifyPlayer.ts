@@ -88,7 +88,7 @@ export const useSpotifyPlayer = (
   const searchVideo = useCallback(async (track: Spotify.Track) => {
     try {
       const query = encodeURIComponent(
-        `${track.name} ${track.artists[0].name} official music video`
+        `${track.name} ${track.artists[0].name} music video`
       );
 
       const response = await fetch(`/api/search?query=${query}`);
