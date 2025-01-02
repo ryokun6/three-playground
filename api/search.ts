@@ -17,11 +17,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   const encodedQuery = encodeURIComponent(query);
-  const INVIDIOUS_INSTANCES = [
-    "https://invidious.snopyta.org",
-    "https://vid.puffyan.us",
-    "https://invidious.kavin.rocks",
-  ];
+  const INVIDIOUS_INSTANCES = ["https://vid.puffyan.us"];
 
   for (const instance of INVIDIOUS_INSTANCES) {
     try {
