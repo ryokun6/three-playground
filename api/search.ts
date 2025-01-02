@@ -18,9 +18,9 @@ export default async function handler(request: Request): Promise<Response> {
 
   const encodedQuery = encodeURIComponent(query);
   const INVIDIOUS_INSTANCES = [
-    "https://yewtu.be",
     "https://invidious.nerdvpn.de",
     "https://vid.puffyan.us",
+    "https://yewtu.be",
   ];
 
   for (const instance of INVIDIOUS_INSTANCES) {
