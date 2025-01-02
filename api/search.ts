@@ -1,6 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-export const handler = async (req: VercelRequest, res: VercelResponse) => {
+export const config = {
+  runtime: "edge",
+};
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { query } = req.query;
 
   const INVIDIOUS_INSTANCES = [
@@ -26,6 +30,4 @@ export const handler = async (req: VercelRequest, res: VercelResponse) => {
   }
 
   return res.status(500).json({ error: "Failed to fetch from all instances" });
-};
-
-export default handler;
+}
