@@ -137,7 +137,10 @@ function App() {
           isLevaHidden={isLevaHidden}
           showLyrics={showLyrics}
           showVideo={showVideo}
-          onVideoToggle={() => setShowVideo(!showVideo)}
+          onVideoToggle={() => {
+            toggleKtvMode(!showVideo);
+            setShowVideo(!showVideo);
+          }}
           onAudioToggle={() => {
             setAudioControls({ enabled: !audioControls.enabled });
             showToast(`Audio ${!audioControls.enabled ? "on" : "off"}`);

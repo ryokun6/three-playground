@@ -65,18 +65,22 @@ export const useLyricsControls = () => {
     return displays[nextIndex];
   }, [lyricsControls.koreanDisplay, setLyricsControls]);
 
-  const toggleKtvMode = useCallback(() => {
-    const newKtvMode = !lyricsControls.ktvMode;
-    setLyricsControls({
-      font: newKtvMode ? LyricsFont.Serif : LyricsFont.Default,
-      alignment: newKtvMode
-        ? LyricsAlignment.Alternating
-        : LyricsAlignment.Center,
-      fontSize: newKtvMode ? 1.4 : 1.0,
-      ktvMode: newKtvMode,
-    });
-    return newKtvMode;
-  }, [lyricsControls.ktvMode, setLyricsControls]);
+  const toggleKtvMode = useCallback(
+    (forcedState?: boolean) => {
+      const newKtvMode =
+        forcedState !== undefined ? forcedState : !lyricsControls.ktvMode;
+      setLyricsControls({
+        font: newKtvMode ? LyricsFont.Serif : LyricsFont.Default,
+        alignment: newKtvMode
+          ? LyricsAlignment.Alternating
+          : LyricsAlignment.Center,
+        fontSize: newKtvMode ? 1.6 : 1.0,
+        ktvMode: newKtvMode,
+      });
+      return newKtvMode;
+    },
+    [lyricsControls.ktvMode, setLyricsControls]
+  );
 
   return {
     lyricsControls,

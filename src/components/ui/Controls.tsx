@@ -101,10 +101,10 @@ export const Controls = ({
             e.stopPropagation();
           }}
         >
-          <KeyboardShortcuts />
-          <MobileGestures />
           {!showVideo && (
             <>
+              <KeyboardShortcuts />
+              <MobileGestures />
               {audioEnabled && (
                 <button
                   onClick={() => {
