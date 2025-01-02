@@ -87,33 +87,16 @@ export const useSpotifyPlayer = (
 
   const searchVideo = useCallback(async (track: Spotify.Track) => {
     try {
-      const INVIDIOUS_INSTANCES = [
-        "https://invidious.snopyta.org",
-        "https://vid.puffyan.us",
-        "https://invidious.kavin.rocks",
-      ];
-
       const query = encodeURIComponent(
         `${track.name} ${track.artists[0].name} official music video`
       );
 
-      // Try each instance until one works
-      for (const instance of INVIDIOUS_INSTANCES) {
-        try {
-          const response = await fetch(
-            `${instance}/api/v1/search?q=${query}&type=video`
-          );
-          if (!response.ok) continue;
+      const response = await fetch(`/api/search?query=${query}`);
+      if (!response.ok) throw new Error("Failed to fetch video");
 
-          const data = await response.json();
-          if (data[0]?.videoId) {
-            setState((prev) => ({ ...prev, videoId: data[0].videoId }));
-            return;
-          }
-        } catch (e) {
-          console.warn(`Failed to fetch from ${instance}:`, e);
-          continue;
-        }
+      const data = await response.json();
+      if (data[0]?.videoId) {
+        setState((prev) => ({ ...prev, videoId: data[0].videoId }));
       }
     } catch (error) {
       console.error("Failed to fetch YouTube video:", error);
