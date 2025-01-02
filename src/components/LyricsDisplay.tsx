@@ -93,7 +93,7 @@ export const LyricsDisplay = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const currentLineRef = useRef<HTMLDivElement>(null);
   const chineseConverter = useMemo(
-    () => Converter({ from: "cn", to: "hk" }),
+    () => Converter({ from: "cn", to: "tw" }),
     []
   );
   const japaneseParser = useMemo(() => loadDefaultJapaneseParser(), []);
